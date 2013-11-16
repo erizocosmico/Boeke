@@ -12,15 +12,15 @@ def display_help():
     print("""
 Boeke build
 
-Arguments:
+Argumentos:
 
-  --MAMP         Use if you're using MAMP.
-  --test         Install a test database. If --test and --fill are not used a production database is installed.
-  --fill         Fill the database with test data.
-  --user=[user]  root mysql username
-  --pass=[pass]  root mysql password
+  --MAMP         Usar si estás usando MAMP.
+  --test         Instala una base de datos de pruebas. Si --fill y --test no están habilitados se creará una de producción.
+  --fill         Rellena la base de datos con datos de prueba.
+  --user=[user]  Nombre de un usuario con privilegios de root
+  --pass=[pass]  Contraseña del usuario
      
-Example: build --test --fill --user=root --pass=root""")
+Ejemplo: build --test --fill --user=root --pass=root""")
 
 def generate_password():
     password = ''
@@ -71,7 +71,7 @@ def main():
     dbuser_pass = generate_password()
         
     if not USER or not PASS:
-        print("Database user and password not provided.")
+        print("No se han proporcionado usuario y/o contraseña.")
         sys.exit(2)
         
     # Create database
@@ -81,7 +81,6 @@ def main():
                     
     # Create user
     sentence = "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';" % (DBUSER, dbuser_pass)
-    print(sentence)
     subprocess.call('%s -u %s --password=%s -e "%s"' % (cmd, USER, PASS, sentence),
                     shell=True)
         
@@ -99,8 +98,8 @@ def main():
         subprocess.call('%s -u %s --password=%s %s < %s' % (cmd, USER, PASS, DBNAME, TESTDATA_DIR),
                         shell=True)
                         
-    print("Database user:", DBUSER)
-    print("Database user password:", dbuser_pass)
+    print("Usuario:", DBUSER)
+    print("Contraseña:", dbuser_pass)
         
 if __name__ == '__main__':
     main()

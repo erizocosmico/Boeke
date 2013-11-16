@@ -1,6 +1,6 @@
 {
     "name": "mvader/Boeke",
-    "description": "Web application to manage books given to ESO students.",
+    "description": "Aplicación web para gestionar el seguimiento de los préstamos de libros a alumnos de la ESO.",
     "homepage": "http://github.com/iesoretania/atica",
     "license": "MIT",
     "authors": [

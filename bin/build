@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+import os
+import sys
+import subprocess
+import string
+import random
+
+def display_help():
+    print("""
+Boeke build
+
+Arguments:
+
+  --MAMP         Use if you're using MAMP.
+  --test         Install a test database. If --test and --fill are not used a production database is installed.
+  --fill         Fill the database with test data.
+  --user=[user]  root mysql username
+  --pass=[pass]  root mysql password
+     
+Example: build --test --fill --user=root --pass=root""")
+
+def generate_password():
+    password = ''
+    for i in xrange(25):
+        password += random.choice(string.ascii_letters + string.digits + '_-#%&/()')
+    return password
+
+def main():
+    CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+    SCHEMA_DIR = CURRENT_DIR  + '/db_schema.sql'
+    TESTDATA_DIR = CURRENT_DIR  + '/test_data.sql'
+    MAMP = False
+    DB_CREATED = False
+    OPTIONS = 0
+    USER = None
+    PASS = None
+    args = sys.argv[1:]
+    
+    if len(args) == 0 or '-h' in args or '--help' in args:
+        display_help()
+        sys.exit(0)
+    
+    for arg in args:
+        if arg == '--MAMP':
+            MAMP = True
+    
+        if arg == '--test':
+            OPTIONS |= 1
+    
+        if arg == '--fill':
+            OPTIONS |= 2
+        
+        if '--user=' in arg:
+            USER = arg[7:]
+        
+        if '--pass=' in arg:
+            PASS = arg[7:]
+    
+    cmd = "mysql" if not MAMP else "/Applications/MAMP/Library/bin/mysql"
+    # Is test?
+    if OPTIONS & 3 in (1, 2):
+        DBNAME = 'boeke_test'
+        DBUSER = 'boeke_user_test'
+    # Is production
+    else:
+        DBNAME = 'boeke_production'
+        DBUSER = 'boeke_user'
+    dbuser_pass = generate_password()
+        
+    if not USER or not PASS:
+        print("Database user and password not provided.")
+        sys.exit(2)
+        
+    # Create database
+    sentence = "CREATE DATABASE %s;" % DBNAME
+    subprocess.call('%s -u %s --password=%s -e "%s"' % (cmd, USER, PASS, sentence),
+                    shell=True)
+                    
+    # Create user
+    sentence = "CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';" % (DBUSER, dbuser_pass)
+    print(sentence)
+    subprocess.call('%s -u %s --password=%s -e "%s"' % (cmd, USER, PASS, sentence),
+                    shell=True)
+        
+    # Create database schema            
+    subprocess.call('%s -u %s --password=%s %s < %s' % (cmd, USER, PASS, DBNAME, SCHEMA_DIR),
+                    shell=True)
+                    
+    # Gran permissions to the user
+    sentence = "GRANT DELETE, INSERT, SELECT, UPDATE ON %s.* TO '%s'@'localhost';" % (DBNAME, DBUSER)
+    subprocess.call('%s -u %s --password=%s -e "%s"' % (cmd, USER, PASS, sentence),
+                    shell=True)
+                    
+    if OPTIONS & 2 == 2:
+        # Fill database with test data          
+        subprocess.call('%s -u %s --password=%s %s < %s' % (cmd, USER, PASS, DBNAME, TESTDATA_DIR),
+                        shell=True)
+                        
+    print("Database user:", DBUSER)
+    print("Database user password:", dbuser_pass)
+        
+if __name__ == '__main__':
+    main()

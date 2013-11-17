@@ -35,32 +35,41 @@ namespace Boeke\Models;
 use \Aurora\Table;
 use \Aurora\Column;
 use \Aurora\Relationship;
+use \Aurora\ForeignKey;
 use \Aurora\Types\Int;
 use \Aurora\Types\String;
 
-class Libro extends Table
+class Ejemplar extends Table
 {
-    protected $isbn;
-    protected $titulo;
-    protected $autor;
-    protected $anio;
-    protected $ejemplares;
-    protected $asignaturas;
+    protected $codigo;
+    protected $libro_isbn;
+    protected $estado;
+    protected $libro;
+    protected $historial;
     
     protected function setup()
     {
-        $this->name = 'libro';
-        $this->isbn = new Column(new String(13));
-        $this->isbn->primaryKey = true;
-        $this->titulo = new Column(new String(80));
-        $this->autor = new Column(new String(85));
-        $this->anio = new Column(new Int(true));
-        $this->ejemplares = new Relationship('Ejemplar', 'libro_isbn', 'isbn', false);
-        $this->asignaturas = new Relationship(
-            'LibroAsignatura',
-            'libro_isbn',
+        $this->name = 'ejemplar';
+        
+        $this->codigo = new Column(new Int(true));
+        $this->codigo->primaryKey = true;
+        $this->libro_isbn = new Column(new String(13));
+        $this->libro_isbn->foreignKey = new ForeignKey(
+            'Libro',
             'isbn',
+            'libro_isbn',
+            'CASCADE',
+            'CASCADE'
+        );
+        $this->estado = new Column(new Int(true));
+        $this->estado->default = 0;
+        
+        $this->historial = new Relationship(
+            'Historial',
+            'ejemplar_codigo',
+            'codigo',
             false
         );
+        $this->libro = new Relationship('Libro', 'isbn', 'libro_isbn', true);
     }
 }

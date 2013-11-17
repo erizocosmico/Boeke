@@ -34,6 +34,7 @@ namespace Boeke\Models;
 
 use \Aurora\Table;
 use \Aurora\Column;
+use \Aurora\Relationship;
 use \Aurora\Types\Int;
 use \Aurora\Types\Boolean;
 use \Aurora\Types\BigInt;
@@ -45,17 +46,17 @@ class Alumno extends Table
     protected $nombre;
     protected $curso_actual;
     protected $repitiendo;
+    protected $historial;
     
     protected function setup()
     {
+        $this->name = 'alumno';
         $this->nie = new Column(new BigInt());
         $this->nie->primaryKey = true;
-        
         $this->nombre = new Column(new String(70));
-        
         $this->curso_actual = new Column(new Int(true));
         $this->curso_actual->default = 1;
-        
         $this->repitiendo = new Column(new Boolean());
+        $this->historial = new Relationship('Historial', 'alumno_nie', 'nie', false);
     }
 }

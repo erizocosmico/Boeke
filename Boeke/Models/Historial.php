@@ -35,32 +35,63 @@ namespace Boeke\Models;
 use \Aurora\Table;
 use \Aurora\Column;
 use \Aurora\Relationship;
+use \Aurora\ForeignKey;
 use \Aurora\Types\Int;
 use \Aurora\Types\String;
+use \Aurora\Types\BigInt;
+use \Aurora\Types\Blob;
 
-class Libro extends Table
+class Historial extends Table
 {
-    protected $isbn;
-    protected $titulo;
-    protected $autor;
-    protected $anio;
-    protected $ejemplares;
-    protected $asignaturas;
+    protected $id;
+    protected $tipo;
+    protected $ejemplar_codigo;
+    protected $alumno_nie;
+    protected $estado;
+    protected $fecha;
+    protected $anotacion;
+    protected $ejemplar;
+    protected $alumno;
     
     protected function setup()
     {
-        $this->name = 'libro';
-        $this->isbn = new Column(new String(13));
-        $this->isbn->primaryKey = true;
-        $this->titulo = new Column(new String(80));
-        $this->autor = new Column(new String(85));
-        $this->anio = new Column(new Int(true));
-        $this->ejemplares = new Relationship('Ejemplar', 'libro_isbn', 'isbn', false);
-        $this->asignaturas = new Relationship(
-            'LibroAsignatura',
-            'libro_isbn',
-            'isbn',
-            false
+        $this->name = 'historial';
+        
+        $this->id = new Column(new Int(true));
+        $this->id->primaryKey = true;
+        $this->tipo = new Column(new Int(true));
+        $this->tipo->default = 0;
+        $this->ejemplar_codigo = new Column(new Int(true));
+        $this->ejemplar_codigo->foreignKey = new ForeignKey(
+            'Ejemplar',
+            'codigo',
+            'ejemplar_codigo',
+            'CASCADE',
+            'CASCADE'
+        );
+        $this->alumno_nie = new Column(new BigInt());
+        $this->alumno_nie->foreignKey = new ForeignKey(
+            'Alumno',
+            'nie',
+            'alumno_nie',
+            'NO ACTION',
+            'NO ACTION'
+        );
+        $this->estado = new Column(new Int(true));
+        $this->fecha = new Column(new BigInt());
+        $this->anotacion = new Column(new Blob());
+        
+        $this->ejemplar = new Relationship(
+            'Ejemplar',
+            'codigo',
+            'ejemplar_codigo',
+            true
+        );
+        $this->alumno = new Relationship(
+            'Alumno',
+            'nie',
+            'alumno_nie',
+            true
         );
     }
 }

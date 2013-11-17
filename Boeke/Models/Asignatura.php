@@ -38,28 +38,24 @@ use \Aurora\Relationship;
 use \Aurora\Types\Int;
 use \Aurora\Types\String;
 
-class Libro extends Table
+class Asignatura extends Table
 {
-    protected $isbn;
-    protected $titulo;
-    protected $autor;
-    protected $anio;
-    protected $ejemplares;
-    protected $asignaturas;
+    protected $id;
+    protected $nivel;
+    protected $nombre;
+    protected $libros;
     
     protected function setup()
     {
-        $this->name = 'libro';
-        $this->isbn = new Column(new String(13));
-        $this->isbn->primaryKey = true;
-        $this->titulo = new Column(new String(80));
-        $this->autor = new Column(new String(85));
-        $this->anio = new Column(new Int(true));
-        $this->ejemplares = new Relationship('Ejemplar', 'libro_isbn', 'isbn', false);
-        $this->asignaturas = new Relationship(
+        $this->name = 'asignatura';
+        $this->id = new Column(new Int(true));
+        $this->id->primaryKey = true;
+        $this->nivel = new Column(new Int(true));
+        $this->nombre = new Column(new String(60));
+        $this->libros = new Relationship(
             'LibroAsignatura',
-            'libro_isbn',
-            'isbn',
+            'asignatura_id',
+            'id',
             false
         );
     }

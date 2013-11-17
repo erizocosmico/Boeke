@@ -34,33 +34,29 @@ namespace Boeke\Models;
 
 use \Aurora\Table;
 use \Aurora\Column;
-use \Aurora\Relationship;
 use \Aurora\Types\Int;
 use \Aurora\Types\String;
+use \Aurora\Types\Boolean;
 
-class Libro extends Table
+class Historial extends Table
 {
-    protected $isbn;
-    protected $titulo;
-    protected $autor;
-    protected $anio;
-    protected $ejemplares;
-    protected $asignaturas;
+    protected $id;
+    protected $nombre_usuario;
+    protected $nombre_usuario_limpio;
+    protected $usuario_pass;
+    protected $usuario_salt;
+    protected $es_admin;
     
     protected function setup()
     {
-        $this->name = 'libro';
-        $this->isbn = new Column(new String(13));
-        $this->isbn->primaryKey = true;
-        $this->titulo = new Column(new String(80));
-        $this->autor = new Column(new String(85));
-        $this->anio = new Column(new Int(true));
-        $this->ejemplares = new Relationship('Ejemplar', 'libro_isbn', 'isbn', false);
-        $this->asignaturas = new Relationship(
-            'LibroAsignatura',
-            'libro_isbn',
-            'isbn',
-            false
-        );
+        $this->name = 'usuario';
+        
+        $this->id = new Column(new Int(true));
+        $this->id->primaryKey = true;
+        $this->nombre_usuario = new Column(new String(60));
+        $this->nombre_usuario_clean = new Column(new String(60));
+        $this->usuario_pass = new Column(new String(255));
+        $this->usuario_salt = new Column(new String(255));
+        $this->es_admin = new Column(new Boolean());
     }
 }

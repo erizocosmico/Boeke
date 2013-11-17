@@ -57,8 +57,7 @@ CREATE TABLE IF NOT EXISTS `libro` (
   `titulo` VARCHAR(80) NOT NULL,
   `autor` VARCHAR(85) NOT NULL,
   `anio` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`isbn`),
-  UNIQUE INDEX `isbn_UNIQUE` (`isbn` ASC))
+  PRIMARY KEY (`isbn`))
 ENGINE = InnoDB;
 
 

@@ -18,6 +18,7 @@
         "aurora/aurora": "1.0.2", 
         "slim/slim": "2.3.*",
         "slim/views": "0.*",
+        "slim/extras": "*",
         "twig/twig": "1.*"
     },
     "require-dev": {

@@ -1,0 +1,20 @@
+# Nombre del usuario de la base de datos
+database_user: boeke_user
+# Host del servidor de MySQL
+database_host: 127.0.0.1
+# Puerto del servidor de MySQL
+database_port: 3306
+# Nombre de la base de datos
+database_name: boeke_production
+# Contraseña del usuario de la base de datos
+database_pass: "my fancy password"
+
+# Depuración activada
+debug: true
+
+# Ruta de las cookies
+cookie_path: /
+# Duración de las cookies
+cookie_lifetime: 15 days
+# La clave secreta para el cifrado de cookies
+secret_key: "here be dragons"

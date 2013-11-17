@@ -98,6 +98,7 @@ def main():
         subprocess.call('%s -u %s --password=%s %s < %s' % (cmd, USER, PASS, DBNAME, TESTDATA_DIR),
                         shell=True)
                         
+    print("Base de datos:", DBNAME)
     print("Usuario:", DBUSER)
     print("Contraseña:", dbuser_pass)
         

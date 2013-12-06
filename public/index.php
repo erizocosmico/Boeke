@@ -72,9 +72,14 @@ ORM::configure(array(
 ));
 ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
 
-// Rutas
-/**
- * @todo Implementar
+/*
+ * Damos al controlador base la referencia a la aplicación, dado que
+ * al asignar los manejadores de las rutas con los controladores
+ * no puede asignarse la aplicación de ninguna otra forma.
  */
+\Boeke\Controllers\Base::$app = $app;
+
+// Rutas
+$app->get('/', '\\Boeke\\Controllers\\Index::index')->name('index');
 
 $app->run();

@@ -66,8 +66,8 @@ def main():
         DBUSER = 'boeke_user_test'
     # Is production
     else:
-        DBNAME = 'boeke_production'
-        DBUSER = 'boeke_user'
+        DBNAME = raw_input('Introduzca el nombre de la base de datos: ')
+        DBUSER = raw_input('Introduzca el nombre para el nuevo usuario de la base de datos: ')
     dbuser_pass = generate_password()
         
     if not USER or not PASS:

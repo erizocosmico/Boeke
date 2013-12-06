@@ -21,6 +21,26 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `sesion`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sesion` ;
+
+CREATE TABLE IF NOT EXISTS `sesion` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `usuario_id` VARCHAR(60) NOT NULL,
+  `creada` BIGINT UNSIGNED NOT NULL,
+  'ultima_visita' BIGINT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `usuario_id_fk_idx` (`usuario_id` ASC),
+  CONSTRAINT `sesion_usuario_id_fk`
+  FOREIGN KEY (`usuario_id`)
+  REFERENCES `usuario` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `nivel`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `nivel` ;

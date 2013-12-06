@@ -32,17 +32,12 @@
  */
 namespace Boeke\Models;
 
-class Usuario extends Model
+class Sesion extends Model
 {
-    public static $_table = 'usuario';
+    public static $_table = 'sesion';
     
-    public function historial()
+    public function usuario()
     {
-        return $this->hasMany('Historial');
-    }
-    
-    public function sesion()
-    {
-        return $this->belongsTo('Sesion');
+        return $this->belongsTo('Usuario');
     }
 }

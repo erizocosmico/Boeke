@@ -60,6 +60,24 @@ $app = new \Slim\Slim(array(
     'http.version'          => '1.1',
 ));
 
+$app->add(new \Slim\Middleware\SessionCookie(array(
+    'expires' => $config['cookie_lifetime'],
+    /**
+     * @todo Mover al config
+     */
+    'path' => '/',
+    'domain' => null,
+    'secure' => false,
+    'httponly' => false,
+    'name' => 'boeke_session',
+    'secret' => $config['secret_key'],
+    'cipher' => MCRYPT_RIJNDAEL_256,
+    'cipher_mode' => MCRYPT_MODE_CBC
+)));
+
+// Añadimos protección contra ataques CSRF
+$app->add(new \Slim\Extras\Middleware\CsrfGuard());
+
 // Añadimos el prefijo automático para los modelos
 Model::$auto_prefix_models = '\\Boeke\\Models\\';
 // Configuramos la base de datos
@@ -72,14 +90,28 @@ ORM::configure(array(
 ));
 ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
 
+$app->hook('slim.before', function () use ($app) {
+    $posIndex = strpos($_SERVER['PHP_SELF'], '/index.php');
+    $baseUrl = substr($_SERVER['PHP_SELF'], 0, $posIndex + 1);
+    $app->view()->appendData(array('base_url' => $baseUrl));
+});
+
 /*
  * Damos al controlador base la referencia a la aplicación, dado que
  * al asignar los manejadores de las rutas con los controladores
  * no puede asignarse la aplicación de ninguna otra forma.
  */
 \Boeke\Controllers\Base::$app = $app;
+$middleware = new \Boeke\Middleware();
 
 // Rutas
-$app->get('/', '\\Boeke\\Controllers\\Index::index')->name('index');
+$app->get(
+    '/',
+    $middleware->isLoggedIn($app),  
+    '\\Boeke\\Controllers\\Index::index'
+)->name('index');
+    
+$app->map('/login', '\\Boeke\\Controllers\\Users::login')
+    ->via('GET', 'POST')->name('login');
 
 $app->run();

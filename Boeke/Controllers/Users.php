@@ -32,10 +32,10 @@
  */
 namespace Boeke\Controllers;
 
-class Index extends Base
+class Users extends Base
 {
-    public static function index()
+    public static function login()
     {
-        echo 'Index';
+        self::$app->render('login.html.twig');
     }
 }

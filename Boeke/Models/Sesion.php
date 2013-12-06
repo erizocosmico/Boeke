@@ -32,7 +32,7 @@
  */
 namespace Boeke\Models;
 
-class Sesion extends Model
+class Sesion extends \Model
 {
     public static $_table = 'sesion';
     

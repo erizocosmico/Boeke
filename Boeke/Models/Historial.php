@@ -32,7 +32,7 @@
  */
 namespace Boeke\Models;
 
-class Historial extends Model
+class Historial extends \Model
 {
     public static $_table = 'historial';
     

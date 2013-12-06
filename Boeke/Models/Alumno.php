@@ -32,7 +32,7 @@
  */
 namespace Boeke\Models;
 
-class Alumno extends Model
+class Alumno extends \Model
 {
     public static $_table = 'alumno';
     public static $_id_column = 'nie';

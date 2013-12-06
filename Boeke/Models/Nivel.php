@@ -32,7 +32,7 @@
  */
 namespace Boeke\Models;
 
-class Nivel extends Model
+class Nivel extends \Model
 {
     public static $_table = 'nivel';
     

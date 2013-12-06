@@ -27,9 +27,10 @@ DROP TABLE IF EXISTS `sesion` ;
 
 CREATE TABLE IF NOT EXISTS `sesion` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `usuario_id` VARCHAR(60) NOT NULL,
+  `hash_sesion` VARCHAR(255) NOT NULL,
+  `usuario_id` INT UNSIGNED NOT NULL,
   `creada` BIGINT UNSIGNED NOT NULL,
-  'ultima_visita' BIGINT UNSIGNED NOT NULL,
+  `ultima_visita` BIGINT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `usuario_id_fk_idx` (`usuario_id` ASC),
   CONSTRAINT `sesion_usuario_id_fk`
@@ -141,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `ejemplar` (
     REFERENCES `alumno` (`nie`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
-  INDEX `ejemplar_libro_id_fk_idx` (`libro_isbn` ASC),
+  INDEX `ejemplar_libro_id_fk_idx` (`libro_id` ASC),
   CONSTRAINT `ejemplar_libro_id_fk`
     FOREIGN KEY (`libro_id`)
     REFERENCES `libro` (`id`)

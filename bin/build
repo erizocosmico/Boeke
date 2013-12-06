@@ -29,9 +29,9 @@ def generate_password():
     return password
 
 def main():
-    CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-    SCHEMA_DIR = CURRENT_DIR  + '/db_schema.sql'
-    TESTDATA_DIR = CURRENT_DIR  + '/test_data.sql'
+    CURRENT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    SCHEMA_DIR = CURRENT_DIR  + '/sql/schema.sql'
+    TESTDATA_DIR = CURRENT_DIR  + '/sql/test_data.sql'
     MAMP = False
     DB_CREATED = False
     OPTIONS = 0
@@ -75,7 +75,7 @@ def main():
         sys.exit(2)
         
     # Create database
-    sentence = "CREATE DATABASE %s;" % DBNAME
+    sentence = "CREATE DATABASE %s CHARACTER SET utf8 COLLATE utf8_general_ci;" % DBNAME
     subprocess.call('%s -u %s --password=%s -e "%s"' % (cmd, USER, PASS, sentence),
                     shell=True)
                     
@@ -89,7 +89,7 @@ def main():
                     shell=True)
                     
     # Gran permissions to the user
-    sentence = "GRANT DELETE, INSERT, SELECT, UPDATE ON %s.* TO '%s'@'localhost';" % (DBNAME, DBUSER)
+    sentence = "GRANT DELETE, INSERT, SELECT, UPDATE ON %s.* TO '%s'@'localhost'; FLUSH PRIVILEGES;" % (DBNAME, DBUSER)
     subprocess.call('%s -u %s --password=%s -e "%s"' % (cmd, USER, PASS, sentence),
                     shell=True)
                     

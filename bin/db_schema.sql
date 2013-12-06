@@ -21,15 +21,33 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `nivel`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `nivel` ;
+
+CREATE TABLE IF NOT EXISTS `alumno` (
+  `id` INT UNSIGNED NOT NULL,
+  `nombre` VARCHAR(40) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `asignatura`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `asignatura` ;
 
 CREATE TABLE IF NOT EXISTS `asignatura` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nivel` TINYINT UNSIGNED NOT NULL,
+  `nivel_id` INT UNSIGNED NOT NULL,
   `nombre` VARCHAR(60) NOT NULL,
-  PRIMARY KEY (`id`, `nombre`))
+  PRIMARY KEY (`id`, `nombre`),
+  INDEX `nivel_id_fk_idx` (`nivel_id` ASC),
+  CONSTRAINT `asignatura_nivel_id_fk`
+    FOREIGN KEY (`nivel_id`)
+    REFERENCES `nivel` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -95,7 +113,14 @@ CREATE TABLE IF NOT EXISTS `ejemplar` (
   `codigo` INT UNSIGNED NOT NULL,
   `libro_id` INT UNSIGNED NOT NULL,
   `estado` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `alumno_nie` BIGINT UNSIGNED NULL,
   PRIMARY KEY (`codigo`),
+  INDEX `ejemplar_alumno_nie_fk_idx` (`alumno_nie` ASC),
+  CONSTRAINT `ejemplar_alumno_nie_fk`
+    FOREIGN KEY (`alumno_nie`)
+    REFERENCES `alumno` (`nie`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   INDEX `ejemplar_libro_id_fk_idx` (`libro_isbn` ASC),
   CONSTRAINT `ejemplar_libro_id_fk`
     FOREIGN KEY (`libro_id`)

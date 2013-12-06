@@ -32,44 +32,25 @@
  */
 namespace Boeke\Models;
 
-use \Aurora\Table;
-use \Aurora\Column;
-use \Aurora\Relationship;
-use \Aurora\ForeignKey;
-use \Aurora\Types\Int;
-use \Aurora\Types\String;
+use \Paris\Model;
 
-class Ejemplar extends Table
+class Ejemplar extends Model
 {
-    protected $codigo;
-    protected $libro_isbn;
-    protected $estado;
-    protected $libro;
-    protected $historial;
+    public static $_table = 'ejemplar';
+    public static $_id_column = 'codigo';
     
-    protected function setup()
+    public function alumno()
     {
-        $this->name = 'ejemplar';
-        
-        $this->codigo = new Column(new Int(true));
-        $this->codigo->primaryKey = true;
-        $this->libro_isbn = new Column(new String(13));
-        $this->libro_isbn->foreignKey = new ForeignKey(
-            'Libro',
-            'isbn',
-            'libro_isbn',
-            'CASCADE',
-            'CASCADE'
-        );
-        $this->estado = new Column(new Int(true));
-        $this->estado->default = 0;
-        
-        $this->historial = new Relationship(
-            'Historial',
-            'ejemplar_codigo',
-            'codigo',
-            false
-        );
-        $this->libro = new Relationship('Libro', 'isbn', 'libro_isbn', true);
+        return $this->belongsTo('Alumno');
+    }
+    
+    public function libro()
+    {
+        return $this->belongsTo('Libro');
+    }
+    
+    public function historial()
+    {
+        return $this->hasMany('Historial');
     }
 }

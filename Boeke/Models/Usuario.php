@@ -32,31 +32,14 @@
  */
 namespace Boeke\Models;
 
-use \Aurora\Table;
-use \Aurora\Column;
-use \Aurora\Types\Int;
-use \Aurora\Types\String;
-use \Aurora\Types\Boolean;
+use \Paris\Model;
 
-class Historial extends Table
+class Usuario extends Model
 {
-    protected $id;
-    protected $nombre_usuario;
-    protected $nombre_usuario_limpio;
-    protected $usuario_pass;
-    protected $usuario_salt;
-    protected $es_admin;
+    public static $_table = 'usuario';
     
-    protected function setup()
+    public function historial()
     {
-        $this->name = 'usuario';
-        
-        $this->id = new Column(new Int(true));
-        $this->id->primaryKey = true;
-        $this->nombre_usuario = new Column(new String(60));
-        $this->nombre_usuario_clean = new Column(new String(60));
-        $this->usuario_pass = new Column(new String(255));
-        $this->usuario_salt = new Column(new String(255));
-        $this->es_admin = new Column(new Boolean());
+        return $this->hasMany('Historial');
     }
 }

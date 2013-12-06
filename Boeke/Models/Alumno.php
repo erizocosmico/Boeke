@@ -32,31 +32,20 @@
  */
 namespace Boeke\Models;
 
-use \Aurora\Table;
-use \Aurora\Column;
-use \Aurora\Relationship;
-use \Aurora\Types\Int;
-use \Aurora\Types\Boolean;
-use \Aurora\Types\BigInt;
-use \Aurora\Types\String;
+use \Paris\Model;
 
-class Alumno extends Table
+class Alumno extends Model
 {
-    protected $nie;
-    protected $nombre;
-    protected $curso_actual;
-    protected $repitiendo;
-    protected $historial;
+    public static $_table = 'alumno';
+    public static $_id_column = 'nie';
     
-    protected function setup()
+    public function ejemplares()
     {
-        $this->name = 'alumno';
-        $this->nie = new Column(new BigInt());
-        $this->nie->primaryKey = true;
-        $this->nombre = new Column(new String(70));
-        $this->curso_actual = new Column(new Int(true));
-        $this->curso_actual->default = 1;
-        $this->repitiendo = new Column(new Boolean());
-        $this->historial = new Relationship('Historial', 'alumno_nie', 'nie', false);
+        return $this->hasMany('Ejemplar');
+    }
+    
+    public function historial()
+    {
+        return $this->hasMany('Historial');
     }
 }

@@ -32,31 +32,24 @@
  */
 namespace Boeke\Models;
 
-use \Aurora\Table;
-use \Aurora\Column;
-use \Aurora\Relationship;
-use \Aurora\Types\Int;
-use \Aurora\Types\String;
+use \Paris\Model;
 
-class Asignatura extends Table
+class Asignatura extends Model
 {
-    protected $id;
-    protected $nivel;
-    protected $nombre;
-    protected $libros;
+    public static $_table = 'asignatura';
     
-    protected function setup()
+    public function nivel()
     {
-        $this->name = 'asignatura';
-        $this->id = new Column(new Int(true));
-        $this->id->primaryKey = true;
-        $this->nivel = new Column(new Int(true));
-        $this->nombre = new Column(new String(60));
-        $this->libros = new Relationship(
-            'LibroAsignatura',
-            'asignatura_id',
-            'id',
-            false
+        return $this->belongsTo('Nivel');
+    }
+    
+    public function libros()
+    {
+        return $this->hasManyThrough(
+                    'Libro',
+                    'LibroAsignatura',
+                    'asignatura_id',
+                    'libro_id'      
         );
     }
 }

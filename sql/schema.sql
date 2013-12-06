@@ -25,8 +25,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `nivel` ;
 
-CREATE TABLE IF NOT EXISTS `alumno` (
-  `id` INT UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `nivel` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `nombre` VARCHAR(40) NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;

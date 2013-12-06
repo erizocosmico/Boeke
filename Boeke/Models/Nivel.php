@@ -34,27 +34,12 @@ namespace Boeke\Models;
 
 use \Paris\Model;
 
-class Libro extends Model
+class Nivel extends Model
 {
-    public static $_table = 'libro';
+    public static $_table = 'nivel';
     
     public function asignaturas()
     {
-        return $this->hasManyThrough(
-                    'Asignatura',
-                    'LibroAsignatura',
-                    'libro_id',
-                    'asignatura_id'      
-        );
-    }
-    
-    public function ejemplares()
-    {
-        return $this->hasMany('Ejemplar');
-    }
-    
-    public function historial()
-    {
-        return $this->hasMany('Historial');
+        return $this->hasMany('Asignatura');
     }
 }

@@ -32,66 +32,24 @@
  */
 namespace Boeke\Models;
 
-use \Aurora\Table;
-use \Aurora\Column;
-use \Aurora\Relationship;
-use \Aurora\ForeignKey;
-use \Aurora\Types\Int;
-use \Aurora\Types\String;
-use \Aurora\Types\BigInt;
-use \Aurora\Types\Blob;
+use \Paris\Model;
 
-class Historial extends Table
+class Historial extends Model
 {
-    protected $id;
-    protected $tipo;
-    protected $ejemplar_codigo;
-    protected $alumno_nie;
-    protected $estado;
-    protected $fecha;
-    protected $anotacion;
-    protected $ejemplar;
-    protected $alumno;
+    public static $_table = 'historial';
     
-    protected function setup()
+    public function alumno()
     {
-        $this->name = 'historial';
-        
-        $this->id = new Column(new Int(true));
-        $this->id->primaryKey = true;
-        $this->tipo = new Column(new Int(true));
-        $this->tipo->default = 0;
-        $this->ejemplar_codigo = new Column(new Int(true));
-        $this->ejemplar_codigo->foreignKey = new ForeignKey(
-            'Ejemplar',
-            'codigo',
-            'ejemplar_codigo',
-            'CASCADE',
-            'CASCADE'
-        );
-        $this->alumno_nie = new Column(new BigInt());
-        $this->alumno_nie->foreignKey = new ForeignKey(
-            'Alumno',
-            'nie',
-            'alumno_nie',
-            'NO ACTION',
-            'NO ACTION'
-        );
-        $this->estado = new Column(new Int(true));
-        $this->fecha = new Column(new BigInt());
-        $this->anotacion = new Column(new Blob());
-        
-        $this->ejemplar = new Relationship(
-            'Ejemplar',
-            'codigo',
-            'ejemplar_codigo',
-            true
-        );
-        $this->alumno = new Relationship(
-            'Alumno',
-            'nie',
-            'alumno_nie',
-            true
-        );
+        return $this->belongsTo('Alumno');
+    }
+    
+    public function usuario()
+    {
+        return $this->belongsTo('Usuario');
+    }
+    
+    public function ejemplar()
+    {
+        return $this->belongsTo('Ejemplar');
     }
 }

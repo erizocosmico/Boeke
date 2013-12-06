@@ -60,18 +60,21 @@ $app = new \Slim\Slim(array(
     'http.version'          => '1.1',
 ));
 
-// Inicializamos la base de datos
-$driver = new \Aurora\Drivers\MySQLDriver(
-    $config['database_host'],
-    $config['database_name'],
-    $config['database_port'],
-    $config['database_user'],
-    $config['database_pass']
-);
-\Aurora\Dbal::init($driver);
+// Añadimos el prefijo automático para los modelos
+Model::$auto_prefix_models = '\\Boeke\\Models\\';
+// Configuramos la base de datos
+ORM::configure(array(
+    'connection_string' => 'mysql:host=' . $config['database_host'] .
+        ';dbname=' . $config['database_name'] .
+        ';port=' . $config['database_port'],
+    'username' => $config['database_user'],
+    'password' => $config['database_pass']
+));
+ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
 
-$app->get('/', function () use ($app) {
-    echo "Hello, world";
-});
+// Rutas
+/**
+ * @todo Implementar
+ */
 
 $app->run();

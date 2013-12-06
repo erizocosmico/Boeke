@@ -32,8 +32,6 @@
  */
 namespace Boeke\Models;
 
-use \Paris\Model;
-
 class Historial extends Model
 {
     public static $_table = 'historial';

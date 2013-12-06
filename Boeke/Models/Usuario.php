@@ -32,8 +32,6 @@
  */
 namespace Boeke\Models;
 
-use \Paris\Model;
-
 class Usuario extends Model
 {
     public static $_table = 'usuario';

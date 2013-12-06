@@ -32,8 +32,6 @@
  */
 namespace Boeke\Models;
 
-use \Paris\Model;
-
 class Ejemplar extends Model
 {
     public static $_table = 'ejemplar';

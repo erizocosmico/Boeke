@@ -1,0 +1,29 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Entrar{% endblock %}
+
+{% block content %}
+<div class="container col-md-6 col-md-offset-3">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Entrar</h3>
+        </div>
+        <div class="panel-body">
+            <form role="form">
+                <div class="form-group">
+                    <label for="username">Nombre de usuario</label>
+                    <input type="text" class="form-control" id="username" placeholder="Introduce nombre de usuario...">
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" class="form-control" id="password" placeholder="Introduce tu contraseña...">
+                </div>
+                <button type="submit" class="btn btn-primary center-block">Conectarse</button>
+            </form>
+        </div>
+        <div class="panel-footer">
+            Contacte con el administrador en caso de no poder acceder.
+        </div>
+    </div>
+</div>
+{% endblock %}

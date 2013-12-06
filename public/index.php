@@ -48,7 +48,7 @@ if ($config['debug']) {
 // Inicializamos la aplicación
 $app = new \Slim\Slim(array(
     'mode'                  => ($config['debug']) ? 'development' : 'production',
-    'view'                  => new \Slim\Extras\Views\Twig(),
+    //'view'                  => new \Slim\Extras\Views\Twig(),
     'debug'                 => $config['debug'],
     'templates.path'        => dirname(dirname(__FILE__)) . DSEP . 'templates',
     'log.level'             => ($config['debug']) ? \Slim\Log::DEBUG : \Slim\Log::WARN,
@@ -60,19 +60,28 @@ $app = new \Slim\Slim(array(
     'http.version'          => '1.1',
 ));
 
+// Configuramos las vistas con Twig
+$view = $app->view(new \Slim\Extras\Views\Twig());
+$view->parserOptions = array(
+    'charset'               => 'utf-8',
+    'debug'                 => $config['debug'],
+    'cache'                 => realpath('../templates/cache'),
+    'auto_reload'           => true,
+    'strict_variables'      => false,
+    'autoescape'            => true
+);
+
+// Configuramos las cookies
 $app->add(new \Slim\Middleware\SessionCookie(array(
-    'expires' => $config['cookie_lifetime'],
-    /**
-     * @todo Mover al config
-     */
-    'path' => '/',
-    'domain' => null,
-    'secure' => false,
-    'httponly' => false,
-    'name' => 'boeke_session',
-    'secret' => $config['secret_key'],
-    'cipher' => MCRYPT_RIJNDAEL_256,
-    'cipher_mode' => MCRYPT_MODE_CBC
+    'expires'               => $config['cookie_lifetime'],
+    'path'                  => $config['cookie_path'],
+    'domain'                => null,
+    'secure'                => $config['cookie_secure'],
+    'httponly'              => $config['cookie_http_only'],
+    'name'                  => 'boeke_session',
+    'secret'                => $config['secret_key'],
+    'cipher'                => MCRYPT_RIJNDAEL_256,
+    'cipher_mode'           => MCRYPT_MODE_CBC
 )));
 
 // Añadimos protección contra ataques CSRF
@@ -90,6 +99,7 @@ ORM::configure(array(
 ));
 ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
 
+// Hook para añadir todo aquello que las plantillas necesitan globalmente
 $app->hook('slim.before', function () use ($app) {
     $posIndex = strpos($_SERVER['PHP_SELF'], '/index.php');
     $baseUrl = substr($_SERVER['PHP_SELF'], 0, $posIndex + 1);
@@ -97,11 +107,12 @@ $app->hook('slim.before', function () use ($app) {
 });
 
 /*
- * Damos al controlador base la referencia a la aplicación, dado que
- * al asignar los manejadores de las rutas con los controladores
- * no puede asignarse la aplicación de ninguna otra forma.
+ * Damos al controlador base la referencia a la aplicación y configuración
+ * dado que al asignar los manejadores de las rutas con los controladores
+ * no pueden asignarse de ninguna otra forma.
  */
 \Boeke\Controllers\Base::$app = $app;
+\Boeke\Controllers\Base::$config = $config;
 $middleware = new \Boeke\Middleware();
 
 // Rutas

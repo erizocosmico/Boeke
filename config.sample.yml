@@ -14,7 +14,18 @@ debug: true
 
 # Ruta de las cookies
 cookie_path: /
+# Cookies por https
+cookie_secure: false
+# Cookies solo accesibles desde http
+cookie_http_only: false
 # Duración de las cookies
 cookie_lifetime: 15 days
 # La clave secreta para el cifrado de cookies
 secret_key: "here be dragons"
+# Salto de contraseña
+password_salt: "salt"
+# Máximos intentos de conexión
+login_max_retries: 6
+# Tiempo de bloqueo (en segundos) tras haber superado los intentos máximos
+# de conexión
+login_block: 600

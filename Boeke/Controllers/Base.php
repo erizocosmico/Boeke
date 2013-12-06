@@ -34,5 +34,6 @@ namespace Boeke\Controllers;
 
 class Base
 {
-    public static $app = null;
+    public static $app;
+    public static $config;
 }

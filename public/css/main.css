@@ -1,6 +1,81 @@
-/*
- * HELPER CLASSES
- */
+/* ==== GLOBAL ====================== */
+
+a, a:link, a:visited {
+    color: rgb(57, 139, 206);
+    -webkit-transition: all 100ms ease-in;
+    transition: all 100ms ease-in;
+}
+
+a, p, h1, h2, h3, h4, h5, h6, span, strong, em {
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* ==== NAVBAR ====================== */
+
+.navbar-inverse {
+    background-color: rgb(57, 139, 206);
+    /*border-bottom-color: rgb(27,70,105);*/
+    border-bottom-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0px -1px 0px rgba(255, 255, 255, 0.3) inset;
+}
+
+.navbar-inverse a {
+    color: #EEE !important;
+    text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.6);
+    font-weight: bold;
+}
+
+.navbar-inverse a:hover {
+    color: #FFF !important;
+}
+
+/* ==== BUTTONS ===================== */
+
+/*.btn-primary {
+    background-color: rgb(197,47,36);
+    border-color: rgb(133,26,19);
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background-color: rgb(133,26,19);
+    border-color: rgb(133,26,19);
+}*/
+
+/* ==== INPUTS ====================== */
+
+/*input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
+    box-shadow: 0px 0px 8px rgb(197,47,36);
+    border-color: rgb(217,67,56);
+}*/
+
+/* ==== SIDEBAR ===================== */
+
+.panel-sidebar {
+    background-color: rgb(245, 245, 245);
+}
+
+.panel-sidebar h4 {
+    color: #555;
+    padding-left: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.6);
+}
+
+.panel-sidebar ul li a {
+    color: rgb(102, 102, 102);
+    -webkit-transition: all 100ms ease-in;
+    transition: all 100ms ease-in;
+}
+
+.panel-sidebar ul li a:hover {
+    color: rgb(57, 139, 206);
+    background: rgb(235,235,235);
+}
+
+/* ==== HELPER CLASSES ============== */
 
 .base-icon {
     vertical-align: middle;

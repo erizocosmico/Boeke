@@ -101,6 +101,13 @@ class Users extends Base
         
         self::$app->render('login.html.twig', array(
             'action'        => self::$app->urlFor('login'),
+            'breadcrumbs'   => array(
+                array(
+                    'active'        => true,
+                    'text'          => 'Entrar',
+                    'route'         => self::$app->urlFor('login'),
+                ),
+            ),
         ));
     }
     

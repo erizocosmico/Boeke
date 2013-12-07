@@ -26,29 +26,45 @@
             
             <header>
                 <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <a class="navbar-brand" href="#"><span class="fa fa-book base-icon"></span> Boeke</a>
-                    </div>
-                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                        <ul class="nav navbar-nav navbar-right">
-                            {% if logged_in %}
-                            <li><a href="{{ urlFor('logout') }}" title="Salir">Salir</a></li>
-                            {% else %}
-                            <li><a href="{{ urlFor('login') }}" title="Entrar">Entrar</a></li>
-                            {% endif %}
-                        </ul>
+                    <div class="container">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#"><span class="fa fa-book base-icon"></span> Boeke</a>
+                        </div>
+                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                            <ul class="nav navbar-nav navbar-right">
+                                {% if logged_in %}
+                                <li><a href="{{ urlFor('logout') }}" title="Salir">Salir</a></li>
+                                {% else %}
+                                <li><a href="{{ urlFor('login') }}" title="Entrar">Entrar</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
                     </div>
                 </nav>
             </header>
-
-            {% block content %}
-            {% endblock %}
+            
+            <div class="container">
+                <ol class="breadcrumb">
+                  <li><a href="{{ urlFor('index') }}">Inicio</a></li>
+                  {% for lk in breadcrumbs %}
+                  <li {% if lk.active %}class="active">{% else %}><a href="{{ urlFor(lk.route) }}"{% endif %}{{ lk.text }}{% if not lk.active %}</a>{% endif %}</li>
+                  {% endfor %}
+                  {% if not breadcrumbs %}
+                  <li></li>
+                  {% endif %}
+                </ol>
+                
+                <div class="row row-offcanvas row-offcanvas-right">
+                {% block content %}
+                {% endblock %}
+                </div>
+            </div>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="{{ base_url }}js/vendor/jquery-1.10.1.min.js"><\/script>')</script>

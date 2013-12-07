@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS `usuario` ;
 CREATE TABLE IF NOT EXISTS `usuario` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `nombre_usuario` VARCHAR(60) NOT NULL,
+  `nombre_completo` VARCHAR(90) NOT NULL,
   `usuario_pass` VARCHAR(40) NOT NULL,
   `es_admin` TINYINT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),

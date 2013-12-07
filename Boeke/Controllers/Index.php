@@ -36,6 +36,6 @@ class Index extends Base
 {
     public static function index()
     {
-        echo 'Index';
+        self::$app->render('home.html.twig');
     }
 }

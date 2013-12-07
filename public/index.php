@@ -31,15 +31,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-use Symfony\Component\Yaml\Yaml;
-
-// Alias de DIRECTORY_SEPARATOR para acortar
-define('DSEP', DIRECTORY_SEPARATOR);
-// Cargamos el autoloader de composer
-require dirname(dirname(__FILE__)) . DSEP . 'vendor' . DSEP . 'autoload.php';
-
-// Configuración cargada de config.yml
-$config = Yaml::parse(dirname(dirname(__FILE__)) . DSEP . 'config.yml');
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config.php';
 
 if ($config['debug']) {
     error_reporting(E_ALL);
@@ -48,7 +40,6 @@ if ($config['debug']) {
 // Inicializamos la aplicación
 $app = new \Slim\Slim(array(
     'mode'                  => ($config['debug']) ? 'development' : 'production',
-    //'view'                  => new \Slim\Extras\Views\Twig(),
     'debug'                 => $config['debug'],
     'templates.path'        => dirname(dirname(__FILE__)) . DSEP . 'templates',
     'log.level'             => ($config['debug']) ? \Slim\Log::DEBUG : \Slim\Log::WARN,
@@ -70,6 +61,9 @@ $view->parserOptions = array(
     'strict_variables'      => false,
     'autoescape'            => true
 );
+\Slim\Extras\Views\Twig::$twigExtensions = array(
+    'Twig_Extensions_Slim',
+);
 
 // Configuramos las cookies
 $app->add(new \Slim\Middleware\SessionCookie(array(
@@ -78,7 +72,7 @@ $app->add(new \Slim\Middleware\SessionCookie(array(
     'domain'                => null,
     'secure'                => $config['cookie_secure'],
     'httponly'              => $config['cookie_http_only'],
-    'name'                  => 'boeke_session',
+    'name'                  => $config['cookie_name'],
     'secret'                => $config['secret_key'],
     'cipher'                => MCRYPT_RIJNDAEL_256,
     'cipher_mode'           => MCRYPT_MODE_CBC
@@ -87,23 +81,15 @@ $app->add(new \Slim\Middleware\SessionCookie(array(
 // Añadimos protección contra ataques CSRF
 $app->add(new \Slim\Extras\Middleware\CsrfGuard());
 
-// Añadimos el prefijo automático para los modelos
-Model::$auto_prefix_models = '\\Boeke\\Models\\';
-// Configuramos la base de datos
-ORM::configure(array(
-    'connection_string' => 'mysql:host=' . $config['database_host'] .
-        ';dbname=' . $config['database_name'] .
-        ';port=' . $config['database_port'],
-    'username' => $config['database_user'],
-    'password' => $config['database_pass']
-));
-ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
-
 // Hook para añadir todo aquello que las plantillas necesitan globalmente
 $app->hook('slim.before', function () use ($app) {
     $posIndex = strpos($_SERVER['PHP_SELF'], '/index.php');
     $baseUrl = substr($_SERVER['PHP_SELF'], 0, $posIndex + 1);
-    $app->view()->appendData(array('base_url' => $baseUrl));
+    
+    $app->view()->appendData(array(
+        'base_url'              => $baseUrl,
+        'logged_in'             => isset($_SESSION['session_hash']),
+    ));
 });
 
 /*
@@ -115,14 +101,29 @@ $app->hook('slim.before', function () use ($app) {
 \Boeke\Controllers\Base::$config = $config;
 $middleware = new \Boeke\Middleware();
 
-// Rutas
+/**
+ * Rutas
+ */
+
+// Índice
 $app->get(
     '/',
     $middleware->isLoggedIn($app),  
     '\\Boeke\\Controllers\\Index::index'
 )->name('index');
+   
+// Conexión 
+$app->map(
+    '/login',
+    $middleware->isLoggedIn($app, true),
+    '\\Boeke\\Controllers\\Users::login'
+)->via('GET', 'POST')->name('login');
     
-$app->map('/login', '\\Boeke\\Controllers\\Users::login')
-    ->via('GET', 'POST')->name('login');
+// Desconexión
+$app->get(
+    '/logout',
+    $middleware->isLoggedIn($app),  
+    '\\Boeke\\Controllers\\Users::logout'
+)->name('logout');
 
 $app->run();

@@ -65,7 +65,7 @@ class Users extends Base
             
             if ($user === false) {
                 self::$app->flashNow('error', 'Nombre o contraseña incorrectos.');
-                
+
                 // Miramos los intentos que le quedan al usuario
                 if (isset($_SESSION['retries_left'])) {
                     $_SESSION['retries_left']--;
@@ -102,5 +102,18 @@ class Users extends Base
         self::$app->render('login.html.twig', array(
             'action'        => self::$app->urlFor('login'),
         ));
+    }
+    
+    public static function logout()
+    {
+        self::$app->deleteCookie(self::$config['cookie_name']);
+        // Nos deshacemos de todas las variables de sesión
+        foreach ($_SESSION as $key => $value) {
+            unset($_SESSION[$key]);
+        }
+        // Si redirigimos al índice y no está conectado lo redirigirá
+        // al login, así que nos ahorramos una redirección y
+        // lo mandamos directamente al login.
+        self::$app->redirect('/login');
     }
 }

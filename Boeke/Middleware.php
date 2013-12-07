@@ -46,16 +46,20 @@ class Middleware
      * Middleware para comprobar si el usuario está o no conectado.
      *
      * @param \Slim\Slim $app La instancia de la aplicación
+     * @param bool $reverse Si es verdadero se redirigirá si está conectado.
      * @return \Closure
      */
-    public function isLoggedIn(\Slim\Slim $app)
+    public function isLoggedIn(\Slim\Slim $app, $reverse = false)
     {
-        return function () use ($app) {
+        return function () use ($app, $reverse) {
             // Si no está conectado redirigir a la pantalla de entrada
+            // Si $reverse es verdadero no lo mandaremos
             if (!(isset($_SESSION['user_id']) &&
                 isset($_SESSION['session_hash']))) {
                 session_destroy();
-                $app->redirect('/login');
+                if (!$reverse) {
+                    $app->redirect('/login');
+                }
             } else {
                 // Si está conectado debemos determinar si la id del usuario
                 // se corresponde con el hash de la sesión.
@@ -68,7 +72,11 @@ class Middleware
                 if ($session === false) {
                     unset($_SESSION['user_id']);
                     unset($_SESSION['session_hash']);
-                    $app->redirect('/login');
+                    if (!$reverse) {
+                        $app->redirect('/login');
+                    }
+                } elseif ($reverse) {
+                    $app->redirect('/');
                 }
             }
         };

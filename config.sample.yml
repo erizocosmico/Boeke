@@ -14,6 +14,8 @@ debug: true
 
 # Ruta de las cookies
 cookie_path: /
+# Nombre de la cookie
+cookie_name: boeke_session
 # Cookies por https
 cookie_secure: false
 # Cookies solo accesibles desde http

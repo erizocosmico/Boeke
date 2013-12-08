@@ -1,0 +1,54 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Gestión de usuarios{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Gestión de usuarios</h3>
+            </div>
+            <div class="panel-body">
+                <a href="{{ urlFor('users_new') }}" class="btn btn-primary pull-right"><span class="fa  fa-plus"></span> Crear usuario</a>
+                <h2>Listado de usuarios</h2>
+                {% if users %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre de usuario</th>
+                            <th>Nombre completo</th>
+                            <th>Administrador</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.nombre_usuario }}</td>
+                            <td>{{ user.nombre_completo }}</td>
+                            <td>{% if user.es_admin == 1 %}Sí{% else %}No{% endif %}</td>
+                            <td><a href="{{ urlFor('users_edit', {'id' : user.id}) }}" class="btn btn-default"><span class="fa fa-edit"></span> Editar</a> <a href="{{ urlFor('users_delete', {'id' : user.id}) }}" class="btn btn-danger"><span class="fa fa-times-circle"></span> Borrar</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                {% if pagination != '' %}
+                <div class="centered">
+                    <ul class="pagination">
+                        {{ pagination|raw }}
+                    </ul>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="alert alert-warning">
+                    No hay ningún usuario.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

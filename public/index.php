@@ -125,5 +125,34 @@ $app->get(
     $middleware->isLoggedIn($app),  
     '\\Boeke\\Controllers\\Users::logout'
 )->name('logout');
+    
+$app->group('/users', function () use ($app, $middleware) {
+    $app->get(
+        '/list/(:page)',
+        $middleware->isLoggedIn($app),  
+        '\\Boeke\\Controllers\\Users::usersManagementIndex'
+    )->name('users_index');
+    
+    $app->map(
+        '/new',
+        $middleware->isLoggedIn($app),
+        $middleware->isAdmin($app),
+        '\\Boeke\\Controllers\\Users::usersManagementNew'
+    )->via('GET', 'POST')->name('users_new');
+    
+    $app->map(
+        '/edit/:id',
+        $middleware->isLoggedIn($app),
+        $middleware->isAdmin($app),
+        '\\Boeke\\Controllers\\Users::usersManagementEdit'
+    )->via('GET', 'PUT')->name('users_edit');
+    
+    $app->map(
+        '/delete/:id',
+        $middleware->isLoggedIn($app),
+        $middleware->isAdmin($app),
+        '\\Boeke\\Controllers\\Users::usersManagementDelete'
+    )->via('GET', 'DELETE')->name('users_delete');
+});
 
 $app->run();

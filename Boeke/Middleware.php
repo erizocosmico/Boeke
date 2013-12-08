@@ -81,4 +81,23 @@ class Middleware
             }
         };
     }
+    
+    public function isAdmin(\Slim\Slim $app)
+    {
+        return function() use ($app) {
+            $user = \Model::factory('Usuario')
+                ->where('id', $_SESSION['user_id'])
+                ->findOne();
+            $authorized = false;
+        
+            if ($user !== false) {
+                $authorized = ($user->es_admin == 1);
+            }
+        
+            if (!$authorized) {
+                $app->render('not_authorised.html.twig');
+                $app->stop();
+            }
+        };
+    }
 }

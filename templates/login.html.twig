@@ -17,11 +17,11 @@
                 {% endif %}
                 
                 <div class="form-group">
-                    <label for="username">Nombre de usuario</label>
+                    <label for="username"><span class="fa fa-user"></span> Nombre de usuario</label>
                     <input type="text" class="form-control" name="username" id="username" placeholder="Introduce nombre de usuario..." required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Contraseña</label>
+                    <label for="password"><span class="fa fa-key"></span> Contraseña</label>
                     <input type="password" class="form-control" name="password" id="password" placeholder="Introduce tu contraseña..." required>
                 </div>
                 <input type="hidden" name="{{ csrf_key }}" value="{{ csrf_token }}">

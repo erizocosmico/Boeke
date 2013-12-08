@@ -39,9 +39,9 @@
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                             <ul class="nav navbar-nav navbar-right">
                                 {% if logged_in %}
-                                <li><a href="{{ urlFor('logout') }}" title="Salir">Salir</a></li>
+                                <li><a href="{{ urlFor('logout') }}" title="Salir"><span class="fa fa-sign-out"></span> Salir</a></li>
                                 {% else %}
-                                <li><a href="{{ urlFor('login') }}" title="Entrar">Entrar</a></li>
+                                <li><a href="{{ urlFor('login') }}" title="Entrar"><span class="fa fa-key"></span> Entrar</a></li>
                                 {% endif %}
                             </ul>
                         </div>

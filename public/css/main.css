@@ -1,6 +1,6 @@
 /* ==== GLOBAL ====================== */
 
-a, a:link, a:visited {
+a:not(.btn), a:not(.btn):link, a:not(.btn):visited {
     color: rgb(57, 139, 206);
     -webkit-transition: all 100ms ease-in;
     transition: all 100ms ease-in;
@@ -65,18 +65,45 @@ a, p, h1, h2, h3, h4, h5, h6, span, strong, em {
 }
 
 .panel-sidebar ul li a {
-    color: rgb(102, 102, 102);
+    color: rgb(82, 82, 82) !important;
     -webkit-transition: all 100ms ease-in;
     transition: all 100ms ease-in;
 }
 
-.panel-sidebar ul li a:hover {
-    color: rgb(57, 139, 206);
+.panel-sidebar ul li a:hover, .panel-sidebar ul li a.active {
+    color: rgb(57, 139, 206) !important;
     background: rgb(235,235,235);
+}
+
+.panel-sidebar ul li ul {
+    list-style: none;
+}
+
+.panel-sidebar ul li ul li a {
+    display: block;
+    padding: 5px 0;
+}
+
+.panel-sidebar ul li ul li a.active {
+    background: transparent;
+}
+
+.panel-sidebar ul li ul li a:hover {
+    background: transparent;
+}
+
+/* ==== PAGINATION ================== */
+
+ul.pagination li.active a {
+    color: #FFF !important;
 }
 
 /* ==== HELPER CLASSES ============== */
 
 .base-icon {
     vertical-align: middle;
+}
+
+.centered {
+    text-align: center;
 }

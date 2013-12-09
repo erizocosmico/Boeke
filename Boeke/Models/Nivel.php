@@ -32,10 +32,21 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Nivel
+ *
+ * Modelo para la tabla nivel de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Nivel extends \Model
 {
     public static $_table = 'nivel';
     
+    /**
+     * Devuelve las asignaturas de este nivel
+     */
     public function asignaturas()
     {
         return $this->hasMany('Asignatura');

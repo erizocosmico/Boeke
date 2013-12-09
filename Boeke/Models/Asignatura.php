@@ -32,15 +32,29 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Asignatura
+ *
+ * Modelo para la tabla asignatura de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Asignatura extends \Model
 {
     public static $_table = 'asignatura';
     
+    /**
+     * Devuelve el nivel al que pertenece la asignatura
+     */
     public function nivel()
     {
         return $this->belongsTo('Nivel');
     }
     
+    /**
+     * Devuelve los libros que tiene la asignatura
+     */
     public function libros()
     {
         return $this->hasManyThrough(

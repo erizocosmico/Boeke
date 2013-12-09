@@ -32,10 +32,21 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Libro
+ *
+ * Modelo para la tabla libro de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Libro extends \Model
 {
     public static $_table = 'libro';
     
+    /**
+     * Devuelve las asignaturas a las que está asignado este libro
+     */
     public function asignaturas()
     {
         return $this->hasManyThrough(
@@ -46,13 +57,11 @@ class Libro extends \Model
         );
     }
     
+    /**
+     * Devuelve los ejemplares de este libro
+     */
     public function ejemplares()
     {
         return $this->hasMany('Ejemplar');
-    }
-    
-    public function historial()
-    {
-        return $this->hasMany('Historial');
     }
 }

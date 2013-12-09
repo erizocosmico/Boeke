@@ -32,21 +32,38 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Ejemplar
+ *
+ * Modelo para la tabla ejemplar de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Ejemplar extends \Model
 {
     public static $_table = 'ejemplar';
     public static $_id_column = 'codigo';
     
+    /**
+     * Devuelve el alumno al que pertenece
+     */
     public function alumno()
     {
         return $this->belongsTo('Alumno');
     }
     
+    /**
+     * Devuelve el libro que es este ejemplar
+     */
     public function libro()
     {
         return $this->belongsTo('Libro');
     }
     
+    /**
+     * Devuelve el historial asociado a este ejemplar
+     */
     public function historial()
     {
         return $this->hasMany('Historial');

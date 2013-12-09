@@ -32,15 +32,29 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Usuario
+ *
+ * Modelo para la tabla usuario de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Usuario extends \Model
 {
     public static $_table = 'usuario';
     
+    /**
+     * Devuelve los registros del historial insertados por el usuario
+     */
     public function historial()
     {
         return $this->hasMany('Historial');
     }
     
+    /**
+     * Devuelve la sesión asociada al usuario
+     */
     public function sesion()
     {
         return $this->belongsTo('Sesion');

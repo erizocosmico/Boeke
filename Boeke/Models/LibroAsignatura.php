@@ -32,6 +32,14 @@
  */
 namespace Boeke\Models;
 
+/**
+ * LibroAsignatura
+ *
+ * Modelo para la tabla libro_asignatura de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class LibroAsignatura extends \Model
 {
     public static $_table = 'libro_asignatura';

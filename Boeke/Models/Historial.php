@@ -32,20 +32,37 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Historial
+ *
+ * Modelo para la tabla historial de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Historial extends \Model
 {
     public static $_table = 'historial';
     
+    /**
+     * Devuelve el alumno asociado al registro del historial
+     */
     public function alumno()
     {
         return $this->belongsTo('Alumno');
     }
     
+    /**
+     * Devuelve el usuario que insertó el registro en el historial
+     */
     public function usuario()
     {
         return $this->belongsTo('Usuario');
     }
     
+    /**
+     * Devuelve el ejemplar al que hace referencia el registro del historial
+     */
     public function ejemplar()
     {
         return $this->belongsTo('Ejemplar');

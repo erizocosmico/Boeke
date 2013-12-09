@@ -32,16 +32,30 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Alumno
+ *
+ * Modelo para la tabla alumno de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Alumno extends \Model
 {
     public static $_table = 'alumno';
     public static $_id_column = 'nie';
     
+    /**
+     * Devuelve los ejemplares que posee un alumno
+     */
     public function ejemplares()
     {
         return $this->hasMany('Ejemplar');
     }
     
+    /**
+     * Devuelve los registros del historial de un alumno
+     */
     public function historial()
     {
         return $this->hasMany('Historial');

@@ -32,10 +32,21 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Sesion
+ *
+ * Modelo para la tabla sesion de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Sesion extends \Model
 {
     public static $_table = 'sesion';
     
+    /**
+     * Devuelve el usuario al que está asociado esta sesión
+     */
     public function usuario()
     {
         return $this->belongsTo('Usuario');

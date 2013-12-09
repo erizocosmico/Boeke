@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.0.1
+ * @version     0.1.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -82,6 +82,14 @@ class Middleware
         };
     }
     
+    /**
+     * Middleware para comprobar si el usuario actual es o no administrador.
+     * Si el usuario no es administrador mostrará la plantilla de "no
+     * autorizado" y parará la ejecución.
+     *
+     * @param \Slim\Slim $app Instancia de la aplicación
+     * @return \Closure
+     */
     public function isAdmin(\Slim\Slim $app)
     {
         return function() use ($app) {

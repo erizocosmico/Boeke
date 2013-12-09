@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.0.1
+ * @version     0.1.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -32,8 +32,20 @@
  */
 namespace Boeke\Controllers;
 
+/**
+ * Users
+ *
+ * Controlador para la gestión de usuarios.
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Users extends Base
 {
+    /**
+     * Si es accedida mediante GET muestra el formulario de conexión
+     * si es accedida mediante POST procesa dicho formulario.
+     */
     public static function login()
     {
         // ¿Debemos procesar la petición en caso de ser post?
@@ -98,7 +110,7 @@ class Users extends Base
                 self::$app->redirect('/');
             }
         }
-        
+
         self::$app->render('login.html.twig', array(
             'action'        => self::$app->urlFor('login'),
             'breadcrumbs'   => array(
@@ -111,9 +123,19 @@ class Users extends Base
         ));
     }
     
+    /**
+     * Cierra la sesión del usuario y lo redirige al login
+     */
     public static function logout()
     {
         self::$app->deleteCookie(self::$config['cookie_name']);
+        
+        // Borramos la sesión
+        \Model::factory('Sesion')
+            ->where('hash_sesion', $_SESSION['session_hash'])
+            ->findOne()
+            ->delete();
+        
         // Nos deshacemos de todas las variables de sesión
         foreach ($_SESSION as $key => $value) {
             unset($_SESSION[$key]);
@@ -124,11 +146,17 @@ class Users extends Base
         self::$app->redirect('/login');
     }
     
+    /**
+     * Muestra el listado de usuarios paginado.
+     *
+     * @param int $page La página actual, la 1 por defecto
+     */
     public static function usersManagementIndex($page = 1)
     {
         $app = self::$app;
         $users = array();
         
+        // Obtenemos los registros
         $userList = \Model::factory('Usuario')
             ->limit(25)
             ->offset(25 * ((int)$page - 1))
@@ -139,6 +167,7 @@ class Users extends Base
             $users[] = $row;
         }
         
+        // Generamos la paginación para el conjunto de usuarios
         $pagination = self::generatePagination(
             \Model::factory('Usuario'),
             25,
@@ -157,6 +186,10 @@ class Users extends Base
         ));
     }
     
+    /**
+     * Si es accedida mediante GET muestra el formulario de creación de usuario
+     * si es accedida mediante POST procesa la creación del usuario.
+     */
     public static function usersManagementNew()
     {
         $app = self::$app;
@@ -169,6 +202,7 @@ class Users extends Base
             $password = $app->request->post('usuario_pass');
             $isAdmin = (int)$app->request->post('es_admin', 0);
             
+            // Validamos los posibles errores
             if (empty($username)) {
                 $error[] = 'El nombre de usuario es obligatorio.';
             } else {
@@ -185,6 +219,7 @@ class Users extends Base
                 $error[] = 'La contraseña debe tener un mínimo de 6 caracteres.';
             }
             
+            // Si no hay errores lo creamos
             if (count($error) == 0) {
                 $user = \Model::factory('Usuario')->create();
                 $user->nombre_usuario = $username;
@@ -206,6 +241,12 @@ class Users extends Base
         ));
     }
     
+    /**
+     * Si es accedida mediante GET muestra el formulario de edición de usuario
+     * si es accedida mediante PUT procesa la edición del usuario.
+     *
+     * @param int $userId La id del usuario a editar
+     */
     public static function usersManagementEdit($userId)
     {
         $app = self::$app;
@@ -214,6 +255,7 @@ class Users extends Base
             ->where('id', $userId)
             ->findOne();
         
+        // Si el usuario no existe enviamos al listado
         if ($user === false) {
             $app->redirect($app->urlFor('users_index'));
         }
@@ -226,6 +268,7 @@ class Users extends Base
             $password = $app->request->put('usuario_pass');
             $isAdmin = (int)$app->request->put('es_admin', 0);
             
+            // Validamos los campos
             if (empty($username)) {
                 $error[] = 'El nombre de usuario es obligatorio.';
             } else {
@@ -242,6 +285,7 @@ class Users extends Base
                 $error[] = 'La contraseña debe tener un mínimo de 6 caracteres.';
             }
             
+            // Si no hay errores editamos el usuario
             if (count($error) == 0) {
                 $user->nombre_usuario = $username;
                 $user->nombre_completo = $fullName;
@@ -268,6 +312,12 @@ class Users extends Base
         ));
     }
     
+    /**
+     * Si es accedida mediante GET muestra el formulario de borrado de usuario
+     * si es accedida mediante DELETE procesa el borrado del usuario.
+     *
+     * @param int $userId La id del usuario a borrar
+     */
     public static function usersManagementDelete($userId)
     {
         $app = self::$app;
@@ -276,12 +326,15 @@ class Users extends Base
             ->where('id', $userId)
             ->findOne();
         
+        // Si el usuario no existe redirigimos al listado
         if ($user === false) {
             $app->redirect($app->urlFor('users_index'));
         }
         
         if ($app->request->isDelete()) {
+            // Comprobamos que se ha pulsado "Sí"
             if (isset($_POST['confirm'])) {
+                // Borramos el usuario
                 \Model::factory('Usuario')
                     ->where('id', $userId)
                     ->findOne()
@@ -291,6 +344,7 @@ class Users extends Base
             $app->redirect($app->urlFor('users_index'));
         }
         
+        // Mostramos la plantilla de confirmación genérica
         $app->render('confirm.html.twig', array(
             'sidebar_users_active'                  => true,
             'confirm_title'                         => 'Borrar usuario',

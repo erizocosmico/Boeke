@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.0.1
+ * @version     0.1.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -32,8 +32,19 @@
  */
 namespace Boeke\Controllers;
 
+/**
+ * Index
+ *
+ * Controlador para el índice.
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Index extends Base
 {
+    /**
+     * Renderiza el índice de la página.
+     */
     public static function index()
     {
         self::$app->render('home.html.twig');

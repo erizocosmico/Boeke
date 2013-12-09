@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.0.1
+ * @version     0.1.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -52,4 +52,3 @@ ORM::configure(array(
     'password' => $config['database_pass']
 ));
 ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
-

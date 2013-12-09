@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.0.1
+ * @version     0.1.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -32,10 +32,21 @@
  */
 namespace Boeke\Models;
 
+/**
+ * Libro
+ *
+ * Modelo para la tabla libro de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Libro extends \Model
 {
     public static $_table = 'libro';
     
+    /**
+     * Devuelve las asignaturas a las que está asignado este libro
+     */
     public function asignaturas()
     {
         return $this->hasManyThrough(
@@ -46,13 +57,11 @@ class Libro extends \Model
         );
     }
     
+    /**
+     * Devuelve los ejemplares de este libro
+     */
     public function ejemplares()
     {
         return $this->hasMany('Ejemplar');
-    }
-    
-    public function historial()
-    {
-        return $this->hasMany('Historial');
     }
 }

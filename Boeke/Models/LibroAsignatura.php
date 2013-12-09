@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.0.1
+ * @version     0.1.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -32,6 +32,14 @@
  */
 namespace Boeke\Models;
 
+/**
+ * LibroAsignatura
+ *
+ * Modelo para la tabla libro_asignatura de la base de datos
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class LibroAsignatura extends \Model
 {
     public static $_table = 'libro_asignatura';

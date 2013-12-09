@@ -51,12 +51,4 @@ class Usuario extends \Model
     {
         return $this->hasMany('Historial');
     }
-    
-    /**
-     * Devuelve la sesión asociada al usuario
-     */
-    public function sesion()
-    {
-        return $this->belongsTo('Sesion');
-    }
 }

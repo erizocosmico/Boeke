@@ -129,6 +129,13 @@ class Users extends Base
     public static function logout()
     {
         self::$app->deleteCookie(self::$config['cookie_name']);
+        
+        // Borramos la sesión
+        \Model::factory('Sesion')
+            ->where('hash_sesion', $_SESSION['session_hash'])
+            ->findOne()
+            ->delete();
+        
         // Nos deshacemos de todas las variables de sesión
         foreach ($_SESSION as $key => $value) {
             unset($_SESSION[$key]);

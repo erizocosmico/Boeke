@@ -32,8 +32,19 @@
  */
 namespace Boeke\Controllers;
 
+/**
+ * Index
+ *
+ * Controlador para el índice.
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Index extends Base
 {
+    /**
+     * Renderiza el índice de la página.
+     */
     public static function index()
     {
         self::$app->render('home.html.twig');

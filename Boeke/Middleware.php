@@ -82,6 +82,14 @@ class Middleware
         };
     }
     
+    /**
+     * Middleware para comprobar si el usuario actual es o no administrador.
+     * Si el usuario no es administrador mostrará la plantilla de "no
+     * autorizado" y parará la ejecución.
+     *
+     * @param \Slim\Slim $app Instancia de la aplicación
+     * @return \Closure
+     */
     public function isAdmin(\Slim\Slim $app)
     {
         return function() use ($app) {

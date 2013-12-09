@@ -126,13 +126,16 @@ $app->get(
     '\\Boeke\\Controllers\\Users::logout'
 )->name('logout');
     
+// Gestión de usuarios
 $app->group('/users', function () use ($app, $middleware) {
+    // Listado
     $app->get(
         '/list/(:page)',
         $middleware->isLoggedIn($app),  
         '\\Boeke\\Controllers\\Users::usersManagementIndex'
     )->name('users_index');
     
+    // Creación
     $app->map(
         '/new',
         $middleware->isLoggedIn($app),
@@ -140,6 +143,7 @@ $app->group('/users', function () use ($app, $middleware) {
         '\\Boeke\\Controllers\\Users::usersManagementNew'
     )->via('GET', 'POST')->name('users_new');
     
+    // Edición
     $app->map(
         '/edit/:id',
         $middleware->isLoggedIn($app),
@@ -147,6 +151,7 @@ $app->group('/users', function () use ($app, $middleware) {
         '\\Boeke\\Controllers\\Users::usersManagementEdit'
     )->via('GET', 'PUT')->name('users_edit');
     
+    // Borrado
     $app->map(
         '/delete/:id',
         $middleware->isLoggedIn($app),

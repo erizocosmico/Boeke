@@ -32,11 +32,35 @@
  */
 namespace Boeke\Controllers;
 
+/**
+ * Base
+ *
+ * Controlador base que proporciona funcionalidades compartidas por el resto
+ * de los controladores.
+ *
+ * @package Boeke
+ * @author José Miguel Molina
+ */
 class Base
 {
+    /**
+     * @var \Slim\Slim Instancia de la aplicación
+     */
     public static $app;
+    /**
+     * @var array Configuración del usuario
+     */
     public static $config;
     
+    /**
+     * Genera el HTML para la paginación de un conjunto de items.
+     *
+     * @param \ORMWrapper $set Conjunto de items a paginar
+     * @param int $perPage Cantidad de items por página
+     * @param int $current Página actual
+     * @param callable $urlCallback Función que dada la página genere la url para dicha página
+     * @return string HTML de la paginación
+     */
     public static function generatePagination(
         $set,
         $perPage,
@@ -44,15 +68,15 @@ class Base
         callable $urlCallback
     ) {
         $count = $set->count();
-        $pages = floor($count / $perPage);
-        if ($pages != $count / $perPage) {
-            $pages++;
-        }
+        $pages = ceil($count / $perPage);
         
-        if ($pages < 1) {
+        // Si no hay suficientes registros para paginar no devolvemos nada
+        if ($count < $perPage) {
             return '';
         }
         
+        // Si la página actual es mayor al número de páginas asumimos
+        // que se trata de la primera
         if ($pages < $current) {
             $current = 1;
         }
@@ -66,7 +90,7 @@ class Base
         }
         
         if ($current < 8 || $pages < 8) {
-            // Principio
+            // La página actual está al principio
             for ($i = 1; $i < (($pages + 1) < 8 ? $pages + 1 : 8); $i++) {
                 $output .= '<li' . ($current == $i ? ' class="active"' : '') .
                     '><a href="' . $urlCallback($i) . '">' . $i . '</a></li>';
@@ -76,14 +100,14 @@ class Base
                 $output .= '<li class="disabled"><span>...</span></li>';
             }
         } elseif ($pages - $current < 8) {
-            // Final
+            // La página actual está al final
             $output .= '<li class="disabled"><span>...</span></li>';
             for ($i = $pages - 7; $i <= $pages; $i++) {
                 $output .= '<li' . ($current == $i ? ' class="active"' : '') .
                     '><a href="' . $urlCallback($i) . '">' . $i . '</a></li>';
             }
         } else {
-            // Mitad
+            // La página actual está por el medio
             $output .= '<li class="disabled"><span>...</span></li>';
             for ($i = $current - 3; $i <= $current + 4; $i++) {
                 $output .= '<li' . ($current == $i ? ' class="active"' : '') .

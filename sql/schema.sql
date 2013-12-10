@@ -96,27 +96,11 @@ CREATE TABLE IF NOT EXISTS `libro` (
   `titulo` VARCHAR(80) NOT NULL,
   `autor` VARCHAR(85) NOT NULL,
   `anio` INT UNSIGNED NOT NULL,
+  `asignatura_id` INT UNSGIEND NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `isbn_UNIQUE` (`isbn` ASC))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `libro_asignatura`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `libro_asignatura` ;
-
-CREATE TABLE IF NOT EXISTS `libro_asignatura` (
-  `libro_id` INT UNSIGNED NOT NULL,
-  `asignatura_id` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`libro_id`, `asignatura_id`),
-  INDEX `libro_asignatura_asignatura_id_idx` (`asignatura_id` ASC),
-  CONSTRAINT `libro_asignatura_libro_id`
-    FOREIGN KEY (`libro_id`)
-    REFERENCES `libro` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `libro_asignatura_asignatura_id`
+  UNIQUE INDEX `isbn_UNIQUE` (`isbn` ASC),
+  INDEX `asignatura_id_fk_idx` (`asignatura_id` ASC),
+  CONSTRAINT `libro_asignatura_id_fk`
     FOREIGN KEY (`asignatura_id`)
     REFERENCES `asignatura` (`id`)
     ON DELETE CASCADE

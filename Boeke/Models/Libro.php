@@ -45,16 +45,11 @@ class Libro extends \Model
     public static $_table = 'libro';
     
     /**
-     * Devuelve las asignaturas a las que está asignado este libro
+     * Devuelve la asignatura a la que pertenece el libro
      */
-    public function asignaturas()
+    public function asignatura()
     {
-        return $this->hasManyThrough(
-                    'Asignatura',
-                    'LibroAsignatura',
-                    'libro_id',
-                    'asignatura_id'      
-        );
+        return $this->belongsTo('Asignatura');
     }
     
     /**

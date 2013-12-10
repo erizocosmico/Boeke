@@ -57,11 +57,6 @@ class Asignatura extends \Model
      */
     public function libros()
     {
-        return $this->hasManyThrough(
-                    'Libro',
-                    'LibroAsignatura',
-                    'asignatura_id',
-                    'libro_id'      
-        );
+        return $this->hasMany('Libro');
     }
 }

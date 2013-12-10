@@ -41,6 +41,10 @@ require dirname(dirname(__FILE__)) . DSEP . 'vendor' . DSEP . 'autoload.php';
 // Configuración cargada de config.yml
 $config = Yaml::parse(dirname(dirname(__FILE__)) . DSEP . 'config.yml');
 
+if (!is_array($config)) {
+    die('No se ha encontrado un archivo de configuraci&oacute;n config.yml v&aacute;lido.');
+}
+
 // Añadimos el prefijo automático para los modelos
 Model::$auto_prefix_models = '\\Boeke\\Models\\';
 // Configuramos la base de datos
@@ -52,3 +56,9 @@ ORM::configure(array(
     'password' => $config['database_pass']
 ));
 ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
+
+try {
+    ORM::getDb();
+} catch (\PDOException $e) {
+    die('Imposible acceder a la base de datos. Error: ' . $e->getMessage());
+}

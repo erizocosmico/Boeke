@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.1.3
+ * @version     0.2.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -183,6 +183,13 @@ class Users extends Base
             'page'                                  => $page,
             'users'                                 => $users,
             'pagination'                            => $pagination,
+            'breadcrumbs'   => array(
+                array(
+                    'active'        => true,
+                    'text'          => 'Listado de usuarios',
+                    'route'         => self::$app->urlFor('users_index'),
+                ),
+            ),
         ));
     }
     
@@ -238,6 +245,18 @@ class Users extends Base
         $app->render('users_editor.html.twig', array(
             'sidebar_users_active'                  => true,
             'sidebar_users_new_active'              => true,
+            'breadcrumbs'   => array(
+                array(
+                    'active'        => false,
+                    'text'          => 'Usuarios',
+                    'route'         => self::$app->urlFor('users_index'),
+                ),
+                array(
+                    'active'        => true,
+                    'text'          => 'Nuevo usuario',
+                    'route'         => self::$app->urlFor('users_new'),
+                ),
+            ),
         ));
     }
     
@@ -309,6 +328,20 @@ class Users extends Base
             'es_admin'                              => (bool)$user->es_admin,
             'editing'                               => true,
             'user_id'                               => $userId,
+            'breadcrumbs'   => array(
+                array(
+                    'active'        => false,
+                    'text'          => 'Usuarios',
+                    'route'         => self::$app->urlFor('users_index'),
+                ),
+                array(
+                    'active'        => true,
+                    'text'          => 'Editar usuario',
+                    'route'         => self::$app->urlFor('users_edit', array(
+                        'id'    => $userId,
+                    )),
+                ),
+            ),
         ));
     }
     
@@ -352,6 +385,20 @@ class Users extends Base
             'action'                                => $app->urlFor('users_delete', array('id' => $userId)),
             'method'                                => 'POST',
             'is_delete'                             => true,
+            'breadcrumbs'   => array(
+                array(
+                    'active'        => false,
+                    'text'          => 'Usuarios',
+                    'route'         => self::$app->urlFor('users_index'),
+                ),
+                array(
+                    'active'        => true,
+                    'text'          => 'Borrar usuario',
+                    'route'         => self::$app->urlFor('users_delete', array(
+                        'id'    => $userId,
+                    )),
+                ),
+            ),
         ));
     }
 }

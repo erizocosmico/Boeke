@@ -56,7 +56,7 @@ if (!$installing) {
     ORM::configure(array(
         'connection_string' => 'mysql:host=' . $config['database_host'] .
             ';dbname=' . $config['database_name'] .
-            ';port=' . $config['database_port'],
+            ';port=' . $config['database_port'] . ';charset=UTF8',
         'username' => $config['database_user'],
         'password' => $config['database_pass']
     ));

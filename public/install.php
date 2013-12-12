@@ -179,7 +179,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                     'mysql:host=' .
                     $fields['database']['host'] .
                     ';dbname=' . $fields['database']['name'] .
-                    ';port=' . $fields['database']['port'],
+                    ';port=' . $fields['database']['port'] . ';charset=UTF8',
                     $fields['database']['user'],
                     $fields['database']['pass'],
                     array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)

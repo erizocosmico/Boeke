@@ -1,7 +1,3 @@
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
-
 -- -----------------------------------------------------
 -- Table `usuario`
 -- -----------------------------------------------------
@@ -14,8 +10,7 @@ CREATE TABLE IF NOT EXISTS `usuario` (
   `usuario_pass` VARCHAR(40) NOT NULL,
   `es_admin` TINYINT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `nombre_usuario_UNIQUE` (`nombre_usuario` ASC),
-  UNIQUE INDEX `nombre_usuario_limpio_UNIQUE` (`nombre_usuario_limpio` ASC))
+  UNIQUE INDEX `nombre_usuario_UNIQUE` (`nombre_usuario` ASC))
 ENGINE = InnoDB;
 
 
@@ -96,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `libro` (
   `titulo` VARCHAR(80) NOT NULL,
   `autor` VARCHAR(85) NOT NULL,
   `anio` INT UNSIGNED NOT NULL,
-  `asignatura_id` INT UNSGIEND NOT NULL,
+  `asignatura_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `isbn_UNIQUE` (`isbn` ASC),
   INDEX `asignatura_id_fk_idx` (`asignatura_id` ASC),
@@ -167,8 +162,3 @@ CREATE TABLE IF NOT EXISTS `historial` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

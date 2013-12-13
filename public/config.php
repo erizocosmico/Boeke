@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.1.3
+ * @version     0.2.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -32,6 +32,10 @@
  */
 
 use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Yaml\Exception\ParseException;
+
+// Comprobamos si estamos en el instalador
+$installing = defined('INSTALLING');
 
 // Alias de DIRECTORY_SEPARATOR para acortar
 define('DSEP', DIRECTORY_SEPARATOR);
@@ -39,16 +43,36 @@ define('DSEP', DIRECTORY_SEPARATOR);
 require dirname(dirname(__FILE__)) . DSEP . 'vendor' . DSEP . 'autoload.php';
 
 // Configuración cargada de config.yml
-$config = Yaml::parse(dirname(dirname(__FILE__)) . DSEP . 'config.yml');
+try {
+    $config = Yaml::parse(dirname(dirname(__FILE__)) . DSEP . 'config.yml');
+} catch (ParseException $e) {
+    // El archivo config.yml no es válido
+    $config = false;
+}
+
+// Si $config no es un array mostramos un error a menos que estemos en la instalación
+if (!is_array($config) && !$installing) {
+    die('No se ha encontrado un archivo de configuraci&oacute;n config.yml v&aacute;lido. <a href="install.php">Instalar Boeke</a>.');
+}
 
 // Añadimos el prefijo automático para los modelos
 Model::$auto_prefix_models = '\\Boeke\\Models\\';
 // Configuramos la base de datos
-ORM::configure(array(
-    'connection_string' => 'mysql:host=' . $config['database_host'] .
-        ';dbname=' . $config['database_name'] .
-        ';port=' . $config['database_port'],
-    'username' => $config['database_user'],
-    'password' => $config['database_pass']
-));
+if (!$installing) {
+    ORM::configure(array(
+        'connection_string' => 'mysql:host=' . $config['database_host'] .
+            ';dbname=' . $config['database_name'] .
+            ';port=' . $config['database_port'] . ';charset=UTF8',
+        'username' => $config['database_user'],
+        'password' => $config['database_pass']
+    ));
+}
 ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
+
+try {
+    ORM::getDb();
+} catch (\PDOException $e) {
+    if (!$installing) {
+        die('Imposible acceder a la base de datos. Error: ' . $e->getMessage());
+    }
+}

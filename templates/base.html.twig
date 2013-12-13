@@ -7,7 +7,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <title>{% block title %}Boeke{% endblock %}</title>
-        <meta name="description" content="{{ description }}">
+        <meta name="description" content="Aplicación de gestión del préstamo de libros a alumnos.">
         <meta name="viewport" content="width=device-width">
 
         <link rel="stylesheet" href="{{ base_url }}css/bootstrap.min.css">
@@ -53,7 +53,7 @@
                 <ol class="breadcrumb">
                   <li><a href="{{ urlFor('index') }}">Inicio</a></li>
                   {% for lk in breadcrumbs %}
-                  <li {% if lk.active %}class="active">{% else %}><a href="{{ urlFor(lk.route) }}"{% endif %}{{ lk.text }}{% if not lk.active %}</a>{% endif %}</li>
+                  <li {% if lk.active %}class="active">{% else %}><a href="{{ lk.route }}">{% endif %}{{ lk.text }}{% if not lk.active %}</a>{% endif %}</li>
                   {% endfor %}
                   {% if not breadcrumbs %}
                   <li></li>

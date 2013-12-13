@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.1
+ * @version     0.2.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -396,7 +396,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                         $ymlOutput = join("\n", $ymlOutputLines);
                     
                         // Si se puede escribir en el directorio escribimos directamente el config.yml
-                        if (!is_writable(dirname(dirname(__FILE__)))) {
+                        if (is_writable(dirname(dirname(__FILE__)))) {
                             file_put_contents(
                                 dirname(dirname(__FILE__)) . DSEP . 'config.yml',
                                 $ymlOutput

@@ -82,6 +82,7 @@ $errors = array(
     'admin_username'            => 'El nombre de usuario debe tener entre 5 y 60 caracteres.',
     'admin_full_name'           => 'El nombre completo debe tener entre 3 y 90 caracteres.',
     'admin_password'            => 'La contraseña debe tener entre 5 y 60 caracteres.',
+    'admin_password_repeat'     => 'Las contraseñas no coinciden.',
 );
 
 $post = false;
@@ -119,9 +120,10 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                 'login_block'           => (int)requestVar('login_block'),
             ),
             'admin'         => array(
-                'username'      => requestVar('nombre_usuario'),
-                'full_name'     => requestVar('nombre_completo'),
-                'password'      => requestVar('usuario_pass'),
+                'username'          => requestVar('nombre_usuario'),
+                'full_name'         => requestVar('nombre_completo'),
+                'password'          => requestVar('usuario_pass'),
+                'password_repeat'   => requestVar('password_repeat')
             ),
         );
             
@@ -137,6 +139,10 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                     $error = false;
                     if ($key == 'secret_key' || $key == 'password_salt') {
                         if (strlen($value) < 8 || strlen($value) > 60) {
+                            $error = true;
+                        }
+                    } elseif ($fieldName == 'admin_password_repeat') {
+                        if ($value != $fields['admin']['password']) {
                             $error = true;
                         }
                     } elseif ($fieldName == 'admin_username'
@@ -628,6 +634,13 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                     <label for="usuario_pass" class="col-sm-3 control-label">Contraseña</label>
                                     <div class="col-sm-9">
                                         <input type="password" required="required" class="form-control" id="usuario_pass" name="usuario_pass" placeholder="Contraseña" <?php if ($post) { echo 'value="' . $fields['admin']['password'] . '"'; } ?>>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="password_repeat" class="col-sm-3 control-label">Repetir contraseña</label>
+                                    <div class="col-sm-9">
+                                        <input type="password" required="required" class="form-control" id="password_repeat" name="password_repeat" placeholder="Contraseña" <?php if ($post) { echo 'value="' . $fields['admin']['password_repeat'] . '"'; } ?>>
                                     </div>
                                 </div>
                             </div>

@@ -31,6 +31,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// Constante necesaria para que el config.php ignore ciertas directivas
+// y no se comporte como si lo incluyese la aplicación.
 define('INSTALLING', true);
 
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config.php';
@@ -39,11 +41,20 @@ if (@$config['debug']) {
     error_reporting(E_ALL);
 }
 
+/**
+ * Devuelve el contenido de una variable pasada por POST o un valor por
+ * defecto en caso de no estar definida.
+ * 
+ * @param string $name Nombre del parámetro.
+ * @param mixed $default Valor por defecto.
+ * @return mixed Valor por defecto o del parámetro.
+ */
 function requestVar($name, $default = '')
 {
     return (isset($_POST[$name])) ? $_POST[$name] : $default;
 }
 
+// Mensajes de error separados por tipo para ser mostrados en sus secciones
 $messages = array(
     'database'  => array(),
     'cookie'    => array(),
@@ -51,6 +62,7 @@ $messages = array(
     'admin'     => array(),
 );
 
+// Mensajes de error para cada campo inválido
 $errors = array(
     'database_host'             => 'El servidor de la base de datos es obligatorio.',
     'database_user'             => 'El usuario de la base de datos es obligatorio.',
@@ -77,11 +89,14 @@ $success = false;
 
 // ¿Existe el archivo de configuración?
 if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
+    // Si el archivo de configuración existe se mostrará un mensaje y se abortará la instalación
     $messages['database'][] = 'Ya existe un archivo de configuración <strong>config.yml</strong>. Se abortará la instalación.';
 } else {
+    // Si el método es POST se procesarán los datos
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $post = true;
         
+        // Recogemos los datos
         $fields = array(
             'database'      => array(
                 'host'          => requestVar('db_server'),
@@ -110,6 +125,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
             ),
         );
             
+        // Validamos los diferentes campos
         foreach ($fields as $type => $content) {
             foreach ($content as $key => $value) {
                 $fieldName = $type . '_' . $key;
@@ -169,11 +185,13 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
             }
         }
         
+        // ¿Hay mensajes de error en $messages?
         if (count(array_filter($messages, function ($item) {
             return count($item) > 0;
         })) === 0) {
             $connectionWorks = true;
-                
+            
+            // Probamos la nueva conexión
             try{
                 $dbh = new \PDO(
                     'mysql:host=' .
@@ -186,13 +204,15 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                 );
             }
             catch(\PDOException $e){
+                // Si la conexión no funciona se lanzará una excepción y daremos el mensaje de error
                 $connectionWorks = false;
                 $messages['database'][] = 'Los datos proporcionados no son correctos. No puede establecerse conexión.';
             }
             
             if ($connectionWorks) {
+                // Si la conexión funciona probaremos si hay una instalación previa
                 try {
-                    $stmt = $dbh->prepare('SELECT * FROM usuarix LIMIT 1');
+                    $stmt = $dbh->prepare('SELECT * FROM usuario LIMIT 1');
                     $stmt->execute();
                     
                     $messages['database'][] = 'Hay una instalación previa en la base de datos. Se abortará la instalación.';
@@ -320,12 +340,12 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                         ON UPDATE CASCADE)
                         ENGINE = InnoDB;");
                     } catch (\PDOException $e) {
-                        $messages['database'][] = 'Error creando las tablas de la base de datos.' . $e->getMessage();
+                        $messages['database'][] = 'Error creando las tablas de la base de datos: ' . $e->getMessage();
                         $continue = false;
                         $dbh->rollBack();
                     }
                     
-                    // Crear usuario administrador
+                    // Crear usuario administrador si se pudieron crear las tablas
                     if ($continue) {
                         try {
                             $stmt = $dbh->prepare('INSERT INTO usuario (nombre_usuario, nombre_completo, usuario_pass, es_admin) VALUES (?, ?, ?, 1)');
@@ -335,7 +355,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                 sha1($fields['general']['password_salt'] .
                                 $fields['admin']['password']),
                             ));
-                            
+ 
                             $dbh->commit();
                             $success = true;
                         } catch (\PDOException $e) {
@@ -345,7 +365,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                         }
                     }
                     
-                    // Generar el yml de configuración
+                    // Generar el yml de configuración si la creación del administrador ha sido correcta
                     if ($continue) {
                         $ymlOutputLines = array('debug: false');
                         foreach ($fields as $type => $content) {
@@ -369,12 +389,14 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                     
                         $ymlOutput = join("\n", $ymlOutputLines);
                     
+                        // Si se puede escribir en el directorio escribimos directamente el config.yml
                         if (!is_writable(dirname(dirname(__FILE__)))) {
                             file_put_contents(
                                 dirname(dirname(__FILE__)) . DSEP . 'config.yml',
                                 $ymlOutput
                             );
                         } else {
+                            // No se puede escribir en el directorio, lo mandamos al usuario para que lo suba
                             header('Content-type: application/octet-stream');
                             header('Content-Disposition: attachment; filename="config.yml"');
                             file_put_contents(

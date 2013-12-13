@@ -32,6 +32,7 @@
  */
 
 use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Yaml\Exception\ParseException;
 
 // Comprobamos si estamos en el instalador
 $installing = defined('INSTALLING');
@@ -42,7 +43,12 @@ define('DSEP', DIRECTORY_SEPARATOR);
 require dirname(dirname(__FILE__)) . DSEP . 'vendor' . DSEP . 'autoload.php';
 
 // Configuración cargada de config.yml
-$config = Yaml::parse(dirname(dirname(__FILE__)) . DSEP . 'config.yml');
+try {
+    $config = Yaml::parse(dirname(dirname(__FILE__)) . DSEP . 'config.yml');
+} catch (ParseException $e) {
+    // El archivo config.yml no es válido
+    $config = false;
+}
 
 // Si $config no es un array mostramos un error a menos que estemos en la instalación
 if (!is_array($config) && !$installing) {

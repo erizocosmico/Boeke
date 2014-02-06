@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.5
+ * @version     0.3.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -154,7 +154,7 @@ class Users extends Base
      *
      * @param int $page La página actual, la 1 por defecto
      */
-    public static function usersManagementIndex($page = 1)
+    public static function index($page = 1)
     {
         $app = self::$app;
         $users = array();
@@ -200,7 +200,7 @@ class Users extends Base
      * Si es accedida mediante GET muestra el formulario de creación de usuario
      * si es accedida mediante POST procesa la creación del usuario.
      */
-    public static function usersManagementNew()
+    public static function create()
     {
         $app = self::$app;
         
@@ -220,7 +220,7 @@ class Users extends Base
                     ->where('nombre_usuario', $username)
                     ->findOne();
                 
-                if ($user !== false) {
+                if (!$user) {
                     $error[] = 'El nombre de usuario ya está en uso.';
                 }
             }
@@ -268,7 +268,7 @@ class Users extends Base
      *
      * @param int $userId La id del usuario a editar
      */
-    public static function usersManagementEdit($userId)
+    public static function edit($userId)
     {
         $app = self::$app;
         
@@ -277,7 +277,7 @@ class Users extends Base
             ->findOne();
         
         // Si el usuario no existe enviamos al listado
-        if ($user === false) {
+        if (!$user) {
             $app->redirect($app->urlFor('users_index'));
         }
         
@@ -297,7 +297,7 @@ class Users extends Base
                     ->where('nombre_usuario', $username)
                     ->findOne();
                 
-                if ($userTmp !== false) {
+                if (!$userTmp) {
                     $error[] = 'El nombre de usuario ya está en uso.';
                 }
             }
@@ -352,7 +352,7 @@ class Users extends Base
      *
      * @param int $userId La id del usuario a borrar
      */
-    public static function usersManagementDelete($userId)
+    public static function delete($userId)
     {
         $app = self::$app;
         
@@ -361,7 +361,7 @@ class Users extends Base
             ->findOne();
         
         // Si el usuario no existe redirigimos al listado
-        if ($user === false) {
+        if (!$user) {
             $app->redirect($app->urlFor('users_index'));
         }
         

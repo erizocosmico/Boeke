@@ -16,6 +16,9 @@
         <link rel="stylesheet" href="{{ base_url }}css/main.css">
 
         <script src="{{ base_url }}js/vendor/modernizr-2.6.2.min.js"></script>
+        <script type="text/javascript">
+            var baseUrl = '{{ base_url }}';
+        </script>
         {% block head %}
         {% endblock %}
     </head>
@@ -65,6 +68,25 @@
                 {% endblock %}
                 </div>
             </div>
+
+        <div class="modal fade" id="modal-box">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">{% block modal_title %}{% endblock %}</h4>
+              </div>
+              <div class="modal-body">
+                  <div class="alert hidden" id="modal-alert"></div>
+                  {% block modal_body %}{% endblock %}
+              </div>
+              <div class="modal-footer">
+                  {% block modal_footer %}{% endblock %}
+              </div>
+              <input type="hidden" id="modal-csrf-token" data-key="{{ csrf_key }}" value="{{ csrf_token}}">
+            </div>
+          </div>
+        </div>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="{{ base_url }}js/vendor/jquery-1.10.1.min.js"><\/script>')</script>

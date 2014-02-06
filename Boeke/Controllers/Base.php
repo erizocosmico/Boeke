@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.5
+ * @version     0.3.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -61,7 +61,7 @@ class Base
      * @param callable $urlCallback Función que dada la página genere la url para dicha página
      * @return string HTML de la paginación
      */
-    public static function generatePagination(
+    final public static function generatePagination(
         $set,
         $perPage,
         $current,
@@ -123,5 +123,21 @@ class Base
         }
         
         return $output;
+    }
+    
+    /**
+     * Envía una respuesta en formato JSON.
+     *
+     * @param int $status Estado de la respuesta
+     * @param array $data Datos
+     */
+    final public static function jsonResponse($status, array $data)
+    {
+        self::$app->response->headers->set('Content-Type', 'application/json');
+        self::$app->response()->status($status);
+
+        echo json_encode(array_merge(array(
+            'status' => $status,
+        ), $data));
     }
 }

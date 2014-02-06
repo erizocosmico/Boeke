@@ -14,7 +14,7 @@
             <li><a href="">Gestionar alumnos</a></li>
             <li><a href="">Gestionar libros</a></li>
             <li><a href="">Gestionar ejemplares</a></li>
-            <li><a href="">Gestionar niveles</a></li>
+            <li><a href="{{ urlFor('levels_index') }}" {% if sidebar_levels_active %}class="active"{% endif %}>Gestionar niveles</a></li>
             <li><a href="">Gestionar asignaturas</a></li>
         </ul>
     </div>

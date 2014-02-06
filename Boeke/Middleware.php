@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.4
+ * @version     0.2.5
  * @package     Boeke
  *
  * MIT LICENSE
@@ -49,7 +49,7 @@ class Middleware
      * @param bool $reverse Si es verdadero se redirigirá si está conectado.
      * @return \Closure
      */
-    public function isLoggedIn(\Slim\Slim $app, $reverse = false)
+    public static function isLoggedIn(\Slim\Slim $app, $reverse = false)
     {
         return function () use ($app, $reverse) {
             // Si no está conectado redirigir a la pantalla de entrada
@@ -90,7 +90,7 @@ class Middleware
      * @param \Slim\Slim $app Instancia de la aplicación
      * @return \Closure
      */
-    public function isAdmin(\Slim\Slim $app)
+    public static function isAdmin(\Slim\Slim $app)
     {
         return function() use ($app) {
             $user = \Model::factory('Usuario')

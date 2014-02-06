@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.5
+ * @version     0.3.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -108,55 +108,60 @@ $app->hook('slim.before', function () use ($app) {
  */
 
 // Índice
-$app->get(
-    '/',
-    Middleware::isLoggedIn($app),  
-    '\\Boeke\\Controllers\\Index::index'
-)->name('index');
+$app->get('/', Middleware::isLoggedIn($app), '\\Boeke\\Controllers\\Index::index')
+    ->name('index');
    
 // Conexión 
-$app->map(
-    '/login',
-    Middleware::isLoggedIn($app, true),
-    '\\Boeke\\Controllers\\Users::login'
-)->via('GET', 'POST')->name('login');
+$app->map('/login', Middleware::isLoggedIn($app, true), '\\Boeke\\Controllers\\Users::login')
+    ->via('GET', 'POST')
+    ->name('login');
     
 // Desconexión
-$app->get(
-    '/logout',
-    Middleware::isLoggedIn($app),  
-    '\\Boeke\\Controllers\\Users::logout'
-)->name('logout');
+$app->get('/logout',Middleware::isLoggedIn($app), '\\Boeke\\Controllers\\Users::logout')
+    ->name('logout');
     
 // Gestión de usuarios
-$app->group('/users', Middleware::isLoggedIn($app), function () use ($app, $middleware) {
+$app->group('/users', Middleware::isLoggedIn($app), function () use ($app) {
     // Listado
-    $app->get(
-        '/list/(:page)',
-        '\\Boeke\\Controllers\\Users::usersManagementIndex'
-    )->name('users_index');
+    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Users::index')
+        ->name('users_index');
     
     // Creación
-    $app->map(
-        '/new',
-        Middleware::isAdmin($app),
-        '\\Boeke\\Controllers\\Users::usersManagementNew'
-    )->via('GET', 'POST')->name('users_new');
+    $app->map('/new', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::create')
+        ->via('GET', 'POST')
+        ->name('users_new');
     
     // Edición
-    $app->map(
-        '/edit/:id',
-        ,
-        Middleware::isAdmin($app),
-        '\\Boeke\\Controllers\\Users::usersManagementEdit'
-    )->via('GET', 'PUT')->name('users_edit');
+    $app->map('/edit/:id', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::edit')
+        ->via('GET', 'PUT')
+        ->name('users_edit');
     
     // Borrado
-    $app->map(
-        '/delete/:id',
-        Middleware::isAdmin($app),
-        '\\Boeke\\Controllers\\Users::usersManagementDelete'
-    )->via('GET', 'DELETE')->name('users_delete');
+    $app->map('/delete/:id', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::delete')
+        ->via('GET', 'DELETE')
+        ->name('users_delete');
+});
+
+// Gestión de niveles
+$app->group('/levels', Middleware::isLoggedIn($app), function () use ($app) {
+    // Listado
+    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Levels::index')
+        ->name('levels_index');
+    
+    // Creación
+    $app->map('/new', '\\Boeke\\Controllers\\Levels::create')
+        ->via('GET', 'POST')
+        ->name('levels_new');
+    
+    // Edición
+    $app->map('/edit/:id', '\\Boeke\\Controllers\\Levels::edit')
+        ->via('GET', 'PUT')
+        ->name('levels_edit');
+    
+    // Borrado
+    $app->map('/delete/:id', '\\Boeke\\Controllers\\Levels::delete')
+        ->via('GET', 'DELETE')
+        ->name('levels_delete');
 });
 
 $app->run();

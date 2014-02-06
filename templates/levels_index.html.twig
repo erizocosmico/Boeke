@@ -1,0 +1,75 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Gestión de niveles{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Gestión de niveles</h3>
+            </div>
+            <div class="panel-body">
+                <button class="btn btn-primary pull-right" onclick="showLevelEditor();"><span class="fa  fa-plus"></span> Crear nivel</button>
+                <h2>Listado de niveles</h2>
+                {% if levels %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nivel</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for level in levels %}
+                        <tr>
+                            <td>{{ level.id }}</td>
+                            <td>{{ level.nombre }}</td>
+                            <td><button data-id="{{ level.id }}" data-name="{{ level.nombre }}" class="btn btn-default" onclick="showLevelEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button> <button data-id="{{ level.id }}" data-name="{{ level.nombre }}" class="btn btn-danger" onclick="deleteLevel(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                {% if pagination != '' %}
+                <div class="centered">
+                    <ul class="pagination">
+                        {{ pagination|raw }}
+                    </ul>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="alert alert-warning">
+                    No hay ningún nivel.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modal_body %}
+<div class="hidden" id="editor-panel">
+    <form role="form" class="form-horizontal" onsubmit="return false;">
+        <div class="form-group">
+            <label for="nombre_usuario" class="col-sm-3 control-label">Nombre del nivel</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del nivel...">
+            </div>
+        </div>
+        <input type="hidden" name="{{ csrf_key }}" value="{{ csrf_token }}">
+    </form>
+</div>
+<div class="hidden" id="delete-panel">
+</div>
+{% endblock %}
+
+{% block modal_footer %}
+<div class="hidden" id="editor-actions">
+    <button id="create-level" class="btn btn-primary">Crear nivel</button> <button id="cancel-create" class="btn btn-default">Cancelar</button>
+</div>
+<div class="hidden" id="delete-actions">
+    <button id="delete-level" class="btn btn-danger">Borrar nivel</button> <button id="cancel-delete" class="btn btn-default">Cancelar</button>
+</div>
+{% endblock %}

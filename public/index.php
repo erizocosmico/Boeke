@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.4
+ * @version     0.2.5
  * @package     Boeke
  *
  * MIT LICENSE
@@ -33,6 +33,8 @@
 
 require_once dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR .
     'Boeke' . DIRECTORY_SEPARATOR . 'config.php';
+
+use Boeke\Middleware;
 
 if ($config['debug']) {
     error_reporting(E_ALL);
@@ -100,7 +102,6 @@ $app->hook('slim.before', function () use ($app) {
  */
 \Boeke\Controllers\Base::$app = $app;
 \Boeke\Controllers\Base::$config = $config;
-$middleware = new \Boeke\Middleware();
 
 /**
  * Rutas
@@ -109,54 +110,51 @@ $middleware = new \Boeke\Middleware();
 // Índice
 $app->get(
     '/',
-    $middleware->isLoggedIn($app),  
+    Middleware::isLoggedIn($app),  
     '\\Boeke\\Controllers\\Index::index'
 )->name('index');
    
 // Conexión 
 $app->map(
     '/login',
-    $middleware->isLoggedIn($app, true),
+    Middleware::isLoggedIn($app, true),
     '\\Boeke\\Controllers\\Users::login'
 )->via('GET', 'POST')->name('login');
     
 // Desconexión
 $app->get(
     '/logout',
-    $middleware->isLoggedIn($app),  
+    Middleware::isLoggedIn($app),  
     '\\Boeke\\Controllers\\Users::logout'
 )->name('logout');
     
 // Gestión de usuarios
-$app->group('/users', function () use ($app, $middleware) {
+$app->group('/users', Middleware::isLoggedIn($app), function () use ($app, $middleware) {
     // Listado
     $app->get(
         '/list/(:page)',
-        $middleware->isLoggedIn($app),  
         '\\Boeke\\Controllers\\Users::usersManagementIndex'
     )->name('users_index');
     
     // Creación
     $app->map(
         '/new',
-        $middleware->isLoggedIn($app),
-        $middleware->isAdmin($app),
+        Middleware::isAdmin($app),
         '\\Boeke\\Controllers\\Users::usersManagementNew'
     )->via('GET', 'POST')->name('users_new');
     
     // Edición
     $app->map(
         '/edit/:id',
-        $middleware->isLoggedIn($app),
-        $middleware->isAdmin($app),
+        ,
+        Middleware::isAdmin($app),
         '\\Boeke\\Controllers\\Users::usersManagementEdit'
     )->via('GET', 'PUT')->name('users_edit');
     
     // Borrado
     $app->map(
         '/delete/:id',
-        $middleware->isLoggedIn($app),
-        $middleware->isAdmin($app),
+        Middleware::isAdmin($app),
         '\\Boeke\\Controllers\\Users::usersManagementDelete'
     )->via('GET', 'DELETE')->name('users_delete');
 });

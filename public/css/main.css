@@ -16,7 +16,6 @@ a, p, h1, h2, h3, h4, h5, h6, span, strong, em {
 
 .navbar-inverse {
     background-color: rgb(57, 139, 206);
-    /*border-bottom-color: rgb(27,70,105);*/
     border-bottom-color: rgba(0, 0, 0, 0.3);
     box-shadow: 0px -1px 0px rgba(255, 255, 255, 0.3) inset;
 }
@@ -33,22 +32,6 @@ a, p, h1, h2, h3, h4, h5, h6, span, strong, em {
 
 /* ==== BUTTONS ===================== */
 
-/*.btn-primary {
-    background-color: rgb(197,47,36);
-    border-color: rgb(133,26,19);
-}
-
-.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
-    background-color: rgb(133,26,19);
-    border-color: rgb(133,26,19);
-}*/
-
-/* ==== INPUTS ====================== */
-
-/*input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
-    box-shadow: 0px 0px 8px rgb(197,47,36);
-    border-color: rgb(217,67,56);
-}*/
 
 /* ==== SIDEBAR ===================== */
 

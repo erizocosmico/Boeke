@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.2
+ * @version     0.2.4
  * @package     Boeke
  *
  * MIT LICENSE
@@ -64,18 +64,21 @@ class Users extends Base
         }
         
         $request = self::$app->request;
-        if ($request->isPost() && $processRequest) {
-            // Preparamos la contraseña cifrada
-            $password = sha1(self::$config['password_salt'] .
-                $request->post('password'));
-            
+        if ($request->isPost() && $processRequest) {     
             // Buscamos al usuario
             $user = \Model::factory('Usuario')
                 ->where('nombre_usuario', $request->post('username'))
-                ->where('usuario_pass', $password)
                 ->findOne();
             
-            if ($user === false) {
+            $valid = false;
+            if ($user) {
+                // Comprobamos si la contraseña coincide
+                if (password_verify($request->post('password'), $user->usuario_pass)) {
+                    $valid = true;
+                }
+            }
+            
+            if (!$valid) {
                 self::$app->flashNow('error', 'Nombre o contraseña incorrectos.');
 
                 // Miramos los intentos que le quedan al usuario
@@ -231,8 +234,7 @@ class Users extends Base
                 $user = \Model::factory('Usuario')->create();
                 $user->nombre_usuario = $username;
                 $user->nombre_completo = $fullName;
-                $user->usuario_pass = sha1(self::$config['password_salt'] .
-                    $password);
+                $user->usuario_pass = password_hash($password, PASSWORD_BCRYPT);
                 $user->es_admin = $isAdmin;
                 $user->save();
                 
@@ -309,8 +311,7 @@ class Users extends Base
                 $user->nombre_usuario = $username;
                 $user->nombre_completo = $fullName;
                 if (!empty($password)) {
-                    $user->usuario_pass = sha1(self::$config['password_salt'] .
-                        $password);
+                    $user->usuario_pass = password_hash($password, PASSWORD_BCRYPT);
                 }
                 $user->es_admin = $isAdmin;
                 $user->save();

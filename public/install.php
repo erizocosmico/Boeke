@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.2
+ * @version     0.2.4
  * @package     Boeke
  *
  * MIT LICENSE
@@ -35,7 +35,8 @@
 // y no se comporte como si lo incluyese la aplicación.
 define('INSTALLING', true);
 
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config.php';
+require_once dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR
+    . 'Boeke' . DIRECTORY_SEPARATOR . 'config.php';
 
 if (@$config['debug']) {
     error_reporting(E_ALL);
@@ -54,6 +55,41 @@ function requestVar($name, $default = '')
     return (isset($_POST[$name])) ? $_POST[$name] : $default;
 }
 
+/**
+ * Devuelve un array con las consultas en un archivo SQL.
+ * @param string $file Ruta al archivo.
+ * @return array
+ */
+function splitSqlFile($file)
+{
+    $content = preg_replace('/  /', ' ', file_get_contents($file));
+
+    // Split the content by newline character and filter empty lines
+    // and SQL comments
+    $lines = array_filter(explode("\n", $content), function ($item) {
+        if (empty($item)) {
+            return false;
+        } elseif ($item[0] == '-' || $item[0] == '#') {
+            return false;
+        } else {
+            return true;
+        }
+    });
+
+    $queries = array();
+    $query = '';
+    foreach ($lines as $line) {
+        $query .= $line;
+        // If line contains ; it means it's the last line of the query
+        if (strpos($line, ';') !== false) {
+            $queries[] = $query;
+            $query = '';
+        }
+    }
+
+    return $queries;
+}
+
 // Mensajes de error separados por tipo para ser mostrados en sus secciones
 $messages = array(
     'database'  => array(),
@@ -69,15 +105,6 @@ $errors = array(
     'database_port'             => 'El puerto de la base de datos es obligatorio.',
     'database_pass'             => 'La contraseña del usuario de la base de datos es obligatorio.',
     'database_name'             => 'El nombre de la base de datos es obligatorio.',
-    
-    'cookie_path'               => 'Debes especificar una ruta para la cookie. Por defecto es /.',
-    'cookie_lifetime'           => 'Debes especificar una duración para la cookie del tipo: 15 seconds, 25 days, 40 hours, ...',
-    'cookie_name'               => 'Debes especificar un nombre para la cookie.',
-    
-    'general_secret_key'        => 'La clave secreta debe tener entre 8 y 60 caracteres.',
-    'general_password_salt'     => 'El salto de la contraseña debe tener entre 8 y 60 caracteres.',
-    'general_max_retries'       => 'El número máximo de intentos de conexión debe ser mayor a 0.',
-    'general_login_block'       => 'La duración del bloqueo de conexión debe ser mayor a 0.',
     
     'admin_username'            => 'El nombre de usuario debe tener entre 5 y 60 caracteres.',
     'admin_full_name'           => 'El nombre completo debe tener entre 3 y 90 caracteres.',
@@ -107,17 +134,20 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                 'name'          => requestVar('db_name'),
             ),
             'cookie'        => array(
-                'path'          => requestVar('cookie_path', '/'),
-                'secure'        => (bool)requestVar('cookie_secure', false),
-                'http_only'     => (bool)requestVar('cookie_http_only', false),
-                'lifetime'      => requestVar('cookie_lifetime'),
-                'name'          => requestVar('cookie_name'),
+                'path'          => substr(
+                    $_SERVER['SCRIPT_NAME'],
+                    0,
+                    strpos($_SERVER['SCRIPT_NAME'], 'install.php')
+                ),
+                'secure'        => !empty($_SERVER['HTTPS']),
+                'http_only'     => true,
+                'lifetime'      => '15 days',
+                'name'          => 'boeke_session_' . uniqid(),
             ),
             'general'       => array(
-                'secret_key'            => requestVar('secret_key'),
-                'password_salt'         => requestVar('pw_salt'),
-                'login_max_retries'     => (int)requestVar('login_max_retries'),
-                'login_block'           => (int)requestVar('login_block'),
+                'secret_key'            => sha1(uniqid()),
+                'login_max_retries'     => 6,
+                'login_block'           => 600,
             ),
             'admin'         => array(
                 'username'          => requestVar('nombre_usuario'),
@@ -129,6 +159,10 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
             
         // Validamos los diferentes campos
         foreach ($fields as $type => $content) {
+            if (in_array($type, array('general', 'cookie'))) {
+                continue;
+            }
+
             foreach ($content as $key => $value) {
                 $fieldName = $type . '_' . $key;
                 if (is_int($value)) {
@@ -137,11 +171,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                     }
                 } elseif (is_string($value)) {
                     $error = false;
-                    if ($key == 'secret_key' || $key == 'password_salt') {
-                        if (strlen($value) < 8 || strlen($value) > 60) {
-                            $error = true;
-                        }
-                    } elseif ($fieldName == 'admin_password_repeat') {
+                    if ($fieldName == 'admin_password_repeat') {
                         if ($value != $fields['admin']['password']) {
                             $error = true;
                         }
@@ -156,32 +186,6 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                         }
                     } elseif (strlen($value) === 0) {
                         $error = true;
-                    } elseif ($key == 'lifetime') {
-                        $parts = explode(' ', $value);
-                        if (count($parts) != 2) {
-                            $error = true;
-                        } else {
-                            list($time, $unit) = $parts;
-                            
-                            if ((int)$time === 0) {
-                                $error = true;
-                            } elseif (!in_array($unit, array(
-                                'second',
-                                'minute',
-                                'hour',
-                                'day',
-                                'week',
-                                'month',
-                                'seconds',
-                                'minutes',
-                                'hours',
-                                'days',
-                                'weeks',
-                                'months'
-                            ))) {
-                                $error = true;
-                            }
-                        }
                     }
                     
                     if ($error) {
@@ -227,124 +231,11 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                     // Cargar las tablas de la base de datos
                     $dbh->beginTransaction();
                     try {
-                        
-                        $dbh->exec("CREATE TABLE IF NOT EXISTS `usuario` (
-                        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                        `nombre_usuario` VARCHAR(60) NOT NULL,
-                        `nombre_completo` VARCHAR(90) NOT NULL,
-                        `usuario_pass` VARCHAR(40) NOT NULL,
-                        `es_admin` TINYINT UNSIGNED NOT NULL DEFAULT 0,
-                        PRIMARY KEY (`id`),
-                        UNIQUE INDEX `nombre_usuario_UNIQUE` (`nombre_usuario` ASC))
-                        ENGINE = InnoDB;");
-                        
-                        $dbh->exec("CREATE TABLE IF NOT EXISTS `sesion` (
-                        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                        `hash_sesion` VARCHAR(255) NOT NULL,
-                        `usuario_id` INT UNSIGNED NOT NULL,
-                        `creada` BIGINT UNSIGNED NOT NULL,
-                        `ultima_visita` BIGINT UNSIGNED NOT NULL,
-                        PRIMARY KEY (`id`),
-                        INDEX `usuario_id_fk_idx` (`usuario_id` ASC),
-                        CONSTRAINT `sesion_usuario_id_fk`
-                        FOREIGN KEY (`usuario_id`)
-                        REFERENCES `usuario` (`id`)
-                        ON DELETE CASCADE
-                        ON UPDATE CASCADE)
-                        ENGINE = InnoDB;");
-                        
-                        $dbh->exec("CREATE TABLE IF NOT EXISTS `nivel` (
-                        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                        `nombre` VARCHAR(40) NOT NULL,
-                        PRIMARY KEY (`id`))
-                        ENGINE = InnoDB;");
-                        
-                        $dbh->exec("CREATE TABLE IF NOT EXISTS `asignatura` (
-                        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                        `nivel_id` INT UNSIGNED NOT NULL,
-                        `nombre` VARCHAR(60) NOT NULL,
-                        PRIMARY KEY (`id`, `nombre`),
-                        INDEX `nivel_id_fk_idx` (`nivel_id` ASC),
-                        CONSTRAINT `asignatura_nivel_id_fk`
-                        FOREIGN KEY (`nivel_id`)
-                        REFERENCES `nivel` (`id`)
-                        ON DELETE CASCADE
-                        ON UPDATE CASCADE)
-                        ENGINE = InnoDB;");
-                        
-                        $dbh->exec("CREATE TABLE IF NOT EXISTS `alumno` (
-                        `nie` BIGINT UNSIGNED NOT NULL,
-                        `nombre` VARCHAR(70) NOT NULL,
-                        `apellidos` VARCHAR(70) NOT NULL DEFAULT '',
-                        `telefono` VARCHAR(9) NOT NULL DEFAULT '',
-                        PRIMARY KEY (`nie`))
-                        ENGINE = InnoDB;");
-                        
-                        $dbh->exec("CREATE TABLE IF NOT EXISTS `libro` (
-                        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                        `isbn` VARCHAR(13) NOT NULL,
-                        `titulo` VARCHAR(80) NOT NULL,
-                        `autor` VARCHAR(85) NOT NULL,
-                        `anio` INT UNSIGNED NOT NULL,
-                        `asignatura_id` INT UNSIGNED NOT NULL,
-                        PRIMARY KEY (`id`),
-                        UNIQUE INDEX `isbn_UNIQUE` (`isbn` ASC),
-                        INDEX `asignatura_id_fk_idx` (`asignatura_id` ASC),
-                        CONSTRAINT `libro_asignatura_id_fk`
-                        FOREIGN KEY (`asignatura_id`)
-                        REFERENCES `asignatura` (`id`)
-                        ON DELETE CASCADE
-                        ON UPDATE CASCADE)
-                        ENGINE = InnoDB;");
-                        
-                        $dbh->exec("CREATE TABLE IF NOT EXISTS `ejemplar` (
-                        `codigo` INT UNSIGNED NOT NULL,
-                        `libro_id` INT UNSIGNED NOT NULL,
-                        `estado` TINYINT UNSIGNED NOT NULL DEFAULT 0,
-                        `alumno_nie` BIGINT UNSIGNED NULL,
-                        PRIMARY KEY (`codigo`),
-                        INDEX `ejemplar_alumno_nie_fk_idx` (`alumno_nie` ASC),
-                        CONSTRAINT `ejemplar_alumno_nie_fk`
-                        FOREIGN KEY (`alumno_nie`)
-                        REFERENCES `alumno` (`nie`)
-                        ON DELETE CASCADE
-                        ON UPDATE CASCADE,
-                        INDEX `ejemplar_libro_id_fk_idx` (`libro_id` ASC),
-                        CONSTRAINT `ejemplar_libro_id_fk`
-                        FOREIGN KEY (`libro_id`)
-                        REFERENCES `libro` (`id`)
-                        ON DELETE CASCADE
-                        ON UPDATE CASCADE)
-                        ENGINE = InnoDB;");
-                        
-                        $dbh->exec("CREATE TABLE IF NOT EXISTS `historial` (
-                        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                        `tipo` TINYINT UNSIGNED NOT NULL DEFAULT 0,
-                        `ejemplar_codigo` INT UNSIGNED NOT NULL,
-                        `alumno_nie` BIGINT UNSIGNED NULL,
-                        `estado` TINYINT UNSIGNED NOT NULL DEFAULT 0,
-                        `fecha` BIGINT UNSIGNED NOT NULL,
-                        `anotacion` BLOB NOT NULL,
-                        `usuario_id` INT UNSIGNED NOT NULL,
-                        PRIMARY KEY (`id`),
-                        INDEX `historial_ejemplar_codigo_fk_idx` (`ejemplar_codigo` ASC),
-                        INDEX `historial_alumno_nie_fk_idx` (`alumno_nie` ASC),
-                        CONSTRAINT `historial_ejemplar_codigo_fk`
-                        FOREIGN KEY (`ejemplar_codigo`)
-                        REFERENCES `ejemplar` (`codigo`)
-                        ON DELETE CASCADE
-                        ON UPDATE CASCADE,
-                        CONSTRAINT `historial_alumno_nie_fk`
-                        FOREIGN KEY (`alumno_nie`)
-                        REFERENCES `alumno` (`nie`)
-                        ON DELETE CASCADE
-                        ON UPDATE CASCADE,
-                        CONSTRAINT `historial_usuario_id_fk`
-                        FOREIGN KEY (`usuario_id`)
-                        REFERENCES `usuario` (`id`)
-                        ON DELETE CASCADE
-                        ON UPDATE CASCADE)
-                        ENGINE = InnoDB;");
+                        $queries = splitSqlFile(dirname(dirname(__FILE__)) . DSEP
+                            . 'sql' . DSEP . 'schema.sql');
+                        foreach ($queries as $query) {
+                            $dbh->exec($query);
+                        }
                     } catch (\PDOException $e) {
                         $messages['database'][] = 'Error creando las tablas de la base de datos: ' . $e->getMessage();
                         $continue = false;
@@ -358,8 +249,10 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                             $stmt->execute(array(
                                 $fields['admin']['username'],
                                 $fields['admin']['full_name'],
-                                sha1($fields['general']['password_salt'] .
-                                $fields['admin']['password']),
+                                password_hash(
+                                    $fields['admin']['password'],
+                                    PASSWORD_BCRYPT
+                                ),
                             ));
  
                             $dbh->commit();
@@ -513,99 +406,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h4>Configuración de las cookies</h4>
-                            </div>
-                            <div class="panel-body">
-                                <?php if (count($messages['cookie']) > 0): ?>
-                                    <div class="alert alert-danger">
-                                        <?= join('<br />', $messages['cookie']) ?>
-                                    </div>
-                                <?php endif; ?>
-                                <div class="form-group">
-                                    <label for="cookie_path" class="col-sm-3 control-label">Ruta de la cookie</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" required="required" class="form-control" id="cookie_path" name="cookie_path" placeholder="Ruta de la cookie, / por defecto" <?php if ($post) { echo 'value="' . $fields['cookie']['path'] . '"'; } ?>>
-                                    </div>
-                                </div>
-                        
-                                <div class="form-group">
-                                    <label for="cookie_name" class="col-sm-3 control-label">Nombre de la cookie</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" required="required" class="form-control" id="cookie_name" name="cookie_name" placeholder="Nombre de la cookie" <?php if ($post) { echo 'value="' . $fields['cookie']['name'] . '"'; } ?>>
-                                    </div>
-                                </div>
-                        
-                                <div class="form-group">
-                                    <label for="cookie_lifetime" class="col-sm-3 control-label">Duración de la cookie</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" required="required" class="form-control" id="cookie_lifetime" name="cookie_lifetime" placeholder="Duración de la cookie" <?php if ($post) { echo 'value="' . $fields['cookie']['lifetime'] . '"'; } ?>>
-                                    </div>
-                                    <div class="col-sm-9 col-sm-offset-3">
-                                        <small><strong>Ejemplo:</strong> 10 minutes, 15 hours, 20 days, ...</small>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <label>
-                                            <input type="checkbox" name="cookie_secure" value="1" <?php if ($post) { if ($fields['cookie']['secure']) { echo 'checked'; } } ?>> Usar cookie segura (HTTPS)
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <div class="col-sm-offset-3 col-sm-9">
-                                        <label>
-                                            <input type="checkbox" name="cookie_http_only" value="1" <?php if ($post) { if ($fields['cookie']['http_only']) { echo 'checked'; } } ?>> Permitir cookies solo por HTTP
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h4>Configuración general</h4>
-                            </div>
-                            <div class="panel-body">
-                                <?php if (count($messages['general']) > 0): ?>
-                                    <div class="alert alert-danger">
-                                        <?= join('<br />', $messages['general']) ?>
-                                    </div>
-                                <?php endif; ?>
-                                <div class="form-group">
-                                    <label for="secret_key" class="col-sm-3 control-label">Clave secreta</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" required="required" class="form-control" id="secret_key" name="secret_key" placeholder="Clave secreta para el cifrado" <?php if ($post) { echo 'value="' . $fields['general']['secret_key'] . '"'; } ?>>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="pw_salt" class="col-sm-3 control-label">Salto de contraseña</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" required="required" class="form-control" id="pw_salt" name="pw_salt" placeholder="Salto para las contraseñas" <?php if ($post) { echo 'value="' . $fields['general']['password_salt'] . '"'; } ?>>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="login_max_retries" class="col-sm-3 control-label">Máximos intentos de conexión</label>
-                                    <div class="col-sm-9">
-                                        <input type="number" required="required" class="form-control" id="login_max_retries" name="login_max_retries" placeholder="Número máximo de intentos de conexión" <?php if ($post) { echo 'value="' . $fields['general']['login_max_retries'] . '"'; } ?>>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="login_block" class="col-sm-3 control-label">Bloqueo de conexión</label>
-                                    <div class="col-sm-9">
-                                        <input type="number" required="required" class="form-control" id="login_block" name="login_block" placeholder="Bloqueo en segundos tras los intentos máximos de conexión" <?php if ($post) { echo 'value="' . $fields['general']['login_block'] . '"'; } ?>>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
+
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h4>Administrador de la aplicación</h4>

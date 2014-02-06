@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.2.2
+ * @version     0.2.4
  * @package     Boeke
  *
  * MIT LICENSE
@@ -31,7 +31,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config.php';
+require_once dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR .
+    'Boeke' . DIRECTORY_SEPARATOR . 'config.php';
 
 if ($config['debug']) {
     error_reporting(E_ALL);

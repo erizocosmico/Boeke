@@ -1,0 +1,27 @@
+{
+  "name": "Boeke",
+  "version": "0.3.0",
+  "homepage": "https://github.com/mvader/Boeke",
+  "authors": [
+    "José Miguel Molina Arboledas <rd4091@gmail.com>"
+  ],
+  "description": "Aplicación web para gestionar el seguimiento de los préstamos de libros a alumnos de la ESO.",
+  "main": "public/index.php",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "jquery": "1.10.*",
+    "select2": "latest",
+    "bootstrap": "latest",
+    "modernizr": "latest",
+    "font-awesome": "latest" 
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/js/vendor",
+    "test",
+    "tests"
+  ]
+}

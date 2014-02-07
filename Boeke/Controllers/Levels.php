@@ -90,20 +90,41 @@ class Levels extends Base
     }
     
     /**
+     * Devuelve en formato JSON todos los niveles existentes.
+     */
+    public static function getAll()
+    {
+        $app = self::$app;
+        $levels = array_map(
+            function ($level) {
+                return array(
+                    'id'    => $level['id'],
+                    'name'  => $level['nombre'],
+                );
+            },
+            \Model::factory('Nivel')->findArray()
+        );
+        
+        self::jsonResponse(200, array(
+            'levels'       => $levels,
+        ));
+    }
+    
+    /**
      * Se encarga de crear un nivel.
      */
     public static function create()
     {
         $app = self::$app;
         $error = array();
-        $levelname = $app->request->post('nombre');
+        $levelName = $app->request->post('nombre');
 
         // Validamos los posibles errores
-        if (empty($levelname)) {
+        if (empty($levelName)) {
             $error[] = 'El nombre de nivel es obligatorio.';
         } else {
             $level = \Model::factory('Nivel')
-                ->where('nombre', $levelname)
+                ->where('nombre', $levelName)
                 ->findOne();
             
             if ($level) {
@@ -114,7 +135,7 @@ class Levels extends Base
         // Si no hay errores lo creamos
         if (count($error) == 0) {
             $level = \Model::factory('Nivel')->create();
-            $level->nombre = $levelname;
+            $level->nombre = $levelName;
             $level->save();
             
             self::jsonResponse(201, array(
@@ -139,8 +160,7 @@ class Levels extends Base
         $level = \Model::factory('Nivel')
             ->where('id', $levelId)
             ->findOne();
-        
-        // Si el nivel no existe enviamos al listado
+
         if (!$level) {
             self::jsonResponse(404, array(
                 'error'       => 'El nivel seleccionado no existe.',
@@ -149,14 +169,14 @@ class Levels extends Base
         }
         
         $error = array();
-        $levelname = $app->request->put('nombre');
+        $levelName = $app->request->put('nombre');
         
         // Validamos los campos
-        if (empty($levelname)) {
+        if (empty($levelName)) {
             $error[] = 'El nombre de nivel es obligatorio.';
         } else {
             $levelTmp = \Model::factory('Nivel')
-                ->where('nombre', $levelname)
+                ->where('nombre', $levelName)
                 ->whereNotEqual('id', $level->id)
                 ->findOne();
             
@@ -167,7 +187,7 @@ class Levels extends Base
         
         // Si no hay errores editamos el nivel
         if (count($error) == 0) {
-            $level->nombre = $levelname;
+            $level->nombre = $levelName;
             $level->save();
 
             self::jsonResponse(200, array(
@@ -192,8 +212,7 @@ class Levels extends Base
         $level = \Model::factory('Nivel')
             ->where('id', $levelId)
             ->findOne();
-        
-        // Si el nivel no existe redirigimos al listado
+
         if (!$level) {
             self::jsonResponse(404, array(
                 'error'       => 'El nivel seleccionado no existe.',

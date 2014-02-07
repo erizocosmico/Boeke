@@ -147,21 +147,29 @@ $app->group('/levels', Middleware::isLoggedIn($app), function () use ($app) {
     // Listado
     $app->get('/list/(:page)', '\\Boeke\\Controllers\\Levels::index')
         ->name('levels_index');
-    
+    // Listado en formato JSON
+    $app->get('/all', '\\Boeke\\Controllers\\Levels::getAll');
     // Creación
-    $app->map('/new', '\\Boeke\\Controllers\\Levels::create')
-        ->via('GET', 'POST')
-        ->name('levels_new');
-    
+    $app->post('/new', '\\Boeke\\Controllers\\Levels::create');
     // Edición
-    $app->map('/edit/:id', '\\Boeke\\Controllers\\Levels::edit')
-        ->via('GET', 'PUT')
-        ->name('levels_edit');
-    
+    $app->put('/edit/:id', '\\Boeke\\Controllers\\Levels::edit');
     // Borrado
-    $app->map('/delete/:id', '\\Boeke\\Controllers\\Levels::delete')
-        ->via('GET', 'DELETE')
-        ->name('levels_delete');
+    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Levels::delete');
+});
+
+// Gestión de asignaturas
+$app->group('/subjects', Middleware::isLoggedIn($app), function () use ($app) {
+    // Listado
+    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Subjects::index')
+        ->name('subjects_index'); 
+    // Listado en formato JSON
+    $app->get('/for_level/:level', '\\Boeke\\Controllers\\Subjects::getAll');   
+    // Creación
+    $app->post('/new', '\\Boeke\\Controllers\\Subjects::create'); 
+    // Edición
+    $app->put('/edit/:id', '\\Boeke\\Controllers\\Subjects::edit');   
+    // Borrado
+    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Subjects::delete');
 });
 
 $app->run();

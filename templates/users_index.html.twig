@@ -30,7 +30,7 @@
                             <td>{{ user.nombre_usuario }}</td>
                             <td>{{ user.nombre_completo }}</td>
                             <td>{% if user.es_admin == 1 %}Sí{% else %}No{% endif %}</td>
-                            <td><a href="{{ urlFor('users_edit', {'id' : user.id}) }}" class="btn btn-default"><span class="fa fa-edit"></span> Editar</a> <a href="{{ urlFor('users_delete', {'id' : user.id}) }}" class="btn btn-danger"><span class="fa fa-times-circle"></span> Borrar</a></td>
+                            <td><a href="{{ urlFor('users_edit', {'id' : user.id}) }}" class="btn btn-sm btn-default"><span class="fa fa-edit"></span> Editar</a> <a href="{{ urlFor('users_delete', {'id' : user.id}) }}" class="btn btn-sm btn-danger"><span class="fa fa-times-circle"></span> Borrar</a></td>
                         </tr>
                         {% endfor %}
                     </tbody>

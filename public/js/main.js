@@ -28,15 +28,17 @@ function getCsrfToken() {
 }
     
 function showLevelEditor(elem) {
-    var panel = document.getElementById('editor-panel'),
-        actions = document.getElementById('editor-actions'),
-        name = document.getElementById('nombre'),
+    var name = document.getElementById('nombre'),
         createButton = document.getElementById('create-level'),
         cancelButton = document.getElementById('cancel-create'),
         editing = elem !== undefined,
         url = 'levels/',
         method = 'POST';
 
+    $('#delete-panel').addClass('hidden');
+    $('#delete-actions').addClass('hidden');
+    $('#editor-panel').removeClass('hidden');
+    $('#editor-actions').removeClass('hidden');
     modalBox.modal('show');
     modalTitle.innerHTML = (editing) ? 'Editar nivel' : 'Nuevo nivel';
     if (editing) {
@@ -49,8 +51,7 @@ function showLevelEditor(elem) {
         url += 'new';
         createButton.innerHTML = 'Nuevo nivel';
     }
-    panel.className = '';
-    actions.className = '';
+
     createButton.onclick = function(e) {
         if (name.value.length < 3) {
             displayModalAlert('El nombre del nivel debe tener al menos 3 caracteres', 'danger');
@@ -81,14 +82,15 @@ function showLevelEditor(elem) {
 
 function deleteLevel(elem) {
     var panel = document.getElementById('delete-panel'),
-        actions = document.getElementById('delete-actions'),
         deleteButton = document.getElementById('delete-level'),
         cancelButton = document.getElementById('cancel-delete');
 
     modalBox.modal('show');
     modalTitle.innerHTML = 'Borrar nivel';
-    panel.className = '';
-    actions.className = '';
+    $('#delete-panel').removeClass('hidden');
+    $('#delete-actions').removeClass('hidden');
+    $('#editor-panel').addClass('hidden');
+    $('#editor-actions').addClass('hidden');
     panel.innerHTML = '¿Deseas borrar el nivel "<b>' + elem.getAttribute('data-name') + '</b>"?';
     deleteButton.onclick = function(e) {
         hideModalAlert();
@@ -119,9 +121,7 @@ function deleteLevel(elem) {
 }
 
 function showSubjectEditor(elem) {
-    var panel = document.getElementById('editor-panel'),
-        actions = document.getElementById('editor-actions'),
-        name = document.getElementById('nombre'),
+    var name = document.getElementById('nombre'),
         level = $('#nivel'),
         createButton = document.getElementById('create-subject'),
         cancelButton = document.getElementById('cancel-create'),
@@ -160,6 +160,10 @@ function showSubjectEditor(elem) {
         }
     });
 
+    $('#delete-panel').addClass('hidden');
+    $('#delete-actions').addClass('hidden');
+    $('#editor-panel').removeClass('hidden');
+    $('#editor-actions').removeClass('hidden');
     modalBox.modal('show');
     modalTitle.innerHTML = (editing) ? 'Editar asignatura' : 'Nueva asignatura';
     if (editing) {
@@ -172,8 +176,6 @@ function showSubjectEditor(elem) {
         url += 'new';
         createButton.innerHTML = 'Nueva asignatura';
     }
-    panel.className = '';
-    actions.className = '';
     createButton.onclick = function(e) {
         if (name.value.length < 3) {
             displayModalAlert('El nombre de la asignatura debe tener al menos 3 caracteres', 'danger');
@@ -204,14 +206,15 @@ function showSubjectEditor(elem) {
 
 function deleteSubject(elem) {
     var panel = document.getElementById('delete-panel'),
-        actions = document.getElementById('delete-actions'),
         deleteButton = document.getElementById('delete-subject'),
         cancelButton = document.getElementById('cancel-delete');
 
+    $('#delete-panel').removeClass('hidden');
+    $('#delete-actions').removeClass('hidden');
+    $('#editor-panel').addClass('hidden');
+    $('#editor-actions').addClass('hidden');
     modalBox.modal('show');
     modalTitle.innerHTML = 'Borrar asignatura';
-    panel.className = '';
-    actions.className = '';
     panel.innerHTML = '¿Deseas borrar la asignatura "<b>' + elem.getAttribute('data-name') + '</b>"?';
     deleteButton.onclick = function(e) {
         hideModalAlert();
@@ -242,9 +245,7 @@ function deleteSubject(elem) {
 }
 
 function showStudentEditor(elem) {
-    var panel = document.getElementById('editor-panel'),
-        actions = document.getElementById('editor-actions'),
-        name = document.getElementById('nombre'),
+    var name = document.getElementById('nombre'),
         nie = document.getElementById('nie'),
         surname = document.getElementById('apellidos'),
         phone = document.getElementById('telefono'),
@@ -254,6 +255,10 @@ function showStudentEditor(elem) {
         url = 'students/',
         method = 'POST';
 
+    $('#delete-panel').addClass('hidden');
+    $('#delete-actions').addClass('hidden');
+    $('#editor-panel').removeClass('hidden');
+    $('#editor-actions').removeClass('hidden');
     modalBox.modal('show');
     modalTitle.innerHTML = (editing) ? 'Editar alumno' : 'Nuevo alumno';
     if (editing) {
@@ -267,11 +272,13 @@ function showStudentEditor(elem) {
         createButton.innerHTML = 'Editar alumno';
     } else {
         name.value = '';
+        surname.value = '';
+        nie.value = '';
+        phone.value = '';
+        nie.disabled = false;
         url += 'new';
         createButton.innerHTML = 'Nuevo alumno';
     }
-    panel.className = '';
-    actions.className = '';
     createButton.onclick = function(e) {
         if (name.value.length < 3) {
             displayModalAlert('El nombre del alumno debe tener al menos 3 caracteres.', 'danger');
@@ -307,14 +314,15 @@ function showStudentEditor(elem) {
 
 function deleteStudent(elem) {
     var panel = document.getElementById('delete-panel'),
-        actions = document.getElementById('delete-actions'),
         deleteButton = document.getElementById('delete-student'),
         cancelButton = document.getElementById('cancel-delete');
-
+        
+    $('#delete-panel').removeClass('hidden');
+    $('#delete-actions').removeClass('hidden');
+    $('#editor-panel').addClass('hidden');
+    $('#editor-actions').addClass('hidden');
     modalBox.modal('show');
     modalTitle.innerHTML = 'Borrar alumno';
-    panel.className = '';
-    actions.className = '';
     panel.innerHTML = '¿Deseas borrar el alumno "<b>' + elem.getAttribute('data-name') + '</b>"?';
     deleteButton.onclick = function(e) {
         hideModalAlert();

@@ -28,7 +28,7 @@
                             <td>{{ subject.id }}</td>
                             <td>{{ subject.nivel }}</td>
                             <td>{{ subject.nombre }}</td>
-                            <td><button data-id="{{ subject.id }}" data-name="{{ subject.nombre }}" data-level-id="{{ subject.nivel_id }}" class="btn btn-default" onclick="showSubjectEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button> <button data-id="{{ subject.id }}" data-name="{{ subject.nombre }}" data-level-id="{{ subject.nivel_id }}" class="btn btn-danger" onclick="deleteSubject(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>
+                            <td><button data-id="{{ subject.id }}" data-name="{{ subject.nombre }}" data-level-id="{{ subject.nivel_id }}" class="btn btn-sm btn-default" onclick="showSubjectEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button> <button data-id="{{ subject.id }}" data-name="{{ subject.nombre }}" data-level-id="{{ subject.nivel_id }}" class="btn btn-sm btn-danger" onclick="deleteSubject(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>
                         </tr>
                         {% endfor %}
                     </tbody>

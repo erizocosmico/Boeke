@@ -28,7 +28,7 @@
                             <td>{{ student.nie }}</td>
                             <td>{{ student.nombre }}{% if student.apellidos %} {{ student.apellidos }}{% endif %}</td>
                             <td>{{ student.telefono }}</td>
-                            <td><button data-id="{{ student.nie }}" data-name="{{ student.nombre }}" data-surname="{{ student.apellidos }}" data-phone="{{ student.telefono }}" class="btn btn-default" onclick="showStudentEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button> <button data-id="{{ student.nie }}" data-name="{{ student.nombre }}" data-surname="{{ student.apellidos }}" data-phone="{{ student.telefono }}" class="btn btn-danger" onclick="deleteStudent(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>
+                            <td><button data-id="{{ student.nie }}" data-name="{{ student.nombre }}" data-surname="{{ student.apellidos }}" data-phone="{{ student.telefono }}" class="btn btn-sm btn-default" onclick="showStudentEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button> <button data-id="{{ student.nie }}" data-name="{{ student.nombre }}" data-surname="{{ student.apellidos }}" data-phone="{{ student.telefono }}" class="btn btn-sm btn-danger" onclick="deleteStudent(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>
                         </tr>
                         {% endfor %}
                     </tbody>

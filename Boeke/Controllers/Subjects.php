@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.5.0
+ * @version     0.5.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -53,10 +53,14 @@ class Subjects extends Base
         $subjects = array();
         
         // Obtenemos los registros
-        $subjectList = \Model::factory('Asignatura')
+        $subjectList = \ORM::forTable('asignatura')
+            ->tableAlias('a')
+            ->select('a.*')
+            ->select('n.nombre', 'nivel')
+            ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
             ->limit(25)
             ->offset(25 * ((int)$page - 1))
-            ->orderByAsc('id')
+            ->orderByAsc('a.id')
             ->findMany();
         
         foreach ($subjectList as $row) {
@@ -64,7 +68,7 @@ class Subjects extends Base
                 'id'            => $row->id,
                 'nombre'        => $row->nombre,
                 'nivel_id'      => $row->nivel_id,
-                'nivel'         => $row->nivel()->findOne()->nombre,
+                'nivel'         => $row->nivel,
             );
         }
         
@@ -95,16 +99,44 @@ class Subjects extends Base
     }
     
     /**
-     * Devuelve en formato JSON todas las asignaturas para un nivel.
+     * Devuelve en formato JSON todas las asignaturas.
      */
-    public static function getAll($level)
+    public static function getAll()
+    {
+        $app = self::$app;
+        $subjectList = \ORM::forTable('asignatura')
+            ->tableAlias('a')
+            ->select('a.id, a.nombre')
+            ->select('n.nombre', 'nivel')
+            ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
+            ->findMany();
+        
+        $subjects = array();
+        foreach ($subjectList as $row) {
+            $subjects[] = array(
+                'id'            => $row->id,
+                'nombre'        => $row->nombre . ' (' . $row->nivel . ')',
+            );
+        }
+        
+        self::jsonResponse(200, array(
+            'subjects'       => $subjects,
+        ));
+    }
+    
+    /**
+     * Devuelve en formato JSON todas las asignaturas para un nivel.
+     * 
+     * @param int $level Nivel para el cual se devuelven las asignaturas.
+     */
+    public static function forLevel($level)
     {
         $app = self::$app;
         $subjects = array_map(
-            function ($subjects) {
+            function ($subject) {
                 return array(
-                    'id'    => $level['id'],
-                    'name'  => $level['nombre'],
+                    'id'    => $subject['id'],
+                    'name'  => $subject['nombre'],
                 );
             },
             \Model::factory('Asignatura')
@@ -113,7 +145,7 @@ class Subjects extends Base
         );
         
         self::jsonResponse(200, array(
-            'subjects'       => $levels,
+            'subjects'       => $subjects,
         ));
     }
     

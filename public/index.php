@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.5.0
+ * @version     0.5.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -163,7 +163,8 @@ $app->group('/subjects', Middleware::isLoggedIn($app), function () use ($app) {
     $app->get('/list/(:page)', '\\Boeke\\Controllers\\Subjects::index')
         ->name('subjects_index'); 
     // Listado en formato JSON
-    $app->get('/for_level/:level', '\\Boeke\\Controllers\\Subjects::getAll');   
+    $app->get('/for_level/:level', '\\Boeke\\Controllers\\Subjects::forLevel');
+    $app->get('/all', '\\Boeke\\Controllers\\Subjects::getAll');   
     // Creación
     $app->post('/new', '\\Boeke\\Controllers\\Subjects::create'); 
     // Edición

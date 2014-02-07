@@ -11,7 +11,7 @@
   "private": true,
   "dependencies": {
     "jquery": "1.10.*",
-    "select2": "latest",
+    "selectize": "latest",
     "bootstrap": "latest",
     "modernizr": "latest",
     "font-awesome": "latest" 

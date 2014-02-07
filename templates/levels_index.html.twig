@@ -53,12 +53,11 @@
 <div class="hidden" id="editor-panel">
     <form role="form" class="form-horizontal" onsubmit="return false;">
         <div class="form-group">
-            <label for="nombre_usuario" class="col-sm-3 control-label">Nombre del nivel</label>
+            <label for="nombre" class="col-sm-3 control-label">Nombre del nivel</label>
             <div class="col-sm-9">
                 <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del nivel...">
             </div>
         </div>
-        <input type="hidden" name="{{ csrf_key }}" value="{{ csrf_token }}">
     </form>
 </div>
 <div class="hidden" id="delete-panel">

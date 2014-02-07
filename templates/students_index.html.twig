@@ -1,0 +1,94 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Gestión de alumnos{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Gestión de alumnos</h3>
+            </div>
+            <div class="panel-body">
+                <button class="btn btn-primary pull-right" onclick="showStudentEditor();"><span class="fa  fa-plus"></span> Crear alumno</button>
+                <h2>Listado de alumnos</h2>
+                {% if students %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>NIE</th>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.nie }}</td>
+                            <td>{{ student.nombre }}{% if student.apellidos %} {{ student.apellidos }}{% endif %}</td>
+                            <td>{{ student.telefono }}</td>
+                            <td><button data-id="{{ student.nie }}" data-name="{{ student.nombre }}" data-surname="{{ student.apellidos }}" data-phone="{{ student.telefono }}" class="btn btn-default" onclick="showStudentEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button> <button data-id="{{ student.nie }}" data-name="{{ student.nombre }}" data-surname="{{ student.apellidos }}" data-phone="{{ student.telefono }}" class="btn btn-danger" onclick="deleteStudent(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                {% if pagination != '' %}
+                <div class="centered">
+                    <ul class="pagination">
+                        {{ pagination|raw }}
+                    </ul>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="alert alert-warning">
+                    No hay ningún alumno.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modal_body %}
+<div class="hidden" id="editor-panel">
+    <form role="form" class="form-horizontal" onsubmit="return false;">
+        <div class="form-group">
+            <label for="nie" class="col-sm-3 control-label">NIE del alumno</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="nie" name="nie" placeholder="NIE del alumno...">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="nombre" class="col-sm-3 control-label">Nombre del alumno</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del alumno...">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="apellidos" class="col-sm-3 control-label">Apellidos del alumno</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="apellidos" name="apellidos" placeholder="Apellidos del alumno...">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="telefono" class="col-sm-3 control-label">Teléfono</label>
+            <div class="col-sm-9">
+                <input type="text" maxlength="9" class="form-control" id="telefono" name="telefono" placeholder="Telefono del alumno...">
+            </div>
+        </div>
+    </form>
+</div>
+<div class="hidden" id="delete-panel">
+</div>
+{% endblock %}
+
+{% block modal_footer %}
+<div class="hidden" id="editor-actions">
+    <button id="create-student" class="btn btn-primary">Crear alumno</button> <button id="cancel-create" class="btn btn-default">Cancelar</button>
+</div>
+<div class="hidden" id="delete-actions">
+    <button id="delete-student" class="btn btn-danger">Borrar alumno</button> <button id="cancel-delete" class="btn btn-default">Cancelar</button>
+</div>
+{% endblock %}

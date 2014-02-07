@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.4.0
+ * @version     0.5.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -170,6 +170,21 @@ $app->group('/subjects', Middleware::isLoggedIn($app), function () use ($app) {
     $app->put('/edit/:id', '\\Boeke\\Controllers\\Subjects::edit');   
     // Borrado
     $app->delete('/delete/:id', '\\Boeke\\Controllers\\Subjects::delete');
+});
+
+// Gestión de alumnos
+$app->group('/students', Middleware::isLoggedIn($app), function () use ($app) {
+    // Listado
+    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Students::index')
+        ->name('students_index');
+    // Listado en formato JSON
+    $app->get('/all', '\\Boeke\\Controllers\\Students::getAll');
+    // Creación
+    $app->post('/new', '\\Boeke\\Controllers\\Students::create');
+    // Edición
+    $app->put('/edit/:id', '\\Boeke\\Controllers\\Students::edit');
+    // Borrado
+    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Students::delete');
 });
 
 $app->run();

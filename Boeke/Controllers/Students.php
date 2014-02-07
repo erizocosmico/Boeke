@@ -33,113 +33,131 @@
 namespace Boeke\Controllers;
 
 /**
- * Levels
+ * Students
  *
- * Controlador para la gestión de niveles.
+ * Controlador para la gestión de alumnos.
  *
  * @package Boeke
  * @author José Miguel Molina
  */
-class Levels extends Base
+class Students extends Base
 {  
     /**
-     * Muestra el listado de niveles paginado.
+     * Muestra el listado de alumnos paginado.
      *
      * @param int $page La página actual, la 1 por defecto
      */
     public static function index($page = 1)
     {
         $app = self::$app;
-        $levels = array();
+        $students = array();
         
         // Obtenemos los registros
-        $levelList = \Model::factory('Nivel')
+        $studentList = \Model::factory('Alumno')
             ->limit(25)
             ->offset(25 * ((int)$page - 1))
-            ->orderByAsc('id')
+            ->orderByAsc('nombre')
             ->findArray();
         
-        foreach ($levelList as $row) {
-            $levels[] = $row;
+        foreach ($studentList as $row) {
+            $students[] = $row;
         }
         
-        // Generamos la paginación para el conjunto de niveles
+        // Generamos la paginación para el conjunto de alumnos
         $pagination = self::generatePagination(
-            \Model::factory('Nivel'),
+            \Model::factory('Alumno'),
             25,
             $page,
             function ($i) use ($app) {
-                return $app->urlFor('levels_index', array('page' => $i));
+                return $app->urlFor('students_index', array('page' => $i));
             }
         );
         
-        $app->render('levels_index.html.twig', array(
-            'sidebar_levels_active'                  => true,
-            'sidebar_levels_list_active'             => true,
+        $app->render('students_index.html.twig', array(
+            'sidebar_students_active'                  => true,
+            'sidebar_students_list_active'             => true,
             'page'                                  => $page,
-            'levels'                                 => $levels,
+            'students'                                 => $students,
             'pagination'                            => $pagination,
             'breadcrumbs'   => array(
                 array(
                     'active'        => true,
-                    'text'          => 'Listado de niveles',
-                    'route'         => self::$app->urlFor('levels_index'),
+                    'text'          => 'Listado de alumnos',
+                    'route'         => self::$app->urlFor('students_index'),
                 ),
             ),
         ));
     }
     
     /**
-     * Devuelve en formato JSON todos los niveles existentes.
+     * Devuelve en formato JSON todos los alumnos existentes.
      */
     public static function getAll()
     {
         $app = self::$app;
-        $levels = array_map(
-            function ($level) {
+        $students = array_map(
+            function ($student) {
                 return array(
-                    'id'    => $level['id'],
-                    'name'  => $level['nombre'],
+                    'nie'       => $student['nie'],
+                    'name'      => $student['nombre'],
+                    'surname'   => $student['apellidos'],
+                    'phone'     => $student['telefono']
                 );
             },
-            \Model::factory('Nivel')->findArray()
+            \Model::factory('Alumno')->findArray()
         );
         
         self::jsonResponse(200, array(
-            'levels'       => $levels,
+            'students'       => $students,
         ));
     }
     
     /**
-     * Se encarga de crear un nivel.
+     * Se encarga de crear un alumno.
      */
     public static function create()
     {
         $app = self::$app;
         $error = array();
-        $levelName = $app->request->post('nombre');
+        $nie = (int)$app->request->post('nie');
+        $studentName = $app->request->post('nombre');
+        $surnames = $app->request->post('apellidos');
+        $phone = $app->request->post('telefono');
 
         // Validamos los posibles errores
-        if (empty($levelName)) {
-            $error[] = 'El nombre de nivel es obligatorio.';
+        if (empty($studentName)) {
+            $error[] = 'El nombre de alumno es obligatorio.';
+        }
+        
+        if (!empty($phone)) {
+            if (!preg_match('/[0-9]{9}/i', $phone)) {
+                $error[] = 'El teléfono no es válido.';
+            }
+        }
+        
+        if ($nie <= 0) {
+            $error[] = 'El NIE introducido no es válido.';
         } else {
-            $level = \Model::factory('Nivel')
-                ->where('nombre', $levelName)
+            $student = \Model::factory('Alumno')
+                ->where('nie', $nie)
                 ->findOne();
             
-            if ($level) {
-                $error[] = 'El nombre de nivel ya está en uso.';
+            if ($student) {
+                $error[] = 'El NIE de alumno ya está en uso.';
             }
         }
         
         // Si no hay errores lo creamos
         if (count($error) == 0) {
-            $level = \Model::factory('Nivel')->create();
-            $level->nombre = $levelName;
-            $level->save();
+            $student = \Model::factory('Alumno')->create();
+            $student->nie = $nie;
+            $student->nombre = $studentName;
+            $student->apellidos = $surnames;
+            $student->telefono = $phone;
+            $student->save();
             
             self::jsonResponse(201, array(
-                'message'       => 'Nivel creado correctamente.',
+                'message'       => 'Alumno creado correctamente.',
             ));
         } else {
             self::jsonResponse(400, array(
@@ -149,49 +167,50 @@ class Levels extends Base
     }
     
     /**
-     * Se encarga de editar un nivel.
+     * Se encarga de editar un alumno.
      *
-     * @param int $levelId La id del nivel a editar
+     * @param int $studentId La id del alumno a editar
      */
-    public static function edit($levelId)
+    public static function edit($nie)
     {
         $app = self::$app;
         
-        $level = \Model::factory('Nivel')
-            ->where('id', $levelId)
+        $student = \Model::factory('Alumno')
+            ->where('nie', $nie)
             ->findOne();
 
-        if (!$level) {
+        if (!$student) {
             self::jsonResponse(404, array(
-                'error'       => 'El nivel seleccionado no existe.',
+                'error'       => 'El alumno seleccionado no existe.',
             ));
             return;
         }
         
         $error = array();
-        $levelName = $app->request->put('nombre');
+        $studentName = $app->request->post('nombre');
+        $surnames = $app->request->post('apellidos', '');
+        $phone = $app->request->post('telefono', '');
+
+        // Validamos los posibles errores
+        if (empty($studentName)) {
+            $error[] = 'El nombre de alumno es obligatorio.';
+        }
         
-        // Validamos los campos
-        if (empty($levelName)) {
-            $error[] = 'El nombre de nivel es obligatorio.';
-        } else {
-            $levelTmp = \Model::factory('Nivel')
-                ->where('nombre', $levelName)
-                ->whereNotEqual('id', $level->id)
-                ->findOne();
-            
-            if ($levelTmp) {
-                $error[] = 'El nombre de nivel ya está en uso.';
+        if (!empty($phone)) {
+            if (!preg_match('/[0-9]{9}/i', $phone)) {
+                $error[] = 'El teléfono no es válido.';
             }
         }
         
-        // Si no hay errores editamos el nivel
+        // Si no hay errores editamos el alumno
         if (count($error) == 0) {
-            $level->nombre = $levelName;
-            $level->save();
+            $student->nombre = $studentName;
+            $student->apellidos = $surnames;
+            $student->telefono = $phone;
+            $student->save();
 
             self::jsonResponse(200, array(
-                'message'     => 'Nivel editado correctamente.',
+                'message'     => 'Alumno editado correctamente.',
             ));
         } else {
             self::jsonResponse(400, array(
@@ -201,29 +220,29 @@ class Levels extends Base
     }
     
     /**
-     * Borra el nivel seleccionado.
+     * Borra el alumno seleccionado.
      *
-     * @param int $levelId La id del nivel a borrar
+     * @param int $studentId La id del alumno a borrar
      */
-    public static function delete($levelId)
+    public static function delete($nie)
     {
         $app = self::$app;
         
-        $level = \Model::factory('Nivel')
-            ->where('id', $levelId)
+        $student = \Model::factory('Alumno')
+            ->where('nie', $nie)
             ->findOne();
 
-        if (!$level) {
+        if (!$student) {
             self::jsonResponse(404, array(
-                'error'       => 'El nivel seleccionado no existe.',
+                'error'       => 'El alumno seleccionado no existe.',
             ));
             return;
         }
         
         if ($app->request->delete('confirm') === 'yes') {
-            // Borramos el nivel
-            \Model::factory('Nivel')
-                ->where('id', $levelId)
+            // Borramos el alumno
+            \Model::factory('Alumno')
+                ->where('nie', $nie)
                 ->findOne()
                 ->delete();
         } else {
@@ -235,7 +254,7 @@ class Levels extends Base
         
         self::jsonResponse(200, array(
             'deleted'     => true,
-            'message'     => 'Nivel borrado correctamente.',
+            'message'     => 'Alumno borrado correctamente.',
         ));
     }
 }

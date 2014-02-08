@@ -12,7 +12,7 @@
                 {% endif %}
             </li>
             <li><a href="{{ urlFor('students_index') }}" {% if sidebar_students_active %}class="active"{% endif %}>Gestionar alumnos</a></li>
-            <li><a href="">Gestionar libros</a></li>
+            <li><a href="{{ urlFor('books_index') }}" {% if sidebar_books_active %}class="active"{% endif %}>Gestionar libros</a></li>
             <li><a href="">Gestionar ejemplares</a></li>
             <li><a href="{{ urlFor('levels_index') }}" {% if sidebar_levels_active %}class="active"{% endif %}>Gestionar niveles</a></li>
             <li><a href="{{ urlFor('subjects_index') }}" {% if sidebar_subjects_active %}class="active"{% endif %}>Gestionar asignaturas</a></li>

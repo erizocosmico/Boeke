@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.5.2
+ * @version     0.6.3
  * @package     Boeke
  *
  * MIT LICENSE
@@ -106,7 +106,7 @@ class Subjects extends Base
         $app = self::$app;
         $subjectList = \ORM::forTable('asignatura')
             ->tableAlias('a')
-            ->select('a.id, a.nombre')
+            ->select('a.*')
             ->select('n.nombre', 'nivel')
             ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
             ->findMany();
@@ -115,7 +115,7 @@ class Subjects extends Base
         foreach ($subjectList as $row) {
             $subjects[] = array(
                 'id'            => $row->id,
-                'nombre'        => $row->nombre . ' (' . $row->nivel . ')',
+                'name'          => $row->nombre . ' (' . $row->nivel . ')',
             );
         }
         

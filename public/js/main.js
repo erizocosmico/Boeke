@@ -26,13 +26,51 @@ function getCsrfToken() {
     var csrf = document.getElementById('modal-csrf-token');
     return csrf.getAttribute('data-key') + '=' + csrf.value;
 }
-    
-function showLevelEditor(elem) {
-    var name = document.getElementById('nombre'),
-        createButton = document.getElementById('create-level'),
+
+function isValidISBN(isbn) {
+    if (/^[0-9-]{12,}[0-9]$/.test(isbn)) {
+        var controlDigit = Number(isbn.charAt(isbn.length - 1)),
+            isbn = isbn.replace(/[^\d]/g, '').substring(0, 12),
+            check = 0;
+
+        if (isbn.length < 12) {
+            return false;
+        }
+
+        check = 0;
+        for (var i = 0; i < 13; i += 2) {
+            check += Number(isbn.charAt(i));
+        }
+
+        for (var i = 1; i < 12; i += 2) {
+            check += 3 * Number(isbn.charAt(i));
+        }
+
+        return (check + controlDigit) % 10 === 0;
+    } else if (/^[0-9-]{9,}[0-9xX]$/.test(isbn)) {
+        var controlDigit = isbn.charAt(isbn.length - 1).toLowerCase(),
+            isbn = isbn.replace(/[^\d]/g, '').substring(0, 9),
+            sum = 0;
+
+        if (isbn.length < 9) {
+            return false;
+        }
+
+        for (var i = 0; i < 9; i++) {
+            sum += Number(isbn.charAt(i)) * (i + 1);
+        }
+        
+        var check = sum % 11;
+        return (check === 10 && controlDigit === 'x')
+            || (check < 10 && check === Number(controlDigit));
+    } else {
+        return false;
+    }
+}
+
+function showGenericEditor(options) {
+    var createButton = document.getElementById('create-button'),
         cancelButton = document.getElementById('cancel-create'),
-        editing = elem !== undefined,
-        url = 'levels/',
         method = 'POST';
 
     $('#delete-panel').addClass('hidden');
@@ -40,27 +78,22 @@ function showLevelEditor(elem) {
     $('#editor-panel').removeClass('hidden');
     $('#editor-actions').removeClass('hidden');
     modalBox.modal('show');
-    modalTitle.innerHTML = (editing) ? 'Editar nivel' : 'Nuevo nivel';
-    if (editing) {
-        name.value = elem.getAttribute('data-name');
-        url += 'edit/' + elem.getAttribute('data-id');
+    modalTitle.innerHTML = (options.editing) ? options.editTitle : options.createTitle;
+
+    if (options.editing) {
         method = 'PUT';
-        createButton.innerHTML = 'Editar nivel';
+        createButton.innerHTML = options.editTitle;
     } else {
-        name.value = '';
-        url += 'new';
-        createButton.innerHTML = 'Nuevo nivel';
+        createButton.innerHTML = options.createButton;
     }
 
     createButton.onclick = function(e) {
-        if (name.value.length < 3) {
-            displayModalAlert('El nombre del nivel debe tener al menos 3 caracteres', 'danger');
-        } else {
+        if (options.callbackValidator()) {
             hideModalAlert();
             
             $.ajax({
-                url: baseUrl + url,
-                data: "nombre=" + name.value + '&' + getCsrfToken(),
+                url: baseUrl + options.url,
+                data: options.data() + '&' + getCsrfToken(),
                 type: method
             }).done(function(data) {
                 displayModalAlert(data.message, 'success');
@@ -69,6 +102,7 @@ function showLevelEditor(elem) {
                     refresh();
                 }, 1000);
             }).error(function(data) {
+                console.log(data.responseText);
                 if (data.readyState === 4) {
                     displayModalAlert(JSON.parse(data.responseText).error, 'danger');
                 }
@@ -80,22 +114,22 @@ function showLevelEditor(elem) {
     };
 }
 
-function deleteLevel(elem) {
+function genericDelete(options) {
     var panel = document.getElementById('delete-panel'),
-        deleteButton = document.getElementById('delete-level'),
+        deleteButton = document.getElementById('delete-button'),
         cancelButton = document.getElementById('cancel-delete');
-
-    modalBox.modal('show');
-    modalTitle.innerHTML = 'Borrar nivel';
+        
     $('#delete-panel').removeClass('hidden');
     $('#delete-actions').removeClass('hidden');
     $('#editor-panel').addClass('hidden');
     $('#editor-actions').addClass('hidden');
-    panel.innerHTML = '¿Deseas borrar el nivel "<b>' + elem.getAttribute('data-name') + '</b>"?';
+    modalBox.modal('show');
+    modalTitle.innerHTML = options.title;
+    panel.innerHTML = options.content;
     deleteButton.onclick = function(e) {
         hideModalAlert();
         $.ajax({
-            url: baseUrl + 'levels/delete/' + elem.getAttribute('data-id'),
+            url: baseUrl + options.url,
             data: getCsrfToken() + '&confirm=yes',
             type: 'DELETE'
         }).done(function(data) {
@@ -109,6 +143,7 @@ function deleteLevel(elem) {
                 modalBox.modal('hide');
             }
         }).error(function(data) {
+            console.log(data.responseText);
             if (data.readyState === 4) {
                 panel.className = 'hidden';
                 displayModalAlert(JSON.parse(data.responseText).error, 'danger');
@@ -119,18 +154,58 @@ function deleteLevel(elem) {
         modalBox.modal('hide');
     };
 }
+    
+function showLevelEditor(elem) {
+    var name = document.getElementById('nombre'),
+        editing = elem !== undefined,
+        url = 'levels/';
+
+    if (editing) {
+        name.value = elem.getAttribute('data-name');
+        url += 'edit/' + elem.getAttribute('data-id');
+    } else {
+        name.value = '';
+        url += 'new';
+    }
+    
+    showGenericEditor({
+        data: function() {
+            return "nombre=" + name.value;
+        },
+        editing: editing,
+        editTitle: 'Editar nivel',
+        createTitle: 'Nuevo nivel',
+        createButton: 'Crear nivel',
+        url: url,
+        callbackValidator: function() {
+            if (name.value.length < 3) {
+                displayModalAlert('El nombre del nivel debe tener al menos 3 caracteres', 'danger');
+            } else {
+                return true;
+            }
+            
+            return false;
+        }  
+    });
+}
+
+function deleteLevel(elem) {
+    genericDelete({
+        title: 'Borrar nivel',
+        content: '¿Deseas borrar el nivel "<b>' + elem.getAttribute('data-name') + '</b>"?',
+        url: 'levels/delete/' + elem.getAttribute('data-id')
+    });
+}
 
 function showSubjectEditor(elem) {
     var name = document.getElementById('nombre'),
         level = $('#nivel'),
-        createButton = document.getElementById('create-subject'),
-        cancelButton = document.getElementById('cancel-create'),
         editing = elem !== undefined,
-        url = 'subjects/',
-        method = 'POST';
+        url = 'subjects/';
         
     $level = level.selectize({
         valueField: 'id',
+        placeholder: 'Seleccione un nivel',
         labelField: 'name',
         searchField: 'name',
         preload: true,
@@ -142,6 +217,10 @@ function showSubjectEditor(elem) {
             }
         },
         load: function(query, callback) {
+            if (query != '') {
+                return;
+            }
+
             $.ajax({
                 url: baseUrl + 'levels/all',
                 type: 'GET',
@@ -160,88 +239,44 @@ function showSubjectEditor(elem) {
         }
     });
 
-    $('#delete-panel').addClass('hidden');
-    $('#delete-actions').addClass('hidden');
-    $('#editor-panel').removeClass('hidden');
-    $('#editor-actions').removeClass('hidden');
-    modalBox.modal('show');
-    modalTitle.innerHTML = (editing) ? 'Editar asignatura' : 'Nueva asignatura';
     if (editing) {
         name.value = elem.getAttribute('data-name');
         url += 'edit/' + elem.getAttribute('data-id');
         method = 'PUT';
-        createButton.innerHTML = 'Editar asignatura';
     } else {
         name.value = '';
         url += 'new';
-        createButton.innerHTML = 'Nueva asignatura';
     }
-    createButton.onclick = function(e) {
-        if (name.value.length < 3) {
-            displayModalAlert('El nombre de la asignatura debe tener al menos 3 caracteres', 'danger');
-        } else {
-            hideModalAlert();
+    
+    showGenericEditor({
+        data: function() {
+            return "nombre=" + name.value + '&nivel=' + level.val();
+        },
+        editing: editing,
+        editTitle: 'Editar asignatura',
+        createTitle: 'Nueva asignatura',
+        createButton: 'Crear asignatura',
+        url: url,
+        callbackValidator: function() {
+            if (name.value.length < 3) {
+                displayModalAlert('El nombre de la asignatura debe tener al menos 3 caracteres', 'danger');
+            } else if (level.val() == '') {
+                displayModalAlert('Debes seleccionar un nivel.', 'danger');
+            } else {
+                return true;
+            }
             
-            $.ajax({
-                url: baseUrl + url,
-                data: "nombre=" + name.value + '&nivel=' + level.val() +  '&' + getCsrfToken(),
-                type: method
-            }).done(function(data) {
-                displayModalAlert(data.message, 'success');
-                name.value = '';
-                setTimeout(function() {
-                    refresh();
-                }, 1000);
-            }).error(function(data) {
-                if (data.readyState === 4) {
-                    displayModalAlert(JSON.parse(data.responseText).error, 'danger');
-                }
-            });
-        }
-    };
-    cancelButton.onclick = function(e) {
-        modalBox.modal('hide');
-    };
+            return false;
+        }  
+    });
 }
 
 function deleteSubject(elem) {
-    var panel = document.getElementById('delete-panel'),
-        deleteButton = document.getElementById('delete-subject'),
-        cancelButton = document.getElementById('cancel-delete');
-
-    $('#delete-panel').removeClass('hidden');
-    $('#delete-actions').removeClass('hidden');
-    $('#editor-panel').addClass('hidden');
-    $('#editor-actions').addClass('hidden');
-    modalBox.modal('show');
-    modalTitle.innerHTML = 'Borrar asignatura';
-    panel.innerHTML = '¿Deseas borrar la asignatura "<b>' + elem.getAttribute('data-name') + '</b>"?';
-    deleteButton.onclick = function(e) {
-        hideModalAlert();
-        $.ajax({
-            url: baseUrl + 'subjects/delete/' + elem.getAttribute('data-id'),
-            data: getCsrfToken() + '&confirm=yes',
-            type: 'DELETE'
-        }).done(function(data) {
-            if (data.deleted) {
-                panel.className = 'hidden';
-                displayModalAlert(data.message, 'success');
-                setTimeout(function() {
-                    refresh();
-                }, 1000);
-            } else {
-                modalBox.modal('hide');
-            }
-        }).error(function(data) {
-            if (data.readyState === 4) {
-                panel.className = 'hidden';
-                displayModalAlert(JSON.parse(data.responseText).error, 'danger');
-            }
-        });
-    };
-    cancelButton.onclick = function(e) {
-        modalBox.modal('hide');
-    };
+    genericDelete({
+        title: 'Borrar asignatura',
+        content: '¿Deseas borrar la asignatura "<b>' + elem.getAttribute('data-name') + '</b>"?',
+        url: 'subjects/delete/' + elem.getAttribute('data-id')
+    });
 }
 
 function showStudentEditor(elem) {
@@ -249,18 +284,9 @@ function showStudentEditor(elem) {
         nie = document.getElementById('nie'),
         surname = document.getElementById('apellidos'),
         phone = document.getElementById('telefono'),
-        createButton = document.getElementById('create-student'),
-        cancelButton = document.getElementById('cancel-create'),
         editing = elem !== undefined,
-        url = 'students/',
-        method = 'POST';
+        url = 'students/';
 
-    $('#delete-panel').addClass('hidden');
-    $('#delete-actions').addClass('hidden');
-    $('#editor-panel').removeClass('hidden');
-    $('#editor-actions').removeClass('hidden');
-    modalBox.modal('show');
-    modalTitle.innerHTML = (editing) ? 'Editar alumno' : 'Nuevo alumno';
     if (editing) {
         name.value = elem.getAttribute('data-name');
         nie.value = elem.getAttribute('data-id');
@@ -268,8 +294,6 @@ function showStudentEditor(elem) {
         surname.value = elem.getAttribute('data-surname');
         phone.value = elem.getAttribute('data-phone');
         url += 'edit/' + elem.getAttribute('data-id');
-        method = 'PUT';
-        createButton.innerHTML = 'Editar alumno';
     } else {
         name.value = '';
         surname.value = '';
@@ -277,77 +301,135 @@ function showStudentEditor(elem) {
         phone.value = '';
         nie.disabled = false;
         url += 'new';
-        createButton.innerHTML = 'Nuevo alumno';
     }
-    createButton.onclick = function(e) {
-        if (name.value.length < 3) {
-            displayModalAlert('El nombre del alumno debe tener al menos 3 caracteres.', 'danger');
-        } else if (nie.value.length < 1) {
-            displayModalAlert('Debes rellenar el NIE.', 'danger');
-        } else if (phone.value.length > 0 && !/[0-9]{9}/gi.test(phone.value)) {
-            displayModalAlert('El teléfono no es válido.', 'danger');
-        } else {
-            hideModalAlert();
+    
+    showGenericEditor({
+        data: function() {
+            return "nombre=" + name.value + '&apellidos=' + surname.value + '&telefono='
+            + phone.value + '&nie=' + nie.value;
+        },
+        editing: editing,
+        editTitle: 'Editar alumno',
+        createTitle: 'Nuevo alumno',
+        createButton: 'Crear alumno',
+        url: url,
+        callbackValidator: function() {
+            if (name.value.length < 3) {
+                displayModalAlert('El nombre del alumno debe tener al menos 3 caracteres.', 'danger');
+            } else if (nie.value.length < 1) {
+                displayModalAlert('Debes rellenar el NIE.', 'danger');
+            } else if (phone.value.length > 0 && !/^[0-9]{9}$/.test(phone.value)) {
+                displayModalAlert('El teléfono no es válido.', 'danger');
+            } else {
+                return true;
+            }
             
-            $.ajax({
-                url: baseUrl + url,
-                data: "nombre=" + name.value + '&apellidos=' + surname.value + '&telefono='
-                    + phone.value + '&nie=' + nie.value + '&' + getCsrfToken(),
-                type: method
-            }).done(function(data) {
-                displayModalAlert(data.message, 'success');
-                name.value = '';
-                setTimeout(function() {
-                    refresh();
-                }, 1000);
-            }).error(function(data) {
-                if (data.readyState === 4) {
-                    displayModalAlert(JSON.parse(data.responseText).error, 'danger');
-                }
-            });
-        }
-    };
-    cancelButton.onclick = function(e) {
-        modalBox.modal('hide');
-    };
+            return false;
+        }  
+    });
 }
 
 function deleteStudent(elem) {
-    var panel = document.getElementById('delete-panel'),
-        deleteButton = document.getElementById('delete-student'),
-        cancelButton = document.getElementById('cancel-delete');
+    genericDelete({
+        title: 'Borrar alumno',
+        content: '¿Deseas borrar el alumno "<b>' + elem.getAttribute('data-name') + '</b>"?',
+        url: 'students/delete/' + elem.getAttribute('data-id')
+    });
+}
+
+function showBookEditor(elem) {
+    var title = document.getElementById('titulo'),
+        nie = document.getElementById('isbn'),
+        author = document.getElementById('autor'),
+        year = document.getElementById('anio'),
+        subject = $('#asignatura')
+        editing = elem !== undefined,
+        url = 'books/';
         
-    $('#delete-panel').removeClass('hidden');
-    $('#delete-actions').removeClass('hidden');
-    $('#editor-panel').addClass('hidden');
-    $('#editor-actions').addClass('hidden');
-    modalBox.modal('show');
-    modalTitle.innerHTML = 'Borrar alumno';
-    panel.innerHTML = '¿Deseas borrar el alumno "<b>' + elem.getAttribute('data-name') + '</b>"?';
-    deleteButton.onclick = function(e) {
-        hideModalAlert();
-        $.ajax({
-            url: baseUrl + 'students/delete/' + elem.getAttribute('data-id'),
-            data: getCsrfToken() + '&confirm=yes',
-            type: 'DELETE'
-        }).done(function(data) {
-            if (data.deleted) {
-                panel.className = 'hidden';
-                displayModalAlert(data.message, 'success');
-                setTimeout(function() {
-                    refresh();
-                }, 1000);
+    $subject = subject.selectize({
+        valueField: 'id',
+        placeholder: 'Seleccione una asignatura',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: {
+            option: function(item, escape) {
+                return '<div>' + escape(item.name) + '</div>';
+            }
+        },
+        load: function(query, callback) {
+            if (query != '') {
+                return;
+            }
+
+            $.ajax({
+                url: baseUrl + 'subjects/all',
+                type: 'GET',
+                error: function(res) {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.subjects);
+                
+                    if (editing) {
+                        var sel = $subject[0].selectize;
+                        sel.setValue(elem.getAttribute('data-subject'));
+                    }
+                }
+            });
+        }
+    });
+
+    if (editing) {
+        title.value = elem.getAttribute('data-title');
+        isbn.value = elem.getAttribute('data-isbn');
+        author.value = elem.getAttribute('data-author');
+        year.value = elem.getAttribute('data-year');
+        url += 'edit/' + elem.getAttribute('data-id');
+    } else {
+        title.value = '';
+        isbn.value = '';
+        year.value = '';
+        author.value = '';
+        url += 'new';
+    }
+    
+    showGenericEditor({
+        data: function() {
+            return "titulo=" + title.value + '&isbn=' + isbn.value + '&autor='
+            + author.value + '&anio=' + year.value + '&asignatura_id=' + subject.val();
+        },
+        editing: editing,
+        editTitle: 'Editar libro',
+        createTitle: 'Nuevo libro',
+        createButton: 'Crear libro',
+        url: url,
+        callbackValidator: function() {
+            if (title.value.length < 1) {
+                displayModalAlert('Debes rellenar el título de libro.', 'danger');
+            } else if (isbn.value.length < 1) {
+                displayModalAlert('Debes rellenar el ISBN.', 'danger');
+            } else if (!isValidISBN(isbn.value)) {
+                displayModalAlert('El ISBN no es válido.', 'danger');
+            } else if (year.value > Number(new Date().getFullYear()) || year.value <= 0) {
+                displayModalAlert('Fecha de publicación no válida.', 'danger');
+            } else if (subject.val() == '') {
+                displayModalAlert('Debes seleccionar una asignatura.', 'danger');
             } else {
-                modalBox.modal('hide');
+                return true;
             }
-        }).error(function(data) {
-            if (data.readyState === 4) {
-                panel.className = 'hidden';
-                displayModalAlert(JSON.parse(data.responseText).error, 'danger');
-            }
-        });
-    };
-    cancelButton.onclick = function(e) {
-        modalBox.modal('hide');
-    };
+            
+            return false;
+        }  
+    });
+}
+
+function deleteBook(elem) {
+    genericDelete({
+        title: 'Borrar libro',
+        content: '¿Deseas borrar el libro "<b>' + elem.getAttribute('data-title') + '</b>"?',
+        url: 'books/delete/' + elem.getAttribute('data-id')
+    });
 }

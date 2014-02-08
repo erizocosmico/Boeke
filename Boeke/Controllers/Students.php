@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.5.2
+ * @version     0.6.3
  * @package     Boeke
  *
  * MIT LICENSE
@@ -130,7 +130,7 @@ class Students extends Base
         }
         
         if (!empty($phone)) {
-            if (!preg_match('/[0-9]{9}/i', $phone)) {
+            if (!preg_match('/^[0-9]{9}$/', $phone)) {
                 $error[] = 'El teléfono no es válido.';
             }
         }
@@ -197,7 +197,7 @@ class Students extends Base
         }
         
         if (!empty($phone)) {
-            if (!preg_match('/[0-9]{9}/i', $phone)) {
+            if (!preg_match('/^[0-9]{9}$/', $phone)) {
                 $error[] = 'El teléfono no es válido.';
             }
         }

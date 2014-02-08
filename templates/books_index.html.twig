@@ -1,0 +1,103 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Gestión de libros{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Gestión de libros</h3>
+            </div>
+            <div class="panel-body">
+                <button class="btn btn-primary pull-right" onclick="showBookEditor();"><span class="fa  fa-plus"></span> Crear libro</button>
+                <h2>Listado de libros</h2>
+                {% if books %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ISBN</th>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Asignatura</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for book in books %}
+                        <tr>
+                            <td>{{ book.isbn }}</td>
+                            <td>{{ book.titulo }} ({{ book.anio }})</td>
+                            <td>{{ book.autor }}</td>
+                            <td>{{ book.asignatura }} ({{ book.nivel }})</td>
+                            <td><button data-id="{{ book.id }}" data-isbn="{{ book.isbn }}" data-title="{{ book.titulo }}" data-author="{{ book.autor }}" data-year="{{ book.anio }}" data-subject="{{ book.asignatura_id }}" class="btn btn-sm btn-default" onclick="showBookEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button><br /><button data-id="{{ book.id }}" data-isbn="{{ book.isbn }}" data-title="{{ book.titulo }}" data-author="{{ book.autor }}" data-year="{{ book.anio }}" data-subject="{{ book.asignatura_id }}" class="btn btn-sm btn-danger" onclick="deleteBook(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                {% if pagination != '' %}
+                <div class="centered">
+                    <ul class="pagination">
+                        {{ pagination|raw }}
+                    </ul>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="alert alert-warning">
+                    No hay ningún libro.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modal_body %}
+<div class="hidden" id="editor-panel">
+    <form role="form" class="form-horizontal" onsubmit="return false;">
+        <div class="form-group">
+            <label for="isbn" class="col-sm-3 control-label">ISBN</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="isbn" name="isbn" placeholder="ISBN del libro...">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="titulo" class="col-sm-3 control-label">Título</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Título del libro...">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="autor" class="col-sm-3 control-label">Autor</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="autor" name="autor" placeholder="Autor del libro...">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="anio" class="col-sm-3 control-label">Año de publicación</label>
+            <div class="col-sm-9">
+                <input type="number" class="form-control" id="anio" name="anio" placeholder="Año de publicación...">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="asignatura" class="col-sm-3 control-label">Asignatura</label>
+            <div class="col-sm-9">
+                <select id="asignatura">
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="hidden" id="delete-panel">
+</div>
+{% endblock %}
+
+{% block modal_footer %}
+<div class="hidden" id="editor-actions">
+    <button id="create-button" class="btn btn-primary">Crear libro</button> <button id="cancel-create" class="btn btn-default">Cancelar</button>
+</div>
+<div class="hidden" id="delete-actions">
+    <button id="delete-button" class="btn btn-danger">Borrar libro</button> <button id="cancel-delete" class="btn btn-default">Cancelar</button>
+</div>
+{% endblock %}

@@ -34,7 +34,7 @@ function isValidISBN(isbn) {
             check = 0;
 
         if (isbn.length < 12) {
-            return false;
+            return isValidISBN(isbn + controlDigit);
         }
 
         check = 0;
@@ -143,7 +143,6 @@ function genericDelete(options) {
                 modalBox.modal('hide');
             }
         }).error(function(data) {
-            console.log(data.responseText);
             if (data.readyState === 4) {
                 panel.className = 'hidden';
                 displayModalAlert(JSON.parse(data.responseText).error, 'danger');
@@ -490,4 +489,173 @@ function deleteUser(elem) {
         content: '¿Deseas borrar el usuario "<b>' + elem.getAttribute('data-username') + '</b>"?',
         url: 'users/delete/' + elem.getAttribute('data-id')
     });
+}
+
+function copiesCreationInit() {
+    var level,
+        subject,
+        book,
+        _level = $('#nivel'),
+        _subject = $('#asignatura'),
+        _book = $('#libro'),
+        renderer = {
+            option: function(item, escape) {
+                return '<div>' + escape(item.name) + '</div>';
+            }
+        };
+    
+    $level = _level.selectize({
+        valueField: 'id',
+        placeholder: 'Seleccione un nivel',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        load: function(query, callback) {
+            if (query != '') {
+                return;
+            }
+
+            $.ajax({
+                url: baseUrl + 'levels/all',
+                type: 'GET',
+                error: function() {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.levels);
+                }
+            });
+        },
+        onChange: function(value) {
+            if (!value.length) return;
+            $(_subject.get(0).parentNode.parentNode).removeClass('hidden');
+            subject.disable();
+            subject.clearOptions();
+            subject.load(function(callback) {
+                $.ajax({
+                    url: baseUrl + 'subjects/for_level/' + value,
+                    type: 'GET',
+                    error: function(data) {
+                        callback();
+                    },
+                    success: function(res) {
+                        subject.enable();
+                        callback(res.subjects);
+                    }
+                });
+            });
+        }
+    });
+    
+    $subject = _subject.selectize({
+        valueField: 'id',
+        placeholder: 'Seleccione una asignatura',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        onChange: function(value) {
+            if (!value.length) return;
+            $(_book.get(0).parentNode.parentNode).removeClass('hidden');
+            book.disable();
+            book.clearOptions();
+            book.load(function(callback) {
+                $.ajax({
+                    url: baseUrl + 'books/for_subject/' + value,
+                    type: 'GET',
+                    error: function() {
+                        callback();
+                    },
+                    success: function(res) {
+                        book.enable();
+                        callback(res.books);
+                    }
+                });
+            });
+        }
+    });
+    
+    $book = _book.selectize({
+        valueField: 'id',
+        placeholder: 'Seleccione un libro',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        onChange: function(value) {
+            $('#copy-code-box').removeClass('hidden');
+            $('#add-another-copy').removeClass('hidden');
+            document.getElementById('create-submit-button').disabled = false;
+        }
+    });
+    
+    level = $level[0].selectize;
+    subject = $subject[0].selectize;
+    book = $book[0].selectize;
+}
+
+function addAnotherCopy(elem) {
+    var copyCodeBox = document.getElementById('copy-code-box'),
+        num = elem.getAttribute('data-num'),
+        codes = document.getElementsByName('codigo[]'),
+        codesTmp = [];
+        
+    for (var i = 0; i < codes.length; i++) {
+        codesTmp.push(codes[i].value);
+    }
+
+    copyCodeBox.innerHTML += '<div class="form-group">' + 
+        '<label for="codigo_' + num + '" class="col-sm-4 control-label">Código del ejemplar ' + num + '</label>' +
+        '<div class="col-sm-8">' +
+        '<input type="number" class="form-control" id="codigo_' + num + '" name="codigo[]" placeholder="Código del ejemplar...">' +
+        '</div></div>';
+        
+    for (var i = 0; i < codesTmp.length; i++) {
+        codes[i].value = codesTmp[i];
+    }
+
+    elem.setAttribute('data-num', ++num);
+}
+
+function canSubmitCopiesCreationForm(elem) {
+    var level = $('#nivel'),
+        subject = $('#asignatura'),
+        book = $('#libro'),
+        codes,
+        alertBox = $('#alert-box'),
+        showError = function(content) {
+            alertBox.removeClass('hidden');
+            alertBox.html(content);
+        };
+        
+    if (level.val().length < 1 || subject.val().length < 1 || book.val().length < 1) {
+        showError('Debes seleccionar un nivel, una asignatura y un libro.');
+        return false;
+    } else {
+        codes = document.getElementsByName('codigo[]');
+        for (var i = 0; i < codes.length; i++) {
+            if (i === 0) {
+                if (codes[i].value.length < 1) {
+                    showError('Debes rellenar el primer código de ejemplar.');
+                    return false;
+                }
+            }
+            
+            if (codes[i].value.length > 0) {
+                if (!/^[0-9]+$/.test(codes[i].value)) {
+                    showError('Uno o más códigos introducidos no son válidos.');
+                    return false;
+                }
+            }
+        }
+    }
+    
+    return true;
 }

@@ -125,20 +125,14 @@ $app->group('/users', Middleware::isLoggedIn($app), function () use ($app) {
     // Listado
     $app->get('/list/(:page)', '\\Boeke\\Controllers\\Users::index')
         ->name('users_index');
-    
     // Creación
-    $app->map('/new', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::create')
-        ->via('GET', 'POST')
+    $app->post('/new', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::create')
         ->name('users_new');
-    
     // Edición
-    $app->map('/edit/:id', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::edit')
-        ->via('GET', 'PUT')
+    $app->put('/edit/:id', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::edit')
         ->name('users_edit');
-    
     // Borrado
-    $app->map('/delete/:id', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::delete')
-        ->via('GET', 'DELETE')
+    $app->delete('/delete/:id', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::delete')
         ->name('users_delete');
 });
 
@@ -195,12 +189,24 @@ $app->group('/books', Middleware::isLoggedIn($app), function () use ($app) {
         ->name('books_index');
     // Listado en formato JSON
     $app->get('/all', '\\Boeke\\Controllers\\Books::getAll');
+    // Listado por asignatura
+    $app->get('/for_subject/:subject', '\\Boeke\\Controllers\\Books::forSubject');
     // Creación
     $app->post('/new', '\\Boeke\\Controllers\\Books::create');
     // Edición
     $app->put('/edit/:id', '\\Boeke\\Controllers\\Books::edit');
     // Borrado
     $app->delete('/delete/:id', '\\Boeke\\Controllers\\Books::delete');
+});
+
+// Gestión de ejemplares
+$app->group('/copies', Middleware::isLoggedIn($app), function () use ($app) {
+    // Listado
+    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Copies::index')
+        ->name('copies_index');
+    $app->map('/create', '\\Boeke\\Controllers\\Copies::create')
+        ->via('GET', 'POST')
+        ->name('copies_create');
 });
 
 $app->run();

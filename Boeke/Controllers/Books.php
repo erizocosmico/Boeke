@@ -55,8 +55,10 @@ class Books extends Base
             $isbn = substr(preg_replace('/[^\d]/', '', $isbn), 0, 12);
             $sum = 0;
 
-            if (strlen($isbn) < 12 || !is_numeric($controlDigit)) {
+            if (strlen($isbn) < 12 && !is_numeric($controlDigit)) {
                 return false;
+            } else if (strlen($isbn) < 12) {
+                return self::isValidIsbn($isbn . $controlDigit);
             }
 
             $check = 0;
@@ -159,6 +161,27 @@ class Books extends Base
                 );
             },
             \Model::factory('Libro')->findArray()
+        );
+        
+        self::jsonResponse(200, array(
+            'books'       => $books,
+        ));
+    }
+    
+    /**
+     * Devuelve la lista de libros para una asignatura.
+     */
+    public static function forSubject($subject)
+    {
+        $app = self::$app;
+        $books = array_map(
+            function ($book) {
+                return array(
+                    'id'        => $book['id'],
+                    'name'      => $book['titulo'],
+                );
+            },
+            \Model::factory('Libro')->where('asignatura_id', $subject)->findArray()
         );
         
         self::jsonResponse(200, array(

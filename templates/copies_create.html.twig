@@ -1,0 +1,17 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Alta de ejemplares{% endblock %}
+{% block content %}
+{% include "sidebar.html.twig" %}
+
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Alta de ejemplares</h3>
+            </div>
+            <div class="panel-body">
+                {% include 'copies_create_content.html.twig' %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

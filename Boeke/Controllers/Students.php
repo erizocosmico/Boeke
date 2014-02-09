@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.6.3
+ * @version     0.7.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -75,7 +75,6 @@ class Students extends Base
         
         $app->render('students_index.html.twig', array(
             'sidebar_students_active'                  => true,
-            'sidebar_students_list_active'             => true,
             'page'                                  => $page,
             'students'                                 => $students,
             'pagination'                            => $pagination,

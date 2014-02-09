@@ -2,15 +2,7 @@
     <div class="panel panel-sidebar">
         <h4>Navegación</h4>
         <ul class="nav bs-sidenav">
-            <li>
-                <a href="{{ urlFor('users_index') }}" {% if sidebar_users_active %}class="active"{% endif %}>Gestionar usuarios</a>
-                {% if sidebar_users_active %}
-                <ul>
-                    <li><a href="{{ urlFor('users_index') }}" {% if sidebar_users_list_active %}class="active"{% endif %}>Listado de usuarios</a></li>
-                    <li><a href="{{ urlFor('users_new') }}" {% if sidebar_users_new_active %}class="active"{% endif %}>Nuevo usuario</a></li>
-                </ul>
-                {% endif %}
-            </li>
+            <li><a href="{{ urlFor('users_index') }}" {% if sidebar_users_active %}class="active"{% endif %}>Gestionar usuarios</a></li>
             <li><a href="{{ urlFor('students_index') }}" {% if sidebar_students_active %}class="active"{% endif %}>Gestionar alumnos</a></li>
             <li><a href="{{ urlFor('books_index') }}" {% if sidebar_books_active %}class="active"{% endif %}>Gestionar libros</a></li>
             <li><a href="">Gestionar ejemplares</a></li>

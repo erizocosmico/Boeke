@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.6.3
+ * @version     0.7.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -180,9 +180,17 @@ class Users extends Base
             }
         );
         
+        try {
+            $isAdminCallback = \Boeke\Middleware::isAdmin($app, true);
+            $isAdminCallback();
+            $isAdmin = true;
+        } catch (\Exception $e) {
+            $isAdmin = false;
+        }
+        
         $app->render('users_index.html.twig', array(
             'sidebar_users_active'                  => true,
-            'sidebar_users_list_active'             => true,
+            'is_admin'                              => $isAdmin,
             'page'                                  => $page,
             'users'                                 => $users,
             'pagination'                            => $pagination,
@@ -204,62 +212,46 @@ class Users extends Base
     {
         $app = self::$app;
         
-        if ($app->request->isPost()) {
-            $error = array();
+        $error = array();
+        $username = $app->request->post('nombre_usuario');
+        $fullName = $app->request->post('nombre_completo');
+        $password = $app->request->post('usuario_pass');
+        $isAdmin = (int)$app->request->post('es_admin', 0);
+        
+        // Validamos los posibles errores
+        if (empty($username)) {
+            $error[] = 'El nombre de usuario es obligatorio.';
+        } else {
+            $user = \Model::factory('Usuario')
+                ->where('nombre_usuario', $username)
+                ->findOne();
             
-            $username = $app->request->post('nombre_usuario');
-            $fullName = $app->request->post('nombre_completo');
-            $password = $app->request->post('usuario_pass');
-            $isAdmin = (int)$app->request->post('es_admin', 0);
-            
-            // Validamos los posibles errores
-            if (empty($username)) {
-                $error[] = 'El nombre de usuario es obligatorio.';
-            } else {
-                $user = \Model::factory('Usuario')
-                    ->where('nombre_usuario', $username)
-                    ->findOne();
-                
-                if (!$user) {
-                    $error[] = 'El nombre de usuario ya está en uso.';
-                }
-            }
-            
-            if (strlen($password) < 6) {
-                $error[] = 'La contraseña debe tener un mínimo de 6 caracteres.';
-            }
-            
-            // Si no hay errores lo creamos
-            if (count($error) == 0) {
-                $user = \Model::factory('Usuario')->create();
-                $user->nombre_usuario = $username;
-                $user->nombre_completo = $fullName;
-                $user->usuario_pass = password_hash($password, PASSWORD_BCRYPT);
-                $user->es_admin = $isAdmin;
-                $user->save();
-                
-                $app->flashNow('success', 'Usuario añadido correctamente.');
-            } else {
-                $app->flashNow('error', join('<br />', $error));
+            if ($user) {
+                $error[] = 'El nombre de usuario ya está en uso.';
             }
         }
         
-        $app->render('users_editor.html.twig', array(
-            'sidebar_users_active'                  => true,
-            'sidebar_users_new_active'              => true,
-            'breadcrumbs'   => array(
-                array(
-                    'active'        => false,
-                    'text'          => 'Usuarios',
-                    'route'         => self::$app->urlFor('users_index'),
-                ),
-                array(
-                    'active'        => true,
-                    'text'          => 'Nuevo usuario',
-                    'route'         => self::$app->urlFor('users_new'),
-                ),
-            ),
-        ));
+        if (strlen($password) < 6) {
+            $error[] = 'La contraseña debe tener un mínimo de 6 caracteres.';
+        }
+        
+        // Si no hay errores lo creamos
+        if (count($error) == 0) {
+            $user = \Model::factory('Usuario')->create();
+            $user->nombre_usuario = $username;
+            $user->nombre_completo = $fullName;
+            $user->usuario_pass = password_hash($password, PASSWORD_BCRYPT);
+            $user->es_admin = $isAdmin;
+            $user->save();
+            
+            self::jsonResponse(201, array(
+                'message'       => 'Usuario creado correctamente.',
+            ));
+        } else {
+            self::jsonResponse(400, array(
+                'error'       => join('<br />', $error),
+            ));
+        }
     }
     
     /**
@@ -275,75 +267,57 @@ class Users extends Base
         $user = \Model::factory('Usuario')
             ->where('id', $userId)
             ->findOne();
-        
-        // Si el usuario no existe enviamos al listado
+
         if (!$user) {
-            $app->redirect($app->urlFor('users_index'));
+            self::jsonResponse(404, array(
+                'error'       => 'El usuario seleccionado no existe.',
+            ));
+            return;
         }
         
-        if ($app->request->isPut()) {
-            $error = array();
+        $error = array();
+        
+        $username = $app->request->put('nombre_usuario');
+        $fullName = $app->request->put('nombre_completo');
+        $password = $app->request->put('usuario_pass');
+        $isAdmin = (int)$app->request->put('es_admin', 0);
+        
+        // Validamos los campos
+        if (empty($username)) {
+            $error[] = 'El nombre de usuario es obligatorio.';
+        } else {
+            $userTmp = \Model::factory('Usuario')
+                ->where('nombre_usuario', $username)
+                ->whereNotEqual('id', $userId)
+                ->findOne();
             
-            $username = $app->request->put('nombre_usuario');
-            $fullName = $app->request->put('nombre_completo');
-            $password = $app->request->put('usuario_pass');
-            $isAdmin = (int)$app->request->put('es_admin', 0);
-            
-            // Validamos los campos
-            if (empty($username)) {
-                $error[] = 'El nombre de usuario es obligatorio.';
-            } else {
-                $userTmp = \Model::factory('Usuario')
-                    ->where('nombre_usuario', $username)
-                    ->findOne();
-                
-                if (!$userTmp) {
-                    $error[] = 'El nombre de usuario ya está en uso.';
-                }
-            }
-            
-            if (strlen($password) < 6 && !empty($password)) {
-                $error[] = 'La contraseña debe tener un mínimo de 6 caracteres.';
-            }
-            
-            // Si no hay errores editamos el usuario
-            if (count($error) == 0) {
-                $user->nombre_usuario = $username;
-                $user->nombre_completo = $fullName;
-                if (!empty($password)) {
-                    $user->usuario_pass = password_hash($password, PASSWORD_BCRYPT);
-                }
-                $user->es_admin = $isAdmin;
-                $user->save();
-                
-                $app->flashNow('success', 'Usuario editado correctamente.');
-            } else {
-                $app->flashNow('error', join('<br />', $error));
+            if ($userTmp) {
+                $error[] = 'El nombre de usuario ya está en uso.';
             }
         }
         
-        $app->render('users_editor.html.twig', array(
-            'sidebar_users_active'                  => true,
-            'nombre_completo'                       => $user->nombre_completo,
-            'nombre_usuario'                        => $user->nombre_usuario,
-            'es_admin'                              => (bool)$user->es_admin,
-            'editing'                               => true,
-            'user_id'                               => $userId,
-            'breadcrumbs'   => array(
-                array(
-                    'active'        => false,
-                    'text'          => 'Usuarios',
-                    'route'         => self::$app->urlFor('users_index'),
-                ),
-                array(
-                    'active'        => true,
-                    'text'          => 'Editar usuario',
-                    'route'         => self::$app->urlFor('users_edit', array(
-                        'id'    => $userId,
-                    )),
-                ),
-            ),
-        ));
+        if (strlen($password) < 6 && !empty($password)) {
+            $error[] = 'La contraseña debe tener un mínimo de 6 caracteres.';
+        }
+        
+        // Si no hay errores editamos el usuario
+        if (count($error) == 0) {
+            $user->nombre_usuario = $username;
+            $user->nombre_completo = $fullName;
+            if (!empty($password)) {
+                $user->usuario_pass = password_hash($password, PASSWORD_BCRYPT);
+            }
+            $user->es_admin = $isAdmin;
+            $user->save();
+            
+            self::jsonResponse(200, array(
+                'message'       => 'Usuario editado correctamente.',
+            ));
+        } else {
+            self::jsonResponse(400, array(
+                'error'       => join('<br />', $error),
+            ));
+        }
     }
     
     /**
@@ -359,47 +333,29 @@ class Users extends Base
         $user = \Model::factory('Usuario')
             ->where('id', $userId)
             ->findOne();
-        
-        // Si el usuario no existe redirigimos al listado
+
         if (!$user) {
-            $app->redirect($app->urlFor('users_index'));
+            self::jsonResponse(404, array(
+                'error'       => 'El usuario seleccionado no existe.',
+            ));
+            return;
         }
         
-        if ($app->request->isDelete()) {
-            // Comprobamos que se ha pulsado "Sí"
-            if (isset($_POST['confirm'])) {
-                // Borramos el usuario
-                \Model::factory('Usuario')
-                    ->where('id', $userId)
-                    ->findOne()
-                    ->delete();
-            }
-            
-            $app->redirect($app->urlFor('users_index'));
+        if ($app->request->delete('confirm') === 'yes') {
+            // Borramos el usuario
+            \Model::factory('Usuario')
+                ->findOne($userId)
+                ->delete();
+        } else {
+            self::jsonResponse(200, array(
+                'deleted'     => false,
+            ));
+            return;
         }
         
-        // Mostramos la plantilla de confirmación genérica
-        $app->render('confirm.html.twig', array(
-            'sidebar_users_active'                  => true,
-            'confirm_title'                         => 'Borrar usuario',
-            'confirm_message'                       => '¿Está seguro de que desea borrar este usuario?',
-            'action'                                => $app->urlFor('users_delete', array('id' => $userId)),
-            'method'                                => 'POST',
-            'is_delete'                             => true,
-            'breadcrumbs'   => array(
-                array(
-                    'active'        => false,
-                    'text'          => 'Usuarios',
-                    'route'         => self::$app->urlFor('users_index'),
-                ),
-                array(
-                    'active'        => true,
-                    'text'          => 'Borrar usuario',
-                    'route'         => self::$app->urlFor('users_delete', array(
-                        'id'    => $userId,
-                    )),
-                ),
-            ),
+        self::jsonResponse(200, array(
+            'deleted'     => true,
+            'message'     => 'Usuario borrado correctamente.',
         ));
     }
 }

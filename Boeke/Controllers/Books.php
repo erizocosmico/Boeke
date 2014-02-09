@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.6.3
+ * @version     0.7.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -129,7 +129,6 @@ class Books extends Base
         
         $app->render('books_index.html.twig', array(
             'sidebar_books_active'                  => true,
-            'sidebar_books_list_active'             => true,
             'page'                                  => $page,
             'books'                                 => $books,
             'pagination'                            => $pagination,

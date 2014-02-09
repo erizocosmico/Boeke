@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.6.3
+ * @version     0.7.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -88,9 +88,10 @@ class Middleware
      * autorizado" y parará la ejecución.
      *
      * @param \Slim\Slim $app Instancia de la aplicación
+     * @param bool $checkOnly Solo comprobar en lugar de imprimir plantilla de no autorizado.
      * @return \Closure
      */
-    public static function isAdmin(\Slim\Slim $app)
+    public static function isAdmin(\Slim\Slim $app, $checkOnly = false)
     {
         return function() use ($app) {
             $user = \Model::factory('Usuario')
@@ -103,7 +104,9 @@ class Middleware
             }
         
             if (!$authorized) {
-                $app->render('not_authorised.html.twig');
+                if (!$checkOnly) {
+                    $app->render('not_authorised.html.twig');
+                }
                 $app->stop();
             }
         };

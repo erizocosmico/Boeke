@@ -10,7 +10,7 @@
                 <h3 class="panel-title">Gestión de usuarios</h3>
             </div>
             <div class="panel-body">
-                <a href="{{ urlFor('users_new') }}" class="btn btn-primary pull-right"><span class="fa  fa-plus"></span> Crear usuario</a>
+                {% if is_admin %}<button class="btn btn-primary pull-right" onclick="showUserEditor();"><span class="fa fa-plus"></span> Crear usuario</button>{% endif %}
                 <h2>Listado de usuarios</h2>
                 {% if users %}
                 <table class="table table-striped">
@@ -20,7 +20,7 @@
                             <th>Nombre de usuario</th>
                             <th>Nombre completo</th>
                             <th>Administrador</th>
-                            <th>Acciones</th>
+                            {% if is_admin %}<th>Acciones</th>{% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -30,7 +30,7 @@
                             <td>{{ user.nombre_usuario }}</td>
                             <td>{{ user.nombre_completo }}</td>
                             <td>{% if user.es_admin == 1 %}Sí{% else %}No{% endif %}</td>
-                            <td><a href="{{ urlFor('users_edit', {'id' : user.id}) }}" class="btn btn-sm btn-default"><span class="fa fa-edit"></span> Editar</a> <a href="{{ urlFor('users_delete', {'id' : user.id}) }}" class="btn btn-sm btn-danger"><span class="fa fa-times-circle"></span> Borrar</a></td>
+                            {% if is_admin %}<td><button data-id="{{ user.id }}" data-name="{{ user.nombre_completo }}" data-username="{{ user.nombre_usuario }}" data-is-admin="{{ user.es_admin }}" class="btn btn-sm btn-default" onclick="showUserEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button> <button data-id="{{ user.id }}" data-name="{{ user.nombre_completo }}" data-username="{{ user.nombre_usuario }}" data-is-admin="{{ user.es_admin }}" class="btn btn-sm btn-danger" onclick="deleteUser(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>{% endif %}
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -52,3 +52,53 @@
         </div>
     </div>
 {% endblock %}
+
+{% if is_admin %}
+{% block modal_body %}
+<div class="hidden" id="editor-panel">
+    <form role="form" class="form-horizontal" onsubmit="return false;">
+        <div class="form-group">
+            <label for="nombre_usuario" class="col-sm-3 control-label">Nombre de usuario</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="nombre_usuario" name="nombre_usuario" placeholder="Nombre de usuario...">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="nombre_completo" class="col-sm-3 control-label">Nombre completo</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" placeholder="Nombre completo...">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="usuario_pass" class="col-sm-3 control-label">Contraseña</label>
+            <div class="col-sm-9">
+                <input type="password" class="form-control" id="usuario_pass" name="usuario_pass" placeholder="Contraseña...">
+            </div>
+        </div>
+    
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="es_admin" id="es_admin" value="1"> ¿Es administrador?
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="hidden" id="delete-panel">
+</div>
+{% endblock %}
+
+{% block modal_footer %}
+<div class="hidden" id="editor-actions">
+    <button id="create-button" class="btn btn-primary">Crear usuario</button> <button id="cancel-create" class="btn btn-default">Cancelar</button>
+</div>
+<div class="hidden" id="delete-actions">
+    <button id="delete-button" class="btn btn-danger">Borrar usuario</button> <button id="cancel-delete" class="btn btn-default">Cancelar</button>
+</div>
+{% endblock %}
+{% endif %}

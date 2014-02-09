@@ -72,7 +72,8 @@ function showGenericEditor(options) {
     var createButton = document.getElementById('create-button'),
         cancelButton = document.getElementById('cancel-create'),
         method = 'POST';
-
+        
+    hideModalAlert();
     $('#delete-panel').addClass('hidden');
     $('#delete-actions').addClass('hidden');
     $('#editor-panel').removeClass('hidden');
@@ -102,7 +103,6 @@ function showGenericEditor(options) {
                     refresh();
                 }, 1000);
             }).error(function(data) {
-                console.log(data.responseText);
                 if (data.readyState === 4) {
                     displayModalAlert(JSON.parse(data.responseText).error, 'danger');
                 }
@@ -342,7 +342,7 @@ function showBookEditor(elem) {
         nie = document.getElementById('isbn'),
         author = document.getElementById('autor'),
         year = document.getElementById('anio'),
-        subject = $('#asignatura')
+        subject = $('#asignatura'),
         editing = elem !== undefined,
         url = 'books/';
         
@@ -431,5 +431,63 @@ function deleteBook(elem) {
         title: 'Borrar libro',
         content: '¿Deseas borrar el libro "<b>' + elem.getAttribute('data-title') + '</b>"?',
         url: 'books/delete/' + elem.getAttribute('data-id')
+    });
+}
+
+function showUserEditor(elem) {
+    var username = document.getElementById('nombre_usuario'),
+        name = document.getElementById('nombre_completo'),
+        isAdmin = document.getElementById('es_admin'),
+        password = document.getElementById('usuario_pass'),
+        editing = elem !== undefined,
+        url = 'users/';
+        
+    if (editing) {
+        username.value = elem.getAttribute('data-username');
+        name.value = elem.getAttribute('data-name');
+        isAdmin.checked = elem.getAttribute('data-is-admin') == '1';
+        password.value = '';
+        password.placeholder = 'Deja en blanco para mantener la anterior...';
+        url += 'edit/' + elem.getAttribute('data-id');
+    } else {
+        username.value = '';
+        name.value = '';
+        isAdmin.checked = false;
+        password.value = '';
+        url += 'new';
+    }
+    
+    showGenericEditor({
+        data: function() {
+            return "nombre_usuario=" + username.value + '&nombre_completo=' + name.value + 
+            '&es_admin=' + ((isAdmin.checked) ? 1 : 0) + '&usuario_pass=' + password.value
+        },
+        editing: editing,
+        editTitle: 'Editar usuario',
+        createTitle: 'Nuevo usuario',
+        createButton: 'Crear usuario',
+        url: url,
+        callbackValidator: function() {
+            if ((password.value.length < 6 && !editing) 
+                || (editing && password.value.length > 0 && password.value.length < 6)) {
+                displayModalAlert('La contraseña debe tener al menos 6 caracteres.', 'danger');
+            } else if (username.value.length < 1) {
+                displayModalAlert('Debes rellenar el nombre de usuario.', 'danger');
+            } else if (name.value.length < 1) {
+                displayModalAlert('Debes rellenar el nombre completo.', 'danger');
+            } else {
+                return true;
+            }
+            
+            return false;
+        }  
+    });
+}
+
+function deleteUser(elem) {
+    genericDelete({
+        title: 'Borrar usuario',
+        content: '¿Deseas borrar el usuario "<b>' + elem.getAttribute('data-username') + '</b>"?',
+        url: 'users/delete/' + elem.getAttribute('data-id')
     });
 }

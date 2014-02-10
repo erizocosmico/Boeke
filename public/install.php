@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.4.0
+ * @version     0.7.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -324,11 +324,13 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
         <meta name="description" content="Aplicación de gestión del préstamo de libros a alumnos.">
         <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet" href="css/bootstrap.min.css">
-        <link rel="stylesheet" href="css/font-awesome.min.css">
+        <link rel="stylesheet" href="js/vendor/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="js/vendor/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="css/theme.css">
         <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="js/vendor/selectize/dist/css/selectize.bootstrap3.css">
 
-        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+        <script src="{{ base_url }}js/vendor/modernizr/modernizr.js"></script>
     </head>
     <body>
         <!--[if lt IE 7]>

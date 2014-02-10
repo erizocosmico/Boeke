@@ -2,18 +2,21 @@
     <div class="panel panel-sidebar">
         <h4>Navegación</h4>
         <ul class="nav bs-sidenav">
+            <li><a href="{{ urlFor('users_index') }}" {% if sidebar_users_active %}class="active"{% endif %}>Gestionar usuarios</a></li>
+            <li><a href="{{ urlFor('students_index') }}" {% if sidebar_students_active %}class="active"{% endif %}>Gestionar alumnos</a></li>
+            <li><a href="{{ urlFor('books_index') }}" {% if sidebar_books_active %}class="active"{% endif %}>Gestionar libros</a></li>
             <li>
-                <a href="{{ urlFor('users_index') }}" {% if sidebar_users_active %}class="active"{% endif %}>Gestionar usuarios</a>
-                {% if sidebar_users_active %}
-                <ul>
-                    <li><a href="{{ urlFor('users_index') }}" {% if sidebar_users_list_active %}class="active"{% endif %}>Listado de usuarios</a></li>
-                    <li><a href="{{ urlFor('users_new') }}" {% if sidebar_users_new_active %}class="active"{% endif %}>Nuevo usuario</a></li>
-                </ul>
+                <a href="{{ urlFor('copies_index') }}" {% if sidebar_copies_active %}class="active"{% endif %}>Gestionar ejemplares</a>
+                {% if sidebar_copies_active %}
+                    <ul>
+                        <li><a href="{{ urlFor('copies_index') }}" {% if sidebar_copies_list_active %}class="active"{% endif %}>Listado de ejemplares</a></li>
+                        <li><a href="{{ urlFor('copies_create') }}" {% if sidebar_copies_create_active %}class="active"{% endif %}>Alta de ejemplares</a></li>
+                        <li><a href="{{ urlFor('copies_index') }}" {% if sidebar_copies_lending_active %}class="active"{% endif %}>Entrega de lote de libros</a></li>
+                        <li><a href="{{ urlFor('copies_index') }}" {% if sidebar_copies_mass_return_active %}class="active"{% endif %}>Devolución de lote de libros</a></li>
+                        <li><a href="{{ urlFor('copies_index') }}" {% if sidebar_copies_return_active %}class="active"{% endif %}>Devolución manual de libros</a></li>
+                    </ul>
                 {% endif %}
             </li>
-            <li><a href="">Gestionar alumnos</a></li>
-            <li><a href="">Gestionar libros</a></li>
-            <li><a href="">Gestionar ejemplares</a></li>
             <li><a href="{{ urlFor('levels_index') }}" {% if sidebar_levels_active %}class="active"{% endif %}>Gestionar niveles</a></li>
             <li><a href="{{ urlFor('subjects_index') }}" {% if sidebar_subjects_active %}class="active"{% endif %}>Gestionar asignaturas</a></li>
         </ul>

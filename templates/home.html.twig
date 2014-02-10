@@ -5,13 +5,32 @@
 {% block content %}
 {% include "sidebar.html.twig" %}
     <div class="col-xs-12 col-sm-9">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Panel title</h3>
-      </div>
-      <div class="panel-body">
-        Panel content
-      </div>
-    </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h2>Bienvenido a Boeke</h2>
+                <p>Boeke es una aplicación para la gestión de los préstamos de libros a alumnos de centros educativos.</p>
+                <p>Puede usar el menú de <strong>navegación</strong> para acceder a las diferentes secciones de la aplicación. Así mismo, puede usar algunas acciones rápidas que se encuentran en el siguiente panel para una mayor rapidez en el uso de la aplicación.</p>
+            </div>
+        </div>
+    
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h3>Acciones rápidas</h3>
+                <br />
+                <ul class="nav nav-tabs nav-justified">
+                    <li class="active"><a href="#add" data-toggle="tab">Alta de ejemplares</a></li>
+                    <li><a href="#mass-lending" data-toggle="tab">Entrega de lote</a></li>
+                    <li><a href="#mass-return" data-toggle="tab">Devolución de lote</a></li>
+                </ul>
+                
+                <div class="tab-content">
+                    <div class="tab-pane active" id="add">
+                        {% include 'copies_create_content.html.twig' %}
+                    </div>
+                    <div class="tab-pane" id="mass-lending">Entrega de lote</div>
+                    <div class="tab-pane" id="mass-return">Devolución de lote</div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}

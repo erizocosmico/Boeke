@@ -1,0 +1,126 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Gestión de ejemplares{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Gestión de ejemplares</h3>
+            </div>
+            <div class="panel-body">
+                <h2>Listado de ejemplares</h2>
+                {% if copies %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Código</th>
+                            <th class="text-center">Libro</th>
+                            <th class="text-center">Asignado a</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for copy in copies %}
+                        <tr>
+                            <td class="text-center">{{ copy.codigo }}</td>
+                            <td class="text-center">{{ copy.libro }}</td>
+                            <td class="text-center">{{ copy.alumno }}</td>
+                            <td class="text-center">
+                                {{ copy._estado }}
+                                <br />
+                                <button class="btn btn-sm btn-default" data-status="{{ copy.estado }}" data-code="{{ copy.codigo }}" onclick="updateCopyStatus(this); return false;">Actualizar</button>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-default" data-code="{{ copy.codigo }}" onclick="showCopyEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button>
+                                <button class="btn btn-sm btn-danger" data-code="{{ copy.codigo }}" onclick="deleteCopy(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                {% if pagination != '' %}
+                <div class="centered">
+                    <ul class="pagination">
+                        {{ pagination|raw }}
+                    </ul>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="alert alert-warning">
+                    No hay ningún ejemplar.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modal_body %}
+<div class="hidden" id="editor-panel">
+    <form role="form" class="form-horizontal" onsubmit="return false;">
+        <div class="alert alert-danger hidden" id="alert-box"></div>
+        <div class="form-group">
+            <label for="nivel" class="col-sm-4 control-label">Nivel</label>
+            <div class="col-sm-8">
+                <select class="form-control" id="nivel" name="nivel">
+                </select>
+            </div>
+        </div>
+    
+        <div class="form-group hidden">
+            <label for="nombre_completo" class="col-sm-4 control-label">Asignatura</label>
+            <div class="col-sm-8">
+                <select class="form-control" id="asignatura" name="asignatura">
+                </select>
+            </div>
+        </div>
+    
+        <div class="form-group hidden">
+            <label for="libro" class="col-sm-4 control-label">Libro</label>
+            <div class="col-sm-8">
+                <select class="form-control" id="libro" name="libro">
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="hidden" id="update-status-panel">
+    <form role="form" class="form-horizontal" onsubmit="return false;">
+        <div class="alert alert-danger hidden" id="alert-box"></div>
+        <div class="form-group">
+            <label for="nivel" class="col-sm-3 control-label">Estado</label>
+            <div class="col-sm-9">
+                <select class="form-control" id="estado" name="estado">
+                    {{ status_options|raw }}
+                </select>
+            </div>
+        </div>
+    
+        <div class="form-group">
+            <label for="nombre_completo" class="col-sm-3 control-label">Anotación</label>
+            <div class="col-sm-9">
+                <textarea class="form-control" id="anotacion" name="anotacion" placeholder="Anotación sobre el cambio de estado...">
+                </textarea>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="hidden" id="delete-panel">
+</div>
+{% endblock %}
+
+{% block modal_footer %}
+<div class="hidden" id="editor-actions">
+    <button id="create-button" class="btn btn-primary" disabled="true">Editar ejemplar</button> <button id="cancel-create" class="btn btn-default">Cancelar</button>
+</div>
+<div class="hidden" id="update-status-actions">
+    <button id="update-button" class="btn btn-primary">Actualizar estado</button> <button id="cancel-update" class="btn btn-default">Cancelar</button>
+</div>
+<div class="hidden" id="delete-actions">
+    <button id="delete-button" class="btn btn-danger">Borrar ejemplar</button> <button id="cancel-delete" class="btn btn-default">Cancelar</button>
+</div>
+{% endblock %}

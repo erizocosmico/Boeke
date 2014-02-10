@@ -1,37 +1,38 @@
-/* ==== GLOBAL ====================== */
-
-a:not(.btn), a:not(.btn):link, a:not(.btn):visited {
-    color: rgb(57, 139, 206);
-    -webkit-transition: all 100ms ease-in;
-    transition: all 100ms ease-in;
-}
-
-a, p, h1, h2, h3, h4, h5, h6, span, strong, em {
-    -webkit-font-smoothing: antialiased;
-    -moz-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-}
-
 /* ==== NAVBAR ====================== */
 
 .navbar-inverse {
-    background-color: rgb(57, 139, 206);
-    border-bottom-color: rgba(0, 0, 0, 0.3);
-    box-shadow: 0px -1px 0px rgba(255, 255, 255, 0.3) inset;
+    background-color: #2c3e50;
+    border-bottom-color: rgba(0, 0, 0, 0.9);
 }
 
 .navbar-inverse a {
     color: #EEE !important;
     text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.6);
-    font-weight: bold;
+    font-weight: normal;
 }
 
 .navbar-inverse a:hover {
     color: #FFF !important;
 }
 
+/* ==== GENERAL ===================== */
+
+table tr td:last-child {
+    line-height: 1.9em;
+}
+
+.tab-content {
+    padding-top: 20px;
+}
+
 /* ==== BUTTONS ===================== */
 
+.btn {
+    padding: 8px 16px;
+}
+.btn.btn-sm {
+    padding: 2px 6px;
+}
 
 /* ==== SIDEBAR ===================== */
 
@@ -48,18 +49,19 @@ a, p, h1, h2, h3, h4, h5, h6, span, strong, em {
 }
 
 .panel-sidebar ul li a {
-    color: rgb(82, 82, 82) !important;
+    color: rgba(0, 0, 0, 0.7) !important;
     -webkit-transition: all 100ms ease-in;
     transition: all 100ms ease-in;
 }
 
 .panel-sidebar ul li a:hover, .panel-sidebar ul li a.active {
-    color: rgb(57, 139, 206) !important;
+    color: #18BC9C !important;
     background: rgb(235,235,235);
 }
 
 .panel-sidebar ul li ul {
     list-style: none;
+    margin: 0;
 }
 
 .panel-sidebar ul li ul li a {

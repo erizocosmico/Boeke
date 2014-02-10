@@ -204,9 +204,16 @@ $app->group('/copies', Middleware::isLoggedIn($app), function () use ($app) {
     // Listado
     $app->get('/list/(:page)', '\\Boeke\\Controllers\\Copies::index')
         ->name('copies_index');
+    // Creación de ejemplares
     $app->map('/create', '\\Boeke\\Controllers\\Copies::create')
         ->via('GET', 'POST')
         ->name('copies_create');
+    // Edición
+    $app->put('/edit/:id', '\\Boeke\\Controllers\\Copies::edit');
+    // Actualizar estado
+    $app->put('/update_status/:id', '\\Boeke\\Controllers\\Copies::updateStatus');
+    // Borrado
+    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Copies::delete');
 });
 
 $app->run();

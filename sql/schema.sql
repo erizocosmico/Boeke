@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `historial` (
   `estado` TINYINT UNSIGNED NOT NULL DEFAULT 0,
   `fecha` BIGINT UNSIGNED NOT NULL,
   `anotacion` BLOB NOT NULL,
-  `usuario_id` INT UNSIGNED NOT NULL,
+  `usuario_id` INT UNSIGNED NULL,
   PRIMARY KEY (`id`),
   INDEX `historial_ejemplar_codigo_fk_idx` (`ejemplar_codigo` ASC),
   INDEX `historial_alumno_nie_fk_idx` (`alumno_nie` ASC),
@@ -154,11 +154,11 @@ CREATE TABLE IF NOT EXISTS `historial` (
   CONSTRAINT `historial_alumno_nie_fk`
     FOREIGN KEY (`alumno_nie`)
     REFERENCES `alumno` (`nie`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
+    ON DELETE SET NULL
+    ON UPDATE SET NULL,
   CONSTRAINT `historial_usuario_id_fk`
     FOREIGN KEY (`usuario_id`)
     REFERENCES `usuario` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
+    ON DELETE SET NULL
+    ON UPDATE SET NULL)
 ENGINE = InnoDB;

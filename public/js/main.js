@@ -659,3 +659,184 @@ function canSubmitCopiesCreationForm(elem) {
     
     return true;
 }
+
+function showCopyEditor(elem) {
+    var code = document.getElementById('codigo'),
+        level,
+        subject,
+        book,
+        _level = $('#nivel'),
+        _subject = $('#asignatura'),
+        _book = $('#libro'),
+        renderer = {
+            option: function(item, escape) {
+                return '<div>' + escape(item.name) + '</div>';
+            }
+        };
+        
+    $('#update-status-panel').addClass('hidden');
+    $('#update-status-actions').addClass('hidden');
+    
+    $level = _level.selectize({
+        valueField: 'id',
+        placeholder: 'Seleccione un nivel',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        load: function(query, callback) {
+            if (query != '') {
+                return;
+            }
+
+            $.ajax({
+                url: baseUrl + 'levels/all',
+                type: 'GET',
+                error: function() {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.levels);
+                }
+            });
+        },
+        onChange: function(value) {
+            if (!value.length) return;
+            $(_subject.get(0).parentNode.parentNode).removeClass('hidden');
+            subject.disable();
+            subject.clearOptions();
+            subject.load(function(callback) {
+                $.ajax({
+                    url: baseUrl + 'subjects/for_level/' + value,
+                    type: 'GET',
+                    error: function(data) {
+                        callback();
+                    },
+                    success: function(res) {
+                        subject.enable();
+                        callback(res.subjects);
+                    }
+                });
+            });
+        }
+    });
+    
+    $subject = _subject.selectize({
+        valueField: 'id',
+        placeholder: 'Seleccione una asignatura',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        onChange: function(value) {
+            if (!value.length) return;
+            $(_book.get(0).parentNode.parentNode).removeClass('hidden');
+            book.disable();
+            book.clearOptions();
+            book.load(function(callback) {
+                $.ajax({
+                    url: baseUrl + 'books/for_subject/' + value,
+                    type: 'GET',
+                    error: function() {
+                        callback();
+                    },
+                    success: function(res) {
+                        book.enable();
+                        callback(res.books);
+                    }
+                });
+            });
+        }
+    });
+    
+    $book = _book.selectize({
+        valueField: 'id',
+        placeholder: 'Seleccione un libro',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        onChange: function(value) {
+            document.getElementById('create-button').disabled = false;
+        }
+    });
+    
+    level = $level[0].selectize;
+    subject = $subject[0].selectize;
+    book = $book[0].selectize;
+    
+    showGenericEditor({
+        data: function() {
+            return "libro=" + _book.val()
+        },
+        editing: true,
+        editTitle: 'Editar ejemplar',
+        createTitle: 'Editar ejemplar',
+        createButton: 'Editar ejemplar',
+        url: 'copies/edit/' + elem.getAttribute('data-code'),
+        callbackValidator: function() {
+            if (_level.val().length < 1 || _subject.val().length < 1 || _book.val().length < 1) {
+                displayModalAlert('Debes seleccionar un nivel, una asignatura y un libro.', 'danger');
+            } else {
+                return true;
+            }
+            
+            return false;
+        }  
+    });
+}
+
+function deleteCopy(elem) {
+    $('#update-status-panel').addClass('hidden');
+    $('#update-status-actions').addClass('hidden');
+    genericDelete({
+        title: 'Borrar ejemplar',
+        content: '¿Deseas borrar el ejemplar "<b>' + elem.getAttribute('data-code') + '</b>"?',
+        url: 'copies/delete/' + elem.getAttribute('data-code')
+    });
+}
+
+function updateCopyStatus(elem) {
+    var panel = document.getElementById('update-status-panel'),
+        updateButton = document.getElementById('update-button'),
+        cancelButton = document.getElementById('cancel-update'),
+        comment = document.getElementById('anotacion'),
+        status = document.getElementById('estado');
+
+    $('#update-status-panel').removeClass('hidden');
+    $('#update-status-actions').removeClass('hidden');
+    $('#editor-panel').addClass('hidden');
+    $('#editor-actions').addClass('hidden');
+    $('#delete-panel').addClass('hidden');
+    $('#delete-actions').addClass('hidden');
+    modalBox.modal('show');
+    modalTitle.innerHTML = 'Actualizar estado';
+    comment.value = '';
+    status.value = elem.getAttribute('data-status');
+    updateButton.onclick = function(e) {
+        hideModalAlert();
+        $.ajax({
+            url: baseUrl + 'copies/update_status/' + elem.getAttribute('data-code'),
+            data: getCsrfToken() + '&estado=' + status.value + '&anotacion=' + comment.value,
+            type: 'PUT'
+        }).done(function(data) {
+            displayModalAlert(data.message, 'success');
+            setTimeout(function() {
+                refresh();
+            }, 1000);
+        }).error(function(data) {
+            if (data.readyState === 4) {
+                displayModalAlert(JSON.parse(data.responseText).error, 'danger');
+            }
+        });
+    };
+    cancelButton.onclick = function(e) {
+        modalBox.modal('hide');
+    };
+}

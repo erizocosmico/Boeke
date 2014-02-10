@@ -43,6 +43,50 @@ namespace Boeke\Models;
 class Historial extends \Model
 {
     public static $_table = 'historial';
+    /**
+     * @var array Mapeado de los nombres de los estados a su equivalente numérico.
+     */
+    private static $types = array(
+        'nuevo'         => 0,
+        'prestado'      => 1,
+        'devuelto'      => 2,
+        'actualizado'   => 3,
+    );
+    
+    /**
+     * Añade un registro al historial.
+     *
+     * @param int $copy Código del ejemplar
+     * @param string $type Tipo de registro
+     * @param int|null $user Usuario que añade el registro
+     * @param string $comment Anotación
+     * @param int|null $nie Nie del alumno, si procede
+     * @param int $status Estado del ejemplar
+     * @param int $date UNIX Timestamp del momento en que se añade el registro
+     * @throws \PDOException si se produce algún error en la inserción
+     */
+    public static function add(
+        $copy,
+        $type,
+        $user = null,
+        $comment = '',
+        $nie = null,
+        $status = 0,
+        $date = null
+    ) {
+        if ($date === null) {
+            $date = time();
+        }
+        $h = \Model::factory('Historial')->create();
+        $h->tipo = self::$types[$type];
+        $h->ejemplar_codigo = $copy;
+        $h->alumno_nie = $nie;
+        $h->usuario_id = $user;
+        $h->estado = $status;
+        $h->fecha = $date;
+        $h->anotacion = $comment;
+        $h->save();
+    }
     
     /**
      * Devuelve el alumno asociado al registro del historial

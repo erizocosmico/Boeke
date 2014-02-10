@@ -32,6 +32,8 @@
  */
 namespace Boeke\Controllers;
 
+use Boeke\Models\Historial;
+
 /**
  * Copies
  *
@@ -46,6 +48,20 @@ class Copies extends Base
      * @var array Nombre de los estados de un ejemplar.
      */
     private static $statuses = array('Bueno', 'Regular', 'Malo', 'Perdido', 'Baja');
+    
+    /**
+     * Devuelve las opciones de los estados para añadir a un campo select.
+     *
+     * @return string
+     */
+    public static function getStatusSelectOptions() {
+        $output = '';
+        foreach (self::$statuses as $i => $status) {
+            $output .= '<option value="' . $i . '">' . $status . '</option>';
+        }
+        var_dump($output);
+        return $output;
+    }
     
     /** 
      * Devuelve el nombre para el código de estado seleccionado.
@@ -81,7 +97,7 @@ class Copies extends Base
             if (is_null($row->alumno)) {
                 $row->alumno = 'No prestado';
             }
-            $row->estado = self::getStatusName($row->estado);
+            $row->_estado = self::getStatusName($row->estado);
 
             $copies[] = $row;
         }
@@ -101,6 +117,7 @@ class Copies extends Base
             'sidebar_copies_list_active'            => true,
             'page'                                  => $page,
             'copies'                                => $copies,
+            'status_options'                        => self::getStatusSelectOptions(),
             'pagination'                            => $pagination,
             'breadcrumbs'   => array(
                 array(
@@ -149,6 +166,8 @@ class Copies extends Base
                             $bookTmp->codigo = $code;
                             $bookTmp->libro_id = $bookId;
                             $bookTmp->save();
+                            
+                            Historial::add($code, 'nuevo', $_SESSION['user_id']);
                         }
                     }
                     $dbh->commit();
@@ -181,5 +200,131 @@ class Copies extends Base
                 ),
             ),
         ));
+    }
+    
+    /**
+     * Edita el libro de un ejemplar.
+     *
+     * @param int $copyId Código del ejemplar
+     */
+    public static function edit($copyId)
+    {
+        $app = self::$app;
+        $book = (int)$app->request->put('libro');
+        $error = array();
+        
+        $copy = \Model::factory('Ejemplar')->findOne($copyId);
+        if (!$copy) {
+            self::jsonResponse(404, array(
+                'error'       => 'El ejemplar seleccionado no existe.',
+            ));
+            return;
+        }
+        
+        $bookTmp = \Model::factory('Libro')->findOne($book);
+        if (!$bookTmp) {
+            $error[] = 'El libro seleccionado no existe.';
+        }
+        
+        if (count($error) === 0) {
+            $copy->libro_id = $book;
+            $copy->save();
+            
+            self::jsonResponse(200, array(
+                'message'     => 'Ejemplar editado correctamente.',
+            ));
+        } else {
+            self::jsonResponse(400, array(
+                'error'       => join('<br />', $error),
+            ));
+        }
+    }
+    
+    /**
+     * Elimina un ejemplar.
+     *
+     * @param int $id Código del ejemplar.
+     */
+    public static function delete($id)
+    {
+        $app = self::$app;
+        
+        $copy = \Model::factory('Ejemplar')
+            ->findOne($id);
+
+        if (!$copy) {
+            self::jsonResponse(404, array(
+                'error'       => 'El ejemplar seleccionado no existe.',
+            ));
+            return;
+        }
+        
+        if ($app->request->delete('confirm') === 'yes') {
+            // Borramos el libro
+            $copy->delete();
+        } else {
+            self::jsonResponse(200, array(
+                'deleted'     => false,
+            ));
+            return;
+        }
+        
+        self::jsonResponse(200, array(
+            'deleted'     => true,
+            'message'     => 'Ejemplar borrado correctamente.',
+        ));
+    }
+    
+    /**
+     * Actualiza el estado de un ejemplar.
+     *
+     * @param int $copyId Código del ejemplar
+     */
+    public static function updateStatus($copyId)
+    {
+        $app = self::$app;
+        $status = (int)$app->request->put('estado');
+        $comment = $app->request->put('anotacion', '');
+        $error = array();
+        
+        $copy = \Model::factory('Ejemplar')->findOne($copyId);
+        if (!$copy) {
+            self::jsonResponse(404, array(
+                'error'       => 'El ejemplar seleccionado no existe.',
+            ));
+            return;
+        }
+        
+        if (count($error) === 0) {
+            $dbh = \ORM::getDb();
+            $dbh->beginTransaction();
+            try {
+                $copy->estado = $status;
+                $copy->save();
+                Historial::add(
+                    $copyId,
+                    'actualizado',
+                    $_SESSION['user_id'],
+                    $comment,
+                    null,
+                    $status
+                );
+                $dbh->commit();
+            } catch (\PDOException $e) {
+                self::jsonResponse(400, array(
+                    'error'       => 'Se ha producido un error al insertar los datos.',
+                ));
+                $dbh->rollBack();
+                return;
+            }
+            
+            self::jsonResponse(200, array(
+                'message'     => 'Estado actualizado correctamente.',
+            ));
+        } else {
+            self::jsonResponse(400, array(
+                'error'       => join('<br />', $error),
+            ));
+        }
     }
 }

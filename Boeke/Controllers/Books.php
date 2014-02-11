@@ -107,13 +107,17 @@ class Books extends Base
         }
         
         // Obtenemos los registros
-        $sql = 'SELECT l.*, a.nombre as asignatura, n.nombre as nivel ' .
-            'FROM libro l JOIN asignatura a ' .
-                'ON (a.id = l.asignatura_id) ' .
-            'JOIN nivel n ' .
-                'ON (n.id = a.nivel_id) ' .
-            'ORDER BY l.titulo ASC LIMIT ' . (25 * ((int)$page - 1)) . ',25';
-        $bookList = \ORM::forTable('libro')->rawQuery($sql)->findMany();
+        $bookList = \ORM::forTable('libro')
+            ->tableAlias('l')
+            ->select('l.*')
+            ->select('a.nombre', 'asignatura')
+            ->select('n.nombre', 'nivel')
+            ->join('asignatura', array('l.asignatura_id', '=', 'a.id'), 'a')
+            ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
+            ->orderByAsc('l.titulo')
+            ->limit(25)
+            ->offset((25 * ((int)$page - 1)))
+            ->findMany();
         
         foreach ($bookList as $row) {
             $books[] = $row;

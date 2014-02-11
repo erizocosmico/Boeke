@@ -112,6 +112,32 @@ class Students extends Base
     }
     
     /**
+     * Devuelve los resultados en JSON para los alumnos que se correspondan con la búsqueda.
+     *
+     * @param string $query Búsqueda
+     */
+    public static function search($query) {
+        $app = self::$app;
+        $query .= '%';
+        $students = \Model::factory('Alumno')
+            ->whereRaw('nombre LIKE ? OR apellidos LIKE ?', array($query, $query))
+            ->findMany();
+        
+        $studentsArray = array();
+        foreach ($students as $student) {
+            $studentsArray[] = array(
+                'nie'       => $student->nie,
+                'name'      => $student->nombre .
+                    ($student->apellidos ? ' ' . $student->apellidos : ''),
+            );
+        }
+        
+        self::jsonResponse(200, array(
+            'students'  => $studentsArray,
+        ));
+    }
+    
+    /**
      * Se encarga de crear un alumno.
      */
     public static function create()

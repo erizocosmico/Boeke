@@ -37,7 +37,7 @@ table tr td:last-child {
 /* ==== SIDEBAR ===================== */
 
 .panel-sidebar {
-    background-color: rgb(245, 245, 245);
+    background-color: rgb(236,240,241);
 }
 
 .panel-sidebar h4 {
@@ -56,7 +56,7 @@ table tr td:last-child {
 
 .panel-sidebar ul li a:hover, .panel-sidebar ul li a.active {
     color: #18BC9C !important;
-    background: rgb(235,235,235);
+    background: rgb(246, 250, 251);
 }
 
 .panel-sidebar ul li ul {
@@ -75,6 +75,18 @@ table tr td:last-child {
 
 .panel-sidebar ul li ul li a:hover {
     background: transparent;
+}
+
+/* ==== FILTER BOX ================== */
+
+.filter-box {
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+    background: #ecf0f1;
 }
 
 /* ==== PAGINATION ================== */

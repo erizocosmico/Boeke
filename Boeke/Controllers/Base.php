@@ -67,7 +67,11 @@ class Base
         $current,
         callable $urlCallback
     ) {
-        $count = $set->count();
+        if (is_numeric($set)) {
+            $count = $set;
+        } else {
+            $count = $set->count();
+        }
         $pages = ceil($count / $perPage);
         
         // Si no hay suficientes registros para paginar no devolvemos nada

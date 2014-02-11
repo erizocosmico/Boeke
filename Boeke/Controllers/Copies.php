@@ -59,7 +59,6 @@ class Copies extends Base
         foreach (self::$statuses as $i => $status) {
             $output .= '<option value="' . $i . '">' . $status . '</option>';
         }
-        var_dump($output);
         return $output;
     }
     
@@ -87,11 +86,17 @@ class Copies extends Base
         }
         
         // Obtenemos los registros
-        $sql = 'SELECT e.*, l.titulo as libro, a.nombre as alumno FROM ejemplar e' . 
-            ' JOIN libro l ON (l.id = e.libro_id)' .
-            ' LEFT JOIN alumno a ON (e.alumno_nie = a.nie)' .
-            ' ORDER BY e.codigo ASC LIMIT ' . (25 * ((int)$page - 1)) . ',25';
-        $copyList = \ORM::forTable('ejemplar')->rawQuery($sql)->findMany();
+        $copyList = \ORM::forTable('ejemplar')
+            ->tableAlias('e')
+            ->select('e.*')
+            ->select('al.nombre', 'alumno')
+            ->select('l.titulo', 'libro')
+            ->join('libro', array('e.libro_id', '=', 'l.id'), 'l')
+            ->leftOuterJoin('alumno', array('e.alumno_nie', '=', 'al.nie'), 'al')
+            ->orderByAsc('e.codigo')
+            ->limit('25')
+            ->offset((25 * ((int)$page - 1)))
+            ->findMany();
         
         foreach ($copyList as $row) {
             if (is_null($row->alumno)) {
@@ -120,6 +125,134 @@ class Copies extends Base
             'status_options'                        => self::getStatusSelectOptions(),
             'pagination'                            => $pagination,
             'breadcrumbs'   => array(
+                array(
+                    'active'        => true,
+                    'text'          => 'Listado de ejemplares',
+                    'route'         => self::$app->urlFor('copies_index'),
+                ),
+            ),
+        ));
+    }
+    
+    public static function filter($collection, $type, $id, $page = 1)
+    {
+        $app = self::$app;
+        $skipQuery = false;
+        if ($collection !== 'not_returned') {
+            $collection = 'all';
+        }
+        
+        switch ($type) {
+            case 'level':
+                $level = \Model::factory('Nivel')->findOne($id);
+                $skipQuery = !$level;
+            break;
+            
+            case 'subject':
+                $subject = \Model::factory('Asignatura')->findOne($id);
+                $skipQuery = !$subject;
+            break;
+            
+            case 'student':
+                $student = \Model::factory('Alumno')->findOne($id);
+                $skipQuery = !$student;
+            break;
+            
+            default:
+                $type = 'all';
+        }
+        
+        $copies = array();
+        
+        if (!$skipQuery) {
+            $query = \ORM::forTable('ejemplar')
+                ->tableAlias('e')
+                ->select('e.*')
+                ->select('al.nombre', 'alumno')
+                ->select('l.titulo', 'libro');
+            $params = array();
+            
+            switch ($type) {
+                case 'level':
+                    $query = $query
+                        ->join('libro', array('e.libro_id', '=', 'l.id'), 'l')
+                        ->join('asignatura', array('l.asignatura_id', '=', 'a.id'), 'a')
+                        ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
+                        ->leftOuterJoin('alumno', array('e.alumno_nie', '=', 'al.nie'), 'al')
+                        ->where('n.id', $id);
+                break;
+                
+                case 'subject':
+                    $query = $query
+                        ->join('libro', array('e.libro_id', '=', 'l.id'), 'l')
+                        ->join('asignatura', array('l.asignatura_id', '=', 'a.id'), 'a')
+                        ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
+                        ->leftOuterJoin('alumno', array('e.alumno_nie', '=', 'al.nie'), 'al')
+                        ->where('a.id', $id);
+                break;
+                
+                case 'student':
+                    $query = $query
+                        ->join('libro', array('e.libro_id', '=', 'l.id'), 'l')
+                        ->leftOuterJoin('alumno', array('e.alumno_nie', '=', 'al.nie'), 'al')
+                        ->where('e.alumno_nie', $id);
+                break;
+                
+                default:
+                    $query = $query
+                        ->join('libro', array('e.libro_id', '=', 'l.id'), 'l')
+                        ->leftOuterJoin('alumno', array('e.alumno_nie', '=', 'al.nie'), 'al');
+            }
+            if ($collection === 'not_returned') {
+                $query = $query->whereNotNull('e.alumno_nie');
+            }
+            $copyCount = $query->count();
+            $query = $query->orderByAsc('e.codigo')
+                ->limit('25')
+                ->offset((25 * ((int)$page - 1)));
+            $copyList = $query->findMany();
+            
+            foreach ($copyList as $row) {
+                if (is_null($row->alumno)) {
+                    $row->alumno = 'No prestado';
+                } else {
+                    
+                }
+                $row->_estado = self::getStatusName($row->estado);
+                $copies[] = $row;
+            }
+        } else {
+            $copyCount = 0;
+        }
+        
+        // Generamos la paginación para el conjunto de libros
+        $pagination = self::generatePagination(
+            $copyCount,
+            25,
+            $page,
+            function ($i) use ($app, $collection, $type, $id) {
+                return $app->urlFor('copies_filter', array(
+                    'collection'    => $collection,
+                    'type'          => $type,
+                    'id'            => $id,
+                    'page'          => $i
+                ));
+            }
+        );
+        
+        #die(print_r($copies));
+        
+        $app->render('copies_index.html.twig', array(
+            'sidebar_copies_active'                 => true,
+            'sidebar_copies_list_active'            => $collection !== 'not_returned',
+            'sidebar_copies_not_returned_active'    => $collection === 'not_returned',
+            'filter_active'                         => $type !== 'all',
+            'page'                                  => $page,
+            'copies'                                => $copies,
+            'status_options'                        => self::getStatusSelectOptions(),
+            'pagination'                            => $pagination,
+            'breadcrumbs'   => array(
+                // TODO detallar breadcrumbs
                 array(
                     'active'        => true,
                     'text'          => 'Listado de ejemplares',

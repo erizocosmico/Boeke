@@ -180,6 +180,8 @@ $app->group('/students', Middleware::isLoggedIn($app), function () use ($app) {
     $app->put('/edit/:id', '\\Boeke\\Controllers\\Students::edit');
     // Borrado
     $app->delete('/delete/:id', '\\Boeke\\Controllers\\Students::delete');
+    // Búsqueda de alumnos
+    $app->get('/search/:query', '\\Boeke\\Controllers\\Students::search');
 });
 
 // Gestión de libros
@@ -214,6 +216,9 @@ $app->group('/copies', Middleware::isLoggedIn($app), function () use ($app) {
     $app->put('/update_status/:id', '\\Boeke\\Controllers\\Copies::updateStatus');
     // Borrado
     $app->delete('/delete/:id', '\\Boeke\\Controllers\\Copies::delete');
+    // Filtrado de ejemplares
+    $app->get('/:collection/filter_by/:type/:id/(:page)', '\\Boeke\\Controllers\\Copies::filter')
+        ->name('copies_filter');
 });
 
 $app->run();

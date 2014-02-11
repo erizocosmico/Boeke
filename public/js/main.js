@@ -840,3 +840,106 @@ function updateCopyStatus(elem) {
         modalBox.modal('hide');
     };
 }
+
+function filterCopiesInit($notReturned) {
+    var filterLevel = $('#filter-level'),
+        filterSubject = $('#filter-subject'),
+        filterStudent = $('#filter-student'),
+        collection = ($notReturned) ? 'not_returned' : 'all',
+        onSelectedItemCallback = function(item, type) {
+            window.location.pathname = baseUrl + 'copies/' + collection +
+                '/filter_by/' + type + '/' + item + '/';
+        },
+        renderer = {
+            option: function(item, escape) {
+                return '<div>' + escape(item.name) + '</div>';
+            }
+        };
+        
+    $level = filterLevel.selectize({
+        valueField: 'id',
+        placeholder: 'Filtrar por nivel',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        load: function(query, callback) {
+            if (query != '') {
+                return;
+            }
+
+            $.ajax({
+                url: baseUrl + 'levels/all',
+                type: 'GET',
+                error: function() {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.levels);
+                }
+            });
+        },
+        onChange: function(value) {
+            if (!value.length) return;
+            onSelectedItemCallback(value, 'level');
+        }
+    });
+
+    $subject = filterSubject.selectize({
+        valueField: 'id',
+        placeholder: 'Filtrar por asignatura',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        load: function(query, callback) {
+            $.ajax({
+                url: baseUrl + 'subjects/all',
+                type: 'GET',
+                error: function(data) {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.subjects);
+                }
+            });
+        },
+        onChange: function(value) {
+            if (!value.length) return;
+            onSelectedItemCallback(value, 'subject');
+        }
+    });
+    
+    $students = filterStudent.selectize({
+        valueField: 'nie',
+        placeholder: 'Filtrar por alumno',
+        labelField: 'name',
+        searchField: 'name',
+        preload: false,
+        openOnFocus: true,
+        create: false,
+        render: renderer,
+        load: function(query, callback) {
+            if (!query.length) return;
+
+            $.ajax({
+                url: baseUrl + 'students/search/' + query,
+                type: 'GET',
+                error: function(data) {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.students);
+                }
+            });
+        },
+        onChange: function(value) {
+            if (!value.length) return;
+            onSelectedItemCallback(value, 'student');
+        }
+    });
+}

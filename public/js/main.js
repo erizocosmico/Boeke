@@ -3,7 +3,12 @@ var modalBox = $('#modal-box'),
     modalBoxDOMObject = modalBox[0],
     modalTitle = modalBoxDOMObject.getElementsByClassName('modal-title')[0],
     modalContent = modalBoxDOMObject.getElementsByClassName('modal-body')[0],
-    modalFooter = modalBoxDOMObject.getElementsByClassName('modal-footer')[0];
+    modalFooter = modalBoxDOMObject.getElementsByClassName('modal-footer')[0],
+    defaultRenderer = {
+        option: function(item, escape) {
+            return '<div>' + escape(item.name) + '</div>';
+        }
+    };
   
 function refresh() {
     window.location.href = window.location.href;
@@ -66,6 +71,119 @@ function isValidISBN(isbn) {
     } else {
         return false;
     }
+}
+
+function selectStudent(options) {
+    var $student = $('#' + options.id).selectize({
+        valueField: 'nie',
+        placeholder: options.placeholder || 'Filtrar por alumno',
+        labelField: 'name',
+        searchField: 'name',
+        preload: false,
+        openOnFocus: true,
+        create: false,
+        render: defaultRenderer,
+        load: function(query, callback) {
+            if (!query.length) return;
+
+            $.ajax({
+                url: baseUrl + 'students/search/' + query,
+                type: 'GET',
+                error: function(data) {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.students);
+                }
+            });
+        },
+        onChange: function(value) {
+            if (!value.length) return;
+            
+            if (options.onChange !== undefined) {
+                options.onChange(value);
+            }
+        }
+    });
+    
+    return $student[0].selectize;
+}
+
+function selectSubject(options) {
+    $subject = $('#' + options.id).selectize({
+        valueField: 'id',
+        placeholder: options.placeholder || 'Filtrar por asignatura',
+        labelField: 'name',
+        searchField: 'name',
+        preload: true,
+        openOnFocus: true,
+        create: false,
+        render: defaultRenderer,
+        load: function(query, callback) {
+            $.ajax({
+                url: baseUrl + 'subjects/all',
+                type: 'GET',
+                error: function(data) {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.subjects);
+                    if (options.onSuccess !== undefined) {
+                        options.onSuccess($subject[0].selectize);
+                    }
+                }
+            });
+        },
+        onChange: function(value) {
+            if (!value.length) return;
+            
+            if (options.onChange !== undefined) {
+                options.onChange(value);
+            }
+        }
+    });
+    
+    return $subject[0].selectize;
+}
+
+function selectLevel(options) {
+    $level = $('#' + options.id).selectize({
+        valueField: 'id',
+        placeholder: options.placeholder || 'Filtrar por nivel',
+        labelField: 'name',
+        searchField: 'name',
+        preload: options.preload || true,
+        openOnFocus: true,
+        create: false,
+        render: defaultRenderer,
+        load: function(query, callback) {
+            if (query != '') return;
+            $level[0].selectize.clearOptions();
+
+            $.ajax({
+                url: baseUrl + 'levels/all',
+                type: 'GET',
+                error: function() {
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.levels);
+                    
+                    if (options.onSuccess !== undefined) {
+                        options.onSuccess($level[0].selectize);
+                    }
+                }
+            });
+        },
+        onChange: function(value) {
+            if (!value.length) return;
+            if (options.onChange !== undefined) {
+                options.onChange(value);
+            }
+        }
+    });
+    
+    return $level[0].selectize;
 }
 
 function showGenericEditor(options) {
@@ -198,51 +316,30 @@ function deleteLevel(elem) {
 
 function showSubjectEditor(elem) {
     var name = document.getElementById('nombre'),
-        level = $('#nivel'),
         editing = elem !== undefined,
         url = 'subjects/';
-        
-    $level = level.selectize({
-        valueField: 'id',
-        placeholder: 'Seleccione un nivel',
-        labelField: 'name',
-        searchField: 'name',
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        render: {
-            option: function(item, escape) {
-                return '<div>' + escape(item.name) + '</div>';
-            }
-        },
-        load: function(query, callback) {
-            if (query != '') {
-                return;
-            }
 
-            $.ajax({
-                url: baseUrl + 'levels/all',
-                type: 'GET',
-                error: function() {
-                    callback();
-                },
-                success: function(res) {
-                    callback(res.levels);
-                    
-                    if (editing) {
-                        var sel = $level[0].selectize;
-                        sel.setValue(elem.getAttribute('data-level-id'));
-                    }
-                }
-            });
+    var select = selectLevel({
+        placeholder: 'Seleccione un nivel',
+        id: 'nivel',
+        onSuccess: function(select) {
+            if (editing) {
+                select.setValue(elem.getAttribute('data-level-id'));
+            }
         }
     });
 
     if (editing) {
+        if (select !== undefined) {
+            select.setValue(elem.getAttribute('data-level-id'));
+        }
         name.value = elem.getAttribute('data-name');
         url += 'edit/' + elem.getAttribute('data-id');
         method = 'PUT';
     } else {
+        if (select !== undefined) {
+            select.setValue('');
+        }
         name.value = '';
         url += 'new';
     }
@@ -341,43 +438,17 @@ function showBookEditor(elem) {
         nie = document.getElementById('isbn'),
         author = document.getElementById('autor'),
         year = document.getElementById('anio'),
-        subject = $('#asignatura'),
+        subject,
         editing = elem !== undefined,
         url = 'books/';
-        
-    $subject = subject.selectize({
-        valueField: 'id',
+    
+    subject = selectSubject({
         placeholder: 'Seleccione una asignatura',
-        labelField: 'name',
-        searchField: 'name',
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        render: {
-            option: function(item, escape) {
-                return '<div>' + escape(item.name) + '</div>';
+        id: 'asignatura',
+        onSuccess: function(select) {
+            if (editing) {
+                select.setValue(elem.getAttribute('data-subject'));
             }
-        },
-        load: function(query, callback) {
-            if (query != '') {
-                return;
-            }
-
-            $.ajax({
-                url: baseUrl + 'subjects/all',
-                type: 'GET',
-                error: function(res) {
-                    callback();
-                },
-                success: function(res) {
-                    callback(res.subjects);
-                
-                    if (editing) {
-                        var sel = $subject[0].selectize;
-                        sel.setValue(elem.getAttribute('data-subject'));
-                    }
-                }
-            });
         }
     });
 
@@ -387,12 +458,18 @@ function showBookEditor(elem) {
         author.value = elem.getAttribute('data-author');
         year.value = elem.getAttribute('data-year');
         url += 'edit/' + elem.getAttribute('data-id');
+        if (subject !== undefined) {
+            subject.setValue(elem.getAttribute('data-subject'));
+        }
     } else {
         title.value = '';
         isbn.value = '';
         year.value = '';
         author.value = '';
         url += 'new';
+        if (subject !== undefined) {
+            subject.setValue('');
+        }
     }
     
     showGenericEditor({
@@ -495,43 +572,14 @@ function copiesCreationInit() {
     var level,
         subject,
         book,
-        _level = $('#nivel'),
-        _subject = $('#asignatura'),
         _book = $('#libro'),
-        renderer = {
-            option: function(item, escape) {
-                return '<div>' + escape(item.name) + '</div>';
-            }
-        };
+        $book;
     
-    $level = _level.selectize({
-        valueField: 'id',
+    level = selectLevel({
         placeholder: 'Seleccione un nivel',
-        labelField: 'name',
-        searchField: 'name',
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        render: renderer,
-        load: function(query, callback) {
-            if (query != '') {
-                return;
-            }
-
-            $.ajax({
-                url: baseUrl + 'levels/all',
-                type: 'GET',
-                error: function() {
-                    callback();
-                },
-                success: function(res) {
-                    callback(res.levels);
-                }
-            });
-        },
+        id: 'nivel',
         onChange: function(value) {
-            if (!value.length) return;
-            $(_subject.get(0).parentNode.parentNode).removeClass('hidden');
+            $($('#asignatura').get(0).parentNode.parentNode).removeClass('hidden');
             subject.disable();
             subject.clearOptions();
             subject.load(function(callback) {
@@ -550,18 +598,12 @@ function copiesCreationInit() {
         }
     });
     
-    $subject = _subject.selectize({
-        valueField: 'id',
+    subject = selectSubject({
         placeholder: 'Seleccione una asignatura',
-        labelField: 'name',
-        searchField: 'name',
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        render: renderer,
+        id: 'asignatura',
+        preload: false,
         onChange: function(value) {
-            if (!value.length) return;
-            $(_book.get(0).parentNode.parentNode).removeClass('hidden');
+            $($('#libro').get(0).parentNode.parentNode).removeClass('hidden');
             book.disable();
             book.clearOptions();
             book.load(function(callback) {
@@ -588,16 +630,14 @@ function copiesCreationInit() {
         preload: true,
         openOnFocus: true,
         create: false,
-        render: renderer,
+        render: defaultRenderer,
         onChange: function(value) {
             $('#copy-code-box').removeClass('hidden');
             $('#add-another-copy').removeClass('hidden');
             document.getElementById('create-submit-button').disabled = false;
         }
     });
-    
-    level = $level[0].selectize;
-    subject = $subject[0].selectize;
+
     book = $book[0].selectize;
 }
 
@@ -665,46 +705,18 @@ function showCopyEditor(elem) {
         level,
         subject,
         book,
-        _level = $('#nivel'),
-        _subject = $('#asignatura'),
-        _book = $('#libro'),
-        renderer = {
-            option: function(item, escape) {
-                return '<div>' + escape(item.name) + '</div>';
-            }
-        };
+        $book,
+        _book = $('#libro');
         
     $('#update-status-panel').addClass('hidden');
     $('#update-status-actions').addClass('hidden');
+    document.getElementById('create-button').disabled = false;
     
-    $level = _level.selectize({
-        valueField: 'id',
+    level = selectLevel({
         placeholder: 'Seleccione un nivel',
-        labelField: 'name',
-        searchField: 'name',
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        render: renderer,
-        load: function(query, callback) {
-            if (query != '') {
-                return;
-            }
-
-            $.ajax({
-                url: baseUrl + 'levels/all',
-                type: 'GET',
-                error: function() {
-                    callback();
-                },
-                success: function(res) {
-                    callback(res.levels);
-                }
-            });
-        },
+        id: 'nivel',
         onChange: function(value) {
-            if (!value.length) return;
-            $(_subject.get(0).parentNode.parentNode).removeClass('hidden');
+            $($('#asignatura').get(0).parentNode.parentNode).removeClass('hidden');
             subject.disable();
             subject.clearOptions();
             subject.load(function(callback) {
@@ -723,18 +735,12 @@ function showCopyEditor(elem) {
         }
     });
     
-    $subject = _subject.selectize({
-        valueField: 'id',
+    subject = selectSubject({
         placeholder: 'Seleccione una asignatura',
-        labelField: 'name',
-        searchField: 'name',
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        render: renderer,
+        id: 'asignatura',
+        preload: false,
         onChange: function(value) {
-            if (!value.length) return;
-            $(_book.get(0).parentNode.parentNode).removeClass('hidden');
+            $($('#libro').get(0).parentNode.parentNode).removeClass('hidden');
             book.disable();
             book.clearOptions();
             book.load(function(callback) {
@@ -761,15 +767,28 @@ function showCopyEditor(elem) {
         preload: true,
         openOnFocus: true,
         create: false,
-        render: renderer,
+        render: defaultRenderer,
         onChange: function(value) {
             document.getElementById('create-button').disabled = false;
         }
     });
-    
-    level = $level[0].selectize;
-    subject = $subject[0].selectize;
+
     book = $book[0].selectize;
+    
+    if (book !== undefined) {
+        book.setValue('');
+    }
+    
+    if (level !== undefined) {
+        level.setValue('');
+    }
+    
+    if (level !== undefined) {
+        level.setValue('');
+    }
+    
+    $($('#asignatura').get(0).parentNode.parentNode).addClass('hidden');
+    $($('#libro').get(0).parentNode.parentNode).addClass('hidden');
     
     showGenericEditor({
         data: function() {
@@ -781,7 +800,9 @@ function showCopyEditor(elem) {
         createButton: 'Editar ejemplar',
         url: 'copies/edit/' + elem.getAttribute('data-code'),
         callbackValidator: function() {
-            if (_level.val().length < 1 || _subject.val().length < 1 || _book.val().length < 1) {
+            if (level.$input[0].value.length < 1
+                || subject.$input[0].value.length < 1
+                || _book.val().length < 1) {
                 displayModalAlert('Debes seleccionar un nivel, una asignatura y un libro.', 'danger');
             } else {
                 return true;
@@ -842,104 +863,45 @@ function updateCopyStatus(elem) {
 }
 
 function filterCopiesInit($notReturned) {
-    var filterLevel = $('#filter-level'),
-        filterSubject = $('#filter-subject'),
-        filterStudent = $('#filter-student'),
-        collection = ($notReturned) ? 'not_returned' : 'all',
+    var collection = ($notReturned) ? 'not_returned' : 'all',
         onSelectedItemCallback = function(item, type) {
             window.location.pathname = baseUrl + 'copies/' + collection +
                 '/filter_by/' + type + '/' + item + '/';
-        },
-        renderer = {
-            option: function(item, escape) {
-                return '<div>' + escape(item.name) + '</div>';
-            }
         };
-        
-    $level = filterLevel.selectize({
-        valueField: 'id',
+    
+    selectLevel({
         placeholder: 'Filtrar por nivel',
-        labelField: 'name',
-        searchField: 'name',
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        render: renderer,
-        load: function(query, callback) {
-            if (query != '') {
-                return;
-            }
-
-            $.ajax({
-                url: baseUrl + 'levels/all',
-                type: 'GET',
-                error: function() {
-                    callback();
-                },
-                success: function(res) {
-                    callback(res.levels);
-                }
-            });
-        },
+        id: "filter-level",
         onChange: function(value) {
-            if (!value.length) return;
             onSelectedItemCallback(value, 'level');
         }
     });
-
-    $subject = filterSubject.selectize({
-        valueField: 'id',
+    
+    selectSubject({
         placeholder: 'Filtrar por asignatura',
-        labelField: 'name',
-        searchField: 'name',
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        render: renderer,
-        load: function(query, callback) {
-            $.ajax({
-                url: baseUrl + 'subjects/all',
-                type: 'GET',
-                error: function(data) {
-                    callback();
-                },
-                success: function(res) {
-                    callback(res.subjects);
-                }
-            });
-        },
+        id: "filter-subject",
         onChange: function(value) {
-            if (!value.length) return;
             onSelectedItemCallback(value, 'subject');
         }
     });
     
-    $students = filterStudent.selectize({
-        valueField: 'nie',
+    selectStudent({
         placeholder: 'Filtrar por alumno',
-        labelField: 'name',
-        searchField: 'name',
-        preload: false,
-        openOnFocus: true,
-        create: false,
-        render: renderer,
-        load: function(query, callback) {
-            if (!query.length) return;
-
-            $.ajax({
-                url: baseUrl + 'students/search/' + query,
-                type: 'GET',
-                error: function(data) {
-                    callback();
-                },
-                success: function(res) {
-                    callback(res.students);
-                }
-            });
-        },
+        id: "filter-student",
         onChange: function(value) {
-            if (!value.length) return;
             onSelectedItemCallback(value, 'student');
         }
     });
+}
+
+function copiesLendingInit() {
+    var student = selectStudent({
+            placeholder: 'Seleccione un alumno',
+            id: "lending-student"
+        }),
+        level = selectLevel({
+            placeholder: 'Seleccione un nivel',
+            id: "lending-level"
+        });
+    
 }

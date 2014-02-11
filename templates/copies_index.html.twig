@@ -67,17 +67,16 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                
-                {% if pagination != '' %}
+                {% else %}
+                <div class="alert alert-warning">
+                    No hay ningún ejemplar.
+                </div>
+                {% endif %}
+                {% if pagination != '' or (page > 1 and pagination != '') %}
                 <div class="centered">
                     <ul class="pagination">
                         {{ pagination|raw }}
                     </ul>
-                </div>
-                {% endif %}
-                {% else %}
-                <div class="alert alert-warning">
-                    No hay ningún ejemplar.
                 </div>
                 {% endif %}
             </div>

@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.7.0
+ * @version     0.8.6
  * @package     Boeke
  *
  * MIT LICENSE
@@ -204,8 +204,9 @@ $app->group('/books', Middleware::isLoggedIn($app), function () use ($app) {
 // Gestión de ejemplares
 $app->group('/copies', Middleware::isLoggedIn($app), function () use ($app) {
     // Listado
-    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Copies::index')
-        ->name('copies_index');
+    $app->get('/list/(:page)', function ($page = 1) use ($app) {
+        \Boeke\Controllers\Copies::filter('all', 'all', 0, $page);
+    })->name('copies_index');
     // Creación de ejemplares
     $app->map('/create', '\\Boeke\\Controllers\\Copies::create')
         ->via('GET', 'POST')
@@ -219,6 +220,10 @@ $app->group('/copies', Middleware::isLoggedIn($app), function () use ($app) {
     // Filtrado de ejemplares
     $app->get('/:collection/filter_by/:type/:id/(:page)', '\\Boeke\\Controllers\\Copies::filter')
         ->name('copies_filter');
+    // Préstamo de un lote de libros
+    $app->map('/lending', '\\Boeke\\Controllers\\Copies::lending')
+        ->via('GET', 'POST')
+        ->name('copies_lending');
 });
 
 $app->run();

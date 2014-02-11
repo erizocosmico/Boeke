@@ -1,0 +1,15 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Entrega de lote de libros{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h2>Entrega de lote de libros</h2>
+                {% include 'copies_lending_content.html.twig' %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

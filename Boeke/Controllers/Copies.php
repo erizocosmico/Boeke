@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.7.0
+ * @version     0.8.6
  * @package     Boeke
  *
  * MIT LICENSE
@@ -73,68 +73,14 @@ class Copies extends Base
     }
 
     /**
-     * Muestra el listado de ejemplares paginado.
+     * Muestra el listado de ejemplares paginado con filtros.
      *
-     * @param int $page La página actual, la 1 por defecto
+     * @param string $collection Colección en la que buscar
+     * @param string $type Tipo de filtro
+     * @param int $id Identificador para el filtro
+     * @param int $page Página
      */
-    public static function index($page = 1)
-    {
-        $app = self::$app;
-        $copies = array();
-        if ($page < 1) {
-            $page = 1;
-        }
-        
-        // Obtenemos los registros
-        $copyList = \ORM::forTable('ejemplar')
-            ->tableAlias('e')
-            ->select('e.*')
-            ->select('al.nombre', 'alumno')
-            ->select('l.titulo', 'libro')
-            ->join('libro', array('e.libro_id', '=', 'l.id'), 'l')
-            ->leftOuterJoin('alumno', array('e.alumno_nie', '=', 'al.nie'), 'al')
-            ->orderByAsc('e.codigo')
-            ->limit('25')
-            ->offset((25 * ((int)$page - 1)))
-            ->findMany();
-        
-        foreach ($copyList as $row) {
-            if (is_null($row->alumno)) {
-                $row->alumno = 'No prestado';
-            }
-            $row->_estado = self::getStatusName($row->estado);
-
-            $copies[] = $row;
-        }
-        
-        // Generamos la paginación para el conjunto de libros
-        $pagination = self::generatePagination(
-            \Model::factory('Ejemplar'),
-            25,
-            $page,
-            function ($i) use ($app) {
-                return $app->urlFor('copies_index', array('page' => $i));
-            }
-        );
-        
-        $app->render('copies_index.html.twig', array(
-            'sidebar_copies_active'                 => true,
-            'sidebar_copies_list_active'            => true,
-            'page'                                  => $page,
-            'copies'                                => $copies,
-            'status_options'                        => self::getStatusSelectOptions(),
-            'pagination'                            => $pagination,
-            'breadcrumbs'   => array(
-                array(
-                    'active'        => true,
-                    'text'          => 'Listado de ejemplares',
-                    'route'         => self::$app->urlFor('copies_index'),
-                ),
-            ),
-        ));
-    }
-    
-    public static function filter($collection, $type, $id, $page = 1)
+    public static function filter($collection, $type = 'all', $id = 0, $page = 1)
     {
         $app = self::$app;
         $skipQuery = false;
@@ -225,7 +171,7 @@ class Copies extends Base
             $copyCount = 0;
         }
         
-        // Generamos la paginación para el conjunto de libros
+        // Generamos la paginación para el conjunto de ejemplares
         $pagination = self::generatePagination(
             $copyCount,
             25,
@@ -239,8 +185,6 @@ class Copies extends Base
                 ));
             }
         );
-        
-        #die(print_r($copies));
         
         $app->render('copies_index.html.twig', array(
             'sidebar_copies_active'                 => true,
@@ -459,5 +403,36 @@ class Copies extends Base
                 'error'       => join('<br />', $error),
             ));
         }
+    }
+    
+    /**
+     * Si es accedida mediante GET muestra el formulario para el préstamo de un lote
+     * de libros. Si es accedida mediante POST procesa dicha petición.
+     */
+    public static function lending()
+    {
+        $app = self::$app;
+        
+        if ($app->request->isPost()) {
+            $student = (int)$app->request->post('student');
+            // Brubru
+        }
+        
+        $app->render('copies_lending.html.twig', array(
+            'sidebar_copies_active'                 => true,
+            'sidebar_copies_lending_active'         => true,
+            'breadcrumbs'                           => array(
+                array(
+                    'active'        => false,
+                    'text'          => 'Gestión de ejemplares',
+                    'route'         => self::$app->urlFor('copies_index'),
+                ),
+                array(
+                    'active'        => true,
+                    'text'          => 'Entrega de un lote de libros',
+                    'route'         => self::$app->urlFor('copies_lending'),
+                ),
+            ),
+        ));
     }
 }

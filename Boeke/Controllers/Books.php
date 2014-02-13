@@ -149,6 +149,47 @@ class Books extends Base
     }
     
     /**
+     * Devuelve la lista de libros de un nivel diciendo si el estudiante
+     * especificado tiene un ejemplar de dicho libro en su posesión.
+     *
+     * @param int $levelId ID del nivel
+     * @param int $studentId NIE del estudiante
+     */
+    public static function forLevelAndStudent($levelId, $studentId)
+    {
+        $app = self::$app;
+        $books = array();
+        $levelBooks = \ORM::forTable('libro')
+            ->tableAlias('l')
+            ->select('a.nombre', 'asignatura')
+            ->select('l.*')
+            ->join('asignatura', array('a.id', '=', 'l.asignatura_id'), 'a')
+            ->where('a.nivel_id', $levelId)
+            ->findMany();
+        
+        $userCopies = array_map(function ($copy) {
+            return $copy['libro_id'];
+        }, \Model::factory('Ejemplar')
+            ->select('libro_id')
+            ->where('alumno_nie', $studentId)
+            ->findArray()
+        );
+        
+        foreach ($levelBooks as $book) {
+            $books[] = array(
+                'subject'       => $book->asignatura,
+                'title'         => $book->titulo,
+                'id'            => $book->id,
+                'owned'         => in_array($book->id, $userCopies),
+            );
+        }
+        
+        self::jsonResponse(200, array(
+            'books'         => $books,
+        ));
+    }
+    
+    /**
      * Devuelve en formato JSON todos los libros existentes.
      */
     public static function getAll()

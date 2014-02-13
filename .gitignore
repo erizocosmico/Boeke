@@ -2,3 +2,4 @@ vendor/*
 config.yml
 composer.lock
 public/js/vendor/*
+templates/cache/**/*.php

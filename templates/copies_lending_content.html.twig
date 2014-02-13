@@ -3,7 +3,7 @@
         copiesLendingInit();
     });
 </script>
-<form role="form" class="form-horizontal" onsubmit="return canSubmitCopiesLendingForm(this);" method="POST" action="{{ urlFor('copies_lending') }}">
+<form role="form" class="form-horizontal" method="POST" action="{{ urlFor('copies_lending') }}">
     {% if flash['error'] %}
         <div class="alert alert-danger" id="lend-backend-error">
             {{ flash['error']|raw }}
@@ -14,7 +14,7 @@
             {{ flash['success']|raw }}
         </div>
     {% endif %}
-    <div class="alert alert-danger hidden" id="alert-box"></div>
+    <div class="alert alert-danger hidden" id="lending-alert-box"></div>
     
     <div class="form-group">
         <label for="alumno" class="col-sm-3 control-label">Alumno</label>
@@ -31,9 +31,19 @@
             </select>
         </div>
     </div>
+    
+    <table class="table table-bordered hidden" id="books-table">
+        <thead>
+            <th>Asignatura</th>
+            <th>Libro</th>
+            <th class="text-center">Entregar</th>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 
     <div class="form-group text-center">
-        <button type="submit" id="create-submit-button" disabled="true" class="btn btn-primary">Dar ejemplares de alta</button>
+        <button type="submit" id="lending-submit-button" disabled="true" class="btn btn-primary">Entregar lote</button>
     </div>
     <input type="hidden" name="{{ csrf_key }}" value="{{ csrf_token }}">
 </form>

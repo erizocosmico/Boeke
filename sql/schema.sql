@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `ejemplar` (
   CONSTRAINT `ejemplar_alumno_nie_fk`
     FOREIGN KEY (`alumno_nie`)
     REFERENCES `alumno` (`nie`)
-    ON DELETE CASCADE
+    ON DELETE NO ACTION
     ON UPDATE CASCADE,
   INDEX `ejemplar_libro_id_fk_idx` (`libro_id` ASC),
   CONSTRAINT `ejemplar_libro_id_fk`
@@ -160,5 +160,5 @@ CREATE TABLE IF NOT EXISTS `historial` (
     FOREIGN KEY (`usuario_id`)
     REFERENCES `usuario` (`id`)
     ON DELETE SET NULL
-    ON UPDATE SET NULL)
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;

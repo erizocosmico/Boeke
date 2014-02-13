@@ -894,14 +894,74 @@ function filterCopiesInit($notReturned) {
     });
 }
 
+function renderLevelBook(book) {
+    var output = '',
+        checked = '';
+
+    output += '<tr>';
+    output += '<td>' + book.subject + '</td>';
+    checked = (book.owned) ? ' checked="checked" disabled="true"' : '';
+    output += '<td>' + book.title;
+    if (book.owned) {
+        output += ' <span class="tag tag-success">En posesión</span>';
+    }
+    output += '</td><td class="text-center"><input type="checkbox" name="book[]" value="' 
+        + book.id + '"' + checked + '>';
+    output += '</td>';
+    output += '</tr>';
+    return output;
+}
+
 function copiesLendingInit() {
-    var student = selectStudent({
+    var alertBox = document.getElementById('lending-alert-box'),
+        submitButton = document.getElementById('lending-submit-button'),
+        booksTable = document.getElementById('books-table'),
+        booksTableContent = booksTable.getElementsByTagName('tbody')[0],
+        currentStudent = null,
+        showAlertBox = function(text) {
+            alertBox.className = alertBox.className.replace('hidden', '');
+            alertBox.innerHTML = text;
+            window.setTimeout(function() {
+                alertBox.className += ' hidden';
+            }, 1000);
+        },
+        student = selectStudent({
             placeholder: 'Seleccione un alumno',
-            id: "lending-student"
+            id: "lending-student",
+            onChange: function(value) {
+                currentStudent = value;
+            }
         }),
         level = selectLevel({
             placeholder: 'Seleccione un nivel',
-            id: "lending-level"
+            id: "lending-level",
+            onChange: function(value) {
+                if (currentStudent === null) {
+                    showAlertBox('Debes introducir un usuario antes de elegir el nivel.');
+                    level.setValue('');
+                    return;
+                }
+
+                $.ajax({
+                    url: baseUrl + 'books/for_level/' + value + '/for_student/' + currentStudent,
+                    method: 'GET',
+                    error: function(data) {
+                        showAlertBox(JSON.parse(data.responseText));
+                        submitButton.disabled = true;
+                        booksTable.className += 'hidden';
+                    },
+                    success: function(res) {
+                        var books = res.books;
+                        submitButton.disabled = false;
+                        booksTable.className = booksTable.className.replace('hidden', '');
+                        booksTableContent.innerHTML = '';
+                        
+                        for (var i = 0; i < books.length; i++) {
+                            console.log(books[i]);
+                            booksTableContent.innerHTML += renderLevelBook(books[i]);
+                        }
+                    }
+                });
+            }
         });
-    
 }

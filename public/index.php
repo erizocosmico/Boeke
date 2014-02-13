@@ -52,20 +52,21 @@ $app = new \Slim\Slim(array(
     'cookies.path'          => $config['cookie_path'],
     'cookies.secret_key'    => $config['secret_key'],
     'http.version'          => '1.1',
+    'view'                  => new \Slim\Views\Twig(),
 ));
 
 // Configuramos las vistas con Twig
-$view = $app->view(new \Slim\Extras\Views\Twig());
+$view = $app->view();
 $view->parserOptions = array(
     'charset'               => 'utf-8',
     'debug'                 => $config['debug'],
-    'cache'                 => realpath('../templates/cache'),
+    'cache'                 => dirname(dirname(__FILE__)) . DSEP . 'templates/cache',
     'auto_reload'           => true,
     'strict_variables'      => false,
     'autoescape'            => true
 );
-\Slim\Extras\Views\Twig::$twigExtensions = array(
-    'Twig_Extensions_Slim',
+$view->parserExtensions = array(
+    new \Slim\Views\TwigExtension(),
 );
 
 // Configuramos las cookies
@@ -78,7 +79,7 @@ $app->add(new \Slim\Middleware\SessionCookie(array(
     'name'                  => $config['cookie_name'],
     'secret'                => $config['secret_key'],
     'cipher'                => MCRYPT_RIJNDAEL_256,
-    'cipher_mode'           => MCRYPT_MODE_CBC
+    'cipher_mode'           => MCRYPT_MODE_CBC,
 )));
 
 // Añadimos protección contra ataques CSRF
@@ -103,127 +104,7 @@ $app->hook('slim.before', function () use ($app) {
 \Boeke\Controllers\Base::$app = $app;
 \Boeke\Controllers\Base::$config = $config;
 
-/**
- * Rutas
- */
-
-// Índice
-$app->get('/', Middleware::isLoggedIn($app), '\\Boeke\\Controllers\\Index::index')
-    ->name('index');
-   
-// Conexión 
-$app->map('/login', Middleware::isLoggedIn($app, true), '\\Boeke\\Controllers\\Users::login')
-    ->via('GET', 'POST')
-    ->name('login');
-    
-// Desconexión
-$app->get('/logout',Middleware::isLoggedIn($app), '\\Boeke\\Controllers\\Users::logout')
-    ->name('logout');
-    
-// Gestión de usuarios
-$app->group('/users', Middleware::isLoggedIn($app), function () use ($app) {
-    // Listado
-    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Users::index')
-        ->name('users_index');
-    // Creación
-    $app->post('/new', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::create')
-        ->name('users_new');
-    // Edición
-    $app->put('/edit/:id', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::edit')
-        ->name('users_edit');
-    // Borrado
-    $app->delete('/delete/:id', Middleware::isAdmin($app), '\\Boeke\\Controllers\\Users::delete')
-        ->name('users_delete');
-});
-
-// Gestión de niveles
-$app->group('/levels', Middleware::isLoggedIn($app), function () use ($app) {
-    // Listado
-    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Levels::index')
-        ->name('levels_index');
-    // Listado en formato JSON
-    $app->get('/all', '\\Boeke\\Controllers\\Levels::getAll');
-    // Creación
-    $app->post('/new', '\\Boeke\\Controllers\\Levels::create');
-    // Edición
-    $app->put('/edit/:id', '\\Boeke\\Controllers\\Levels::edit');
-    // Borrado
-    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Levels::delete');
-});
-
-// Gestión de asignaturas
-$app->group('/subjects', Middleware::isLoggedIn($app), function () use ($app) {
-    // Listado
-    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Subjects::index')
-        ->name('subjects_index'); 
-    // Listado en formato JSON
-    $app->get('/for_level/:level', '\\Boeke\\Controllers\\Subjects::forLevel');
-    $app->get('/all', '\\Boeke\\Controllers\\Subjects::getAll');   
-    // Creación
-    $app->post('/new', '\\Boeke\\Controllers\\Subjects::create'); 
-    // Edición
-    $app->put('/edit/:id', '\\Boeke\\Controllers\\Subjects::edit');   
-    // Borrado
-    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Subjects::delete');
-});
-
-// Gestión de alumnos
-$app->group('/students', Middleware::isLoggedIn($app), function () use ($app) {
-    // Listado
-    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Students::index')
-        ->name('students_index');
-    // Listado en formato JSON
-    $app->get('/all', '\\Boeke\\Controllers\\Students::getAll');
-    // Creación
-    $app->post('/new', '\\Boeke\\Controllers\\Students::create');
-    // Edición
-    $app->put('/edit/:id', '\\Boeke\\Controllers\\Students::edit');
-    // Borrado
-    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Students::delete');
-    // Búsqueda de alumnos
-    $app->get('/search/:query', '\\Boeke\\Controllers\\Students::search');
-});
-
-// Gestión de libros
-$app->group('/books', Middleware::isLoggedIn($app), function () use ($app) {
-    // Listado
-    $app->get('/list/(:page)', '\\Boeke\\Controllers\\Books::index')
-        ->name('books_index');
-    // Listado en formato JSON
-    $app->get('/all', '\\Boeke\\Controllers\\Books::getAll');
-    // Listado por asignatura
-    $app->get('/for_subject/:subject', '\\Boeke\\Controllers\\Books::forSubject');
-    // Creación
-    $app->post('/new', '\\Boeke\\Controllers\\Books::create');
-    // Edición
-    $app->put('/edit/:id', '\\Boeke\\Controllers\\Books::edit');
-    // Borrado
-    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Books::delete');
-});
-
-// Gestión de ejemplares
-$app->group('/copies', Middleware::isLoggedIn($app), function () use ($app) {
-    // Listado
-    $app->get('/list/(:page)', function ($page = 1) use ($app) {
-        \Boeke\Controllers\Copies::filter('all', 'all', 0, $page);
-    })->name('copies_index');
-    // Creación de ejemplares
-    $app->map('/create', '\\Boeke\\Controllers\\Copies::create')
-        ->via('GET', 'POST')
-        ->name('copies_create');
-    // Edición
-    $app->put('/edit/:id', '\\Boeke\\Controllers\\Copies::edit');
-    // Actualizar estado
-    $app->put('/update_status/:id', '\\Boeke\\Controllers\\Copies::updateStatus');
-    // Borrado
-    $app->delete('/delete/:id', '\\Boeke\\Controllers\\Copies::delete');
-    // Filtrado de ejemplares
-    $app->get('/:collection/filter_by/:type/:id/(:page)', '\\Boeke\\Controllers\\Copies::filter')
-        ->name('copies_filter');
-    // Préstamo de un lote de libros
-    $app->map('/lending', '\\Boeke\\Controllers\\Copies::lending')
-        ->via('GET', 'POST')
-        ->name('copies_lending');
-});
+// Añadimos las rutas
+\Boeke\Routes::register($app);
 
 $app->run();

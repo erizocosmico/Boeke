@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.7.0
+ * @version     0.9.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -67,7 +67,11 @@ class Base
         $current,
         callable $urlCallback
     ) {
-        $count = $set->count();
+        if (is_numeric($set)) {
+            $count = $set;
+        } else {
+            $count = $set->count();
+        }
         $pages = ceil($count / $perPage);
         
         // Si no hay suficientes registros para paginar no devolvemos nada

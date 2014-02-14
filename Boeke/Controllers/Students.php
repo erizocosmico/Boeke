@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.7.0
+ * @version     0.9.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -108,6 +108,32 @@ class Students extends Base
         
         self::jsonResponse(200, array(
             'students'       => $students,
+        ));
+    }
+    
+    /**
+     * Devuelve los resultados en JSON para los alumnos que se correspondan con la búsqueda.
+     *
+     * @param string $query Búsqueda
+     */
+    public static function search($query) {
+        $app = self::$app;
+        $query .= '%';
+        $students = \Model::factory('Alumno')
+            ->whereRaw('nombre LIKE ? OR apellidos LIKE ?', array($query, $query))
+            ->findMany();
+        
+        $studentsArray = array();
+        foreach ($students as $student) {
+            $studentsArray[] = array(
+                'nie'       => $student->nie,
+                'name'      => $student->nombre .
+                    ($student->apellidos ? ' ' . $student->apellidos : ''),
+            );
+        }
+        
+        self::jsonResponse(200, array(
+            'students'  => $studentsArray,
         ));
     }
     
@@ -240,10 +266,17 @@ class Students extends Base
         
         if ($app->request->delete('confirm') === 'yes') {
             // Borramos el alumno
-            \Model::factory('Alumno')
-                ->where('nie', $nie)
-                ->findOne()
-                ->delete();
+            try {
+                \Model::factory('Alumno')
+                    ->where('nie', $nie)
+                    ->findOne()
+                    ->delete();
+            } catch (\PDOException $e) {
+                self::jsonResponse(400, array(
+                    'error'       => 'No puedes borrar este alumno. Tiene ejemplares sin entregar.',
+                ));
+                return;
+            }
         } else {
             self::jsonResponse(200, array(
                 'deleted'     => false,

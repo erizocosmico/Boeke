@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.7.0
+ * @version     0.9.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -107,13 +107,17 @@ class Books extends Base
         }
         
         // Obtenemos los registros
-        $sql = 'SELECT l.*, a.nombre as asignatura, n.nombre as nivel ' .
-            'FROM libro l JOIN asignatura a ' .
-                'ON (a.id = l.asignatura_id) ' .
-            'JOIN nivel n ' .
-                'ON (n.id = a.nivel_id) ' .
-            'ORDER BY l.titulo ASC LIMIT ' . (25 * ((int)$page - 1)) . ',25';
-        $bookList = \ORM::forTable('libro')->rawQuery($sql)->findMany();
+        $bookList = \ORM::forTable('libro')
+            ->tableAlias('l')
+            ->select('l.*')
+            ->select('a.nombre', 'asignatura')
+            ->select('n.nombre', 'nivel')
+            ->join('asignatura', array('l.asignatura_id', '=', 'a.id'), 'a')
+            ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
+            ->orderByAsc('l.titulo')
+            ->limit(25)
+            ->offset((25 * ((int)$page - 1)))
+            ->findMany();
         
         foreach ($bookList as $row) {
             $books[] = $row;
@@ -141,6 +145,47 @@ class Books extends Base
                     'route'         => self::$app->urlFor('books_index'),
                 ),
             ),
+        ));
+    }
+    
+    /**
+     * Devuelve la lista de libros de un nivel diciendo si el estudiante
+     * especificado tiene un ejemplar de dicho libro en su posesión.
+     *
+     * @param int $levelId ID del nivel
+     * @param int $studentId NIE del estudiante
+     */
+    public static function forLevelAndStudent($levelId, $studentId)
+    {
+        $app = self::$app;
+        $books = array();
+        $levelBooks = \ORM::forTable('libro')
+            ->tableAlias('l')
+            ->select('a.nombre', 'asignatura')
+            ->select('l.*')
+            ->join('asignatura', array('a.id', '=', 'l.asignatura_id'), 'a')
+            ->where('a.nivel_id', $levelId)
+            ->findMany();
+        
+        $userCopies = array_map(function ($copy) {
+            return $copy['libro_id'];
+        }, \Model::factory('Ejemplar')
+            ->select('libro_id')
+            ->where('alumno_nie', $studentId)
+            ->findArray()
+        );
+        
+        foreach ($levelBooks as $book) {
+            $books[] = array(
+                'subject'       => $book->asignatura,
+                'title'         => $book->titulo,
+                'id'            => $book->id,
+                'owned'         => in_array($book->id, $userCopies),
+            );
+        }
+        
+        self::jsonResponse(200, array(
+            'books'         => $books,
         ));
     }
     

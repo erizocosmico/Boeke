@@ -20,6 +20,8 @@ for root, dirs, files in os.walk(PATH):
         dirs.remove('vendor')
     if '.git' in dirs:
         dirs.remove('.git')
+    if 'cache' in dirs:
+        dirs.remove('cache')
         
     for file in files:
         if file.endswith('.php'):

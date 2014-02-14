@@ -3,6 +3,11 @@
 {% block title %}Gestión de ejemplares{% endblock %}
 
 {% block content %}
+<script type="text/javascript">
+    window.addEventListener('DOMContentLoaded', function(e) {
+        filterCopiesInit();
+    });
+</script>
 {% include "sidebar.html.twig" %}
     <div class="col-xs-12 col-sm-9">
         <div class="panel panel-default">
@@ -11,6 +16,33 @@
             </div>
             <div class="panel-body">
                 <h2>Listado de ejemplares</h2>
+                {% if not filter_active %}
+                {% if copies %}
+                <div class="filter-box">
+                    <label>Filtrar ejemplares</label>
+                    <div class="clearfix">
+                        {% if not_returned %}
+                        <div class="pull-right col-sm-4 col-xs-12">
+                            <select id="filter-level"></select>
+                        </div>
+                        {% else %}
+                        <div class="pull-right col-sm-4 col-xs-12">
+                            <select id="filter-status"></select>
+                        </div>
+                        {% endif %}
+                        <div class="pull-right col-sm-4 col-xs-12">
+                            <select id="filter-subject"></select>
+                        </div>
+                        <div class="pull-right col-sm-4 col-xs-12">
+                            <select id="filter-student"></select>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% else %}
+                <a href="{{ urlFor('copies_index') }}" class="btn btn-default"><span class="fa fa-chevron-left"></span> Volver al listado completo</a>
+                <br /><br />
+                {% endif %}
                 {% if copies %}
                 <table class="table table-striped">
                     <thead>
@@ -27,7 +59,9 @@
                         <tr>
                             <td class="text-center">{{ copy.codigo }}</td>
                             <td class="text-center">{{ copy.libro }}</td>
-                            <td class="text-center">{{ copy.alumno }}</td>
+                            <td class="text-center">
+                                {{ copy.alumno }}{% if copy['alumno_apellidos'] %} {{ copy.alumno_apellidos }}{% endif %}
+                            </td>
                             <td class="text-center">
                                 {{ copy._estado }}
                                 <br />
@@ -41,17 +75,16 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                
-                {% if pagination != '' %}
+                {% else %}
+                <div class="alert alert-warning">
+                    No hay ningún ejemplar.
+                </div>
+                {% endif %}
+                {% if pagination != '' or (page > 1 and pagination != '') %}
                 <div class="centered">
                     <ul class="pagination">
                         {{ pagination|raw }}
                     </ul>
-                </div>
-                {% endif %}
-                {% else %}
-                <div class="alert alert-warning">
-                    No hay ningún ejemplar.
                 </div>
                 {% endif %}
             </div>

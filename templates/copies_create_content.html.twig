@@ -3,8 +3,9 @@
         copiesCreationInit();
         
         hide = function(elem) {
-            if (elem === undefined) return;
+            if (elem == undefined) return;
             window.setTimeout(function() {
+                if (elem == undefined) return;
                 elem.className += ' hidden';
             }, 2000);
         }
@@ -35,7 +36,7 @@
     </div>
     
     <div class="form-group hidden">
-        <label for="nombre_completo" class="col-sm-4 control-label">Asignatura</label>
+        <label for="asignatura" class="col-sm-4 control-label">Asignatura</label>
         <div class="col-sm-8">
             <select class="form-control" id="asignatura" name="asignatura">
             </select>

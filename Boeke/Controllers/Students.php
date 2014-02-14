@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.8.6
+ * @version     0.9.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -266,10 +266,17 @@ class Students extends Base
         
         if ($app->request->delete('confirm') === 'yes') {
             // Borramos el alumno
-            \Model::factory('Alumno')
-                ->where('nie', $nie)
-                ->findOne()
-                ->delete();
+            try {
+                \Model::factory('Alumno')
+                    ->where('nie', $nie)
+                    ->findOne()
+                    ->delete();
+            } catch (\PDOException $e) {
+                self::jsonResponse(400, array(
+                    'error'       => 'No puedes borrar este alumno. Tiene ejemplares sin entregar.',
+                ));
+                return;
+            }
         } else {
             self::jsonResponse(200, array(
                 'deleted'     => false,

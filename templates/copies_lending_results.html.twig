@@ -1,0 +1,40 @@
+<h3>Libros entregados</h3>
+{% if results.given|length %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Libro</th>
+            <th>Código</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for copy in results.given %}
+        <tr>
+            <td>{{ copy.title }}</td>
+            <td>{{ copy.code }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-warn">
+    No se ha entregado ningún libro.
+</div>
+{% endif %}
+
+{% if results.error|length %}
+<h3>Libros no entregados</h3>
+
+<div class="alert alert-danger">
+    No se han podido encontrar ejemplares para algunos de los libros seleccionados. A continuación le proporcionamos información acerca de aquellos que no se han podido obtener.
+</div>
+<table class="table table-bordered">
+    <tbody>
+        {% for copy in results.error %}
+        <tr>
+            <td>{{ copy.title }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}

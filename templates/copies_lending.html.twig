@@ -8,7 +8,11 @@
         <div class="panel panel-default">
             <div class="panel-body">
                 <h2>Entrega de lote de libros</h2>
+                {% if not results %}
                 {% include 'copies_lending_content.html.twig' %}
+                {% else %}
+                {% include 'copies_lending_results.html.twig' %}
+                {% endif %}
             </div>
         </div>
     </div>

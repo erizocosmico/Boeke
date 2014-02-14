@@ -869,13 +869,53 @@ function filterCopiesInit($notReturned) {
                 '/filter_by/' + type + '/' + item + '/';
         };
     
-    selectLevel({
-        placeholder: 'Filtrar por nivel',
-        id: "filter-level",
-        onChange: function(value) {
-            onSelectedItemCallback(value, 'level');
-        }
-    });
+    if (collection === 'not_returned') {
+        selectLevel({
+            placeholder: 'Filtrar por nivel',
+            id: "filter-level",
+            onChange: function(value) {
+                onSelectedItemCallback(value, 'level');
+            }
+        });
+    } else {
+        var $status = $('#filter-status').selectize({
+            valueField: 'id',
+            placeholder: 'Filtrar por estado',
+            labelField: 'name',
+            searchField: 'name',
+            preload: true,
+            openOnFocus: true,
+            create: false,
+            render: defaultRenderer,
+            load: function(query, callback) {
+                callback([
+                    {
+                        'id': 0,
+                        'name': 'Bueno'
+                    },
+                    {
+                        'id': 1,
+                        'name': 'Regular'
+                    },
+                    {
+                        'id': 2,
+                        'name': 'Malo'
+                    },
+                    {
+                        'id': 3,
+                        'name': 'Perdido'
+                    },
+                    {
+                        'id': 4,
+                        'name': 'Baja'
+                    },
+                ]);
+            },
+            onChange: function(value) {
+                onSelectedItemCallback(value, 'status');
+            }
+        });
+    }
     
     selectSubject({
         placeholder: 'Filtrar por asignatura',
@@ -902,11 +942,13 @@ function renderLevelBook(book) {
     output += '<td>' + book.subject + '</td>';
     checked = (book.owned) ? ' checked="checked" disabled="true"' : '';
     output += '<td>' + book.title;
+    
+    output += '</td><td class="text-center">';
     if (book.owned) {
-        output += ' <span class="tag tag-success">En posesión</span>';
+        output += '<span class="label label-info">En posesión</span>';
+    } else {
+        output += '<input type="checkbox" name="book[]" value="'+ book.id + '">';
     }
-    output += '</td><td class="text-center"><input type="checkbox" name="book[]" value="' 
-        + book.id + '"' + checked + '>';
     output += '</td>';
     output += '</tr>';
     return output;

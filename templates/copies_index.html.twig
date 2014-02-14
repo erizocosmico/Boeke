@@ -21,9 +21,15 @@
                 <div class="filter-box">
                     <label>Filtrar ejemplares</label>
                     <div class="clearfix">
+                        {% if not_returned %}
                         <div class="pull-right col-sm-4 col-xs-12">
                             <select id="filter-level"></select>
                         </div>
+                        {% else %}
+                        <div class="pull-right col-sm-4 col-xs-12">
+                            <select id="filter-status"></select>
+                        </div>
+                        {% endif %}
                         <div class="pull-right col-sm-4 col-xs-12">
                             <select id="filter-subject"></select>
                         </div>
@@ -53,7 +59,9 @@
                         <tr>
                             <td class="text-center">{{ copy.codigo }}</td>
                             <td class="text-center">{{ copy.libro }}</td>
-                            <td class="text-center">{{ copy.alumno }}</td>
+                            <td class="text-center">
+                                {{ copy.alumno }}{% if copy['alumno_apellidos'] %} {{ copy.alumno_apellidos }}{% endif %}
+                            </td>
                             <td class="text-center">
                                 {{ copy._estado }}
                                 <br />

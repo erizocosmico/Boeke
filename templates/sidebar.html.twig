@@ -13,7 +13,7 @@
                         <li><a href="{{ urlFor('copies_filter', {'collection': 'not_returned', 'type': 'all', 'id': '0'}) }}" {% if sidebar_copies_not_returned_active %}class="active"{% endif %}>Ejemplares no devueltos</a></li>
                         <li><a href="{{ urlFor('copies_create') }}" {% if sidebar_copies_create_active %}class="active"{% endif %}>Alta de ejemplares</a></li>
                         <li><a href="{{ urlFor('copies_lending') }}" {% if sidebar_copies_lending_active %}class="active"{% endif %}>Entrega de lote de libros</a></li>
-                        <li><a href="{{ urlFor('copies_index') }}" {% if sidebar_copies_mass_return_active %}class="active"{% endif %}>Devolución de lote de libros</a></li>
+                        <li><a href="{{ urlFor('copies_student_return') }}" {% if sidebar_copies_mass_return_active %}class="active"{% endif %}>Devolución de lote de libros</a></li>
                         <li><a href="{{ urlFor('copies_index') }}" {% if sidebar_copies_return_active %}class="active"{% endif %}>Devolución manual de libros</a></li>
                     </ul>
                 {% endif %}

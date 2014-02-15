@@ -29,8 +29,9 @@
         <![endif]-->
             
             <header>
+                {% if logged_in %}
                 <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
-                    <div class="container">
+                    <div class="container limited-width">
                         <div class="navbar-header">
                             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
                                 <span class="sr-only">Toggle navigation</span>
@@ -51,9 +52,13 @@
                         </div>
                     </div>
                 </nav>
+                {% else %}
+                <h1 class="text-center spacing-vertical"><span class="fa fa-book base-icon"></span> Boeke</h1>
+                {% endif %}
             </header>
             
-            <div class="container">
+            <div class="container limited-width">
+                {% if logged_in %}
                 <ol class="breadcrumb">
                   <li><a href="{{ urlFor('index') }}">Inicio</a></li>
                   {% for lk in breadcrumbs %}
@@ -63,6 +68,7 @@
                   <li></li>
                   {% endif %}
                 </ol>
+                {% endif %}
                 
                 <div class="row row-offcanvas row-offcanvas-right">
                 {% block content %}

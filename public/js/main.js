@@ -21,6 +21,15 @@ function displayModalAlert(content, type) {
     alert.innerHTML = content;
 }
 
+function showAlertBox(id, text) {
+    var alertBox = document.getElementById(id);
+    alertBox.className = alertBox.className.replace('hidden', '');
+    alertBox.innerHTML = text;
+    window.setTimeout(function() {
+        alertBox.className += ' hidden';
+    }, 1000);
+}
+
 function hideModalAlert() {
     var alert = document.getElementById('modal-alert');
     alert.className = 'alert hidden';
@@ -641,10 +650,10 @@ function copiesCreationInit() {
     book = $book[0].selectize;
 }
 
-function addAnotherCopy(elem) {
-    var copyCodeBox = document.getElementById('copy-code-box'),
+function addAnotherCopy(elem, id, inputName) {
+    var copyCodeBox = document.getElementById(id),
         num = elem.getAttribute('data-num'),
-        codes = document.getElementsByName('codigo[]'),
+        codes = document.getElementsByName(inputName + '[]'),
         codesTmp = [];
         
     for (var i = 0; i < codes.length; i++) {
@@ -652,9 +661,9 @@ function addAnotherCopy(elem) {
     }
 
     copyCodeBox.innerHTML += '<div class="form-group">' + 
-        '<label for="codigo_' + num + '" class="col-sm-4 control-label">Código del ejemplar ' + num + '</label>' +
+        '<label for="' + inputName + '" class="col-sm-4 control-label">Código del ejemplar ' + num + '</label>' +
         '<div class="col-sm-8">' +
-        '<input type="number" class="form-control" id="codigo_' + num + '" name="codigo[]" placeholder="Código del ejemplar...">' +
+        '<input type="number" class="form-control" id="' + inputName + '_' + num + '" name="' + inputName + '[]" placeholder="Código del ejemplar...">' +
         '</div></div>';
         
     for (var i = 0; i < codesTmp.length; i++) {
@@ -868,7 +877,7 @@ function filterCopiesInit($notReturned) {
             window.location.pathname = baseUrl + 'copies/' + collection +
                 '/filter_by/' + type + '/' + item + '/';
         };
-    
+
     if (collection === 'not_returned') {
         selectLevel({
             placeholder: 'Filtrar por nivel',
@@ -955,18 +964,10 @@ function renderLevelBook(book) {
 }
 
 function copiesLendingInit() {
-    var alertBox = document.getElementById('lending-alert-box'),
-        submitButton = document.getElementById('lending-submit-button'),
+    var submitButton = document.getElementById('lending-submit-button'),
         booksTable = document.getElementById('books-table'),
         booksTableContent = booksTable.getElementsByTagName('tbody')[0],
         currentStudent = null,
-        showAlertBox = function(text) {
-            alertBox.className = alertBox.className.replace('hidden', '');
-            alertBox.innerHTML = text;
-            window.setTimeout(function() {
-                alertBox.className += ' hidden';
-            }, 1000);
-        },
         student = selectStudent({
             placeholder: 'Seleccione un alumno',
             id: "lending-student",
@@ -979,7 +980,7 @@ function copiesLendingInit() {
             id: "lending-level",
             onChange: function(value) {
                 if (currentStudent === null) {
-                    showAlertBox('Debes introducir un usuario antes de elegir el nivel.');
+                    showAlertBox('lending-alert-box','Debes introducir un usuario antes de elegir el nivel.');
                     level.setValue('');
                     return;
                 }
@@ -988,7 +989,7 @@ function copiesLendingInit() {
                     url: baseUrl + 'books/for_level/' + value + '/for_student/' + currentStudent,
                     method: 'GET',
                     error: function(data) {
-                        showAlertBox(JSON.parse(data.responseText));
+                        showAlertBox('lending-alert-box', JSON.parse(data.responseText).error);
                         submitButton.disabled = true;
                         booksTable.className += 'hidden';
                     },
@@ -1006,4 +1007,69 @@ function copiesLendingInit() {
                 });
             }
         });
+}
+
+function renderNotReturnedCopy(copy) {
+    return '<tr>'
+        + '<td>' + copy.code + '</td>'
+        + '<td>' + copy.book + '</td>'
+        + '<td class="text-center"><button class="btn btn-danger btn-sm" data-code="' + copy.code 
+        + '" onclick="markCopyLost(this); return false;">Marcar como perdido</button></td>'
+        + '</tr>';      
+}
+
+function markCopyLost(elem) {
+    var code = elem.getAttribute('data-code'),
+        cell = elem.parentNode,
+        csrf = document.getElementById('csrf_key');
+        
+    $.ajax({
+        url: baseUrl + 'copies/mark_lost',
+        method: 'POST',
+        data: 'code=' + code + '&' + csrf.getAttribute('name') + '=' + csrf.value,
+        success: function(data) {
+            cell.innerHTML = 'Marcado como perdido';
+        },
+        errror: function(data) {
+            showAlertBox('return-alert-box', JSON.parse(data.responseText).error);
+        }
+    });
+}
+
+function studentCopiesReturnInit() {
+    var hiddenContent = document.getElementById('return-data-hidden'),
+        submitBtn = document.getElementById('return-submit-button'),
+        booksTable = document.getElementById('return-books-table'),
+        booksTableContent = booksTable.getElementsByTagName('tbody')[0];
+
+    selectStudent({
+        placeholder: 'Seleccione un alumno',
+        id: "return-student",
+        onChange: function(value) {
+            submitBtn.disabled = false;
+            hiddenContent.className = '';
+            
+            $.ajax({
+                url: baseUrl + 'copies/not_returned/for_student/' + value,
+                method: 'GET',
+                success: function(data) {
+                    var copies = data.copies;
+                    
+                    booksTable.className = booksTable.className.replace('hidden', '');
+                    booksTableContent.innerHTML = '';
+
+                    if (copies.length === 0) {
+                        booksTable.className += ' hidden';
+                    }
+
+                    for (var i = 0; i < copies.length; i++) {
+                        booksTableContent.innerHTML += renderNotReturnedCopy(copies[i]);
+                    }
+                },
+                error: function(res) {
+                    showAlertBox('return-alert-box', JSON.parse(res.responseText).error);
+                }
+            });
+        }
+    });
 }

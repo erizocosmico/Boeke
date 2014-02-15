@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.9.1
+ * @version     0.10.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -171,6 +171,18 @@ class Routes
             $app->map('/lending', '\\Boeke\\Controllers\\Copies::lending')
                 ->via('GET', 'POST')
                 ->name('copies_lending');
+            // Devolución de un lote de libros
+            $app->map('/return(/:student)', '\\Boeke\\Controllers\\Copies::returnStudentCopies')
+                ->via('GET', 'POST')
+                ->name('copies_student_return');
+            // Marcar un ejemplar como perdido
+            $app->post('/mark_lost', '\\Boeke\\Controllers\\Copies::copyLost')
+                ->name('copies_mark_lost');
+            // Libros no devueltos por el alumno
+            $app->get(
+                '/not_returned/for_student/:student',
+                '\\Boeke\\Controllers\\Copies::notReturnedByStudent'
+            );
         });
     }
 }

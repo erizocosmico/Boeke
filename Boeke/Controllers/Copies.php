@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.9.1
+ * @version     0.10.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -250,7 +250,6 @@ class Copies extends Base
                     $app->flashNow('success', 'Ejemplares insertados correctamente.');
                 } catch (\PDOException $e) {
                     $dbh->rollBack();
-                    die($e->getMessage());
                     $error[] = 'Ha ocurrido un error insertando los ejemplares. Ninguno fue insertado para garantizar la integridad de los datos.';
                 }
             }
@@ -654,5 +653,265 @@ class Copies extends Base
         }
         
         return null;
+    }
+    
+    /**
+     * Gestiona la devolución de un lote de libros.
+     * Si es accedido mediante POST procesará los datos recibidos.
+     * Si es accedido mediante GET simplemente mostrará el formulario.
+     *
+     * @param int $student NIE del alumno (solo aplicable en POST)
+     */
+    public static function returnStudentCopies($student = 0)
+    {
+        $app = self::$app;
+        
+        if ($app->request->isPost()) {
+            $confirmed = (bool)$app->request->post('confirm', 0);
+            // Si no ha confirmado recogemos los datos
+            if (!$confirmed) {
+                $student = (int)$app->request->post('student');
+                $goodState = (array)$app->request->post('good_state');
+                $mediumState = (array)$app->request->post('medium_state');
+                $badState = (array)$app->request->post('bad_state');
+            } else {
+                $goodState = explode(',', $app->request->post('good_state'));
+                $mediumState = explode(',', $app->request->post('medium_state'));
+                $badState = explode(',', $app->request->post('bad_state'));
+            }
+            
+            // Comprobamos que el alumno existe y si no existe devolvemos a la
+            // pantalla de devolución de lote de libros
+            if (!\Model::factory('Alumno')->findOne($student)) {
+                $app->flash('error', 'El alumno especificado no existe.');
+                $app->redirect($app->urlFor('copies_student_return'));
+                return;
+            }
+
+            // Organizamos los nuevos estados para cada ejemplar
+            $copiesNewStatus = array();
+            $copiesToUpdate = array_filter(array_merge($goodState, $mediumState, $badState));
+            $uniqueCopies = array_unique($copiesToUpdate);
+            if (count($copiesToUpdate) !== count($uniqueCopies)) {
+                $app->flash('error', 'Hay ejemplares repetidos en los diferentes estados. Por favor, inténtelo de nuevo con los datos correctos.');
+                $app->redirect($app->urlFor('copies_student_return'));
+                return;
+            } else if (count($copiesToUpdate) === 0) {
+                $app->flash('error', 'No se han introducido ejemplares para devolver.');
+                $app->redirect($app->urlFor('copies_student_return'));
+                return;
+            }
+
+            foreach ($goodState as $copy) {
+                $copiesNewStatus[$copy] = 0;
+            }
+        
+            foreach ($mediumState as $copy) {
+                $copiesNewStatus[$copy] = 1;
+            }
+        
+            foreach ($badState as $copy) {
+                $copiesNewStatus[$copy] = 2;
+            }
+            
+            $copiesList = array();
+            if (count($copiesToUpdate) > 0) {
+                $copiesList = \Model::factory('Ejemplar')
+                    ->whereIn('codigo', $copiesToUpdate)
+                    ->findMany();
+            }
+            $copies = array();
+            $invalidCopies = array();
+        
+            // Comprobamos que los ejemplares pertenecen al alumno
+            foreach ($copiesList as $copy) {
+                if ($copy->alumno_nie != $student) {
+                    $invalidCopies[] = $copy;
+                } else {
+                    $copies[] = $copy;
+                }
+            }
+            
+            // Comprobamos si el usuario ha confirmado la acción
+            // en cuyo caso simplemente seguiremos adelante
+            if (!$confirmed) {
+                // Si hay ejemplares que no pertenecen al alumno mostramos
+                // el mensaje de confirmación para notificar al usuario
+                if (count($invalidCopies) > 0) {
+                    // Conseguimos un array con los códigos de los ejemplares que
+                    // no pertenecen al usuario
+                    $invalidCopies = array_map(function ($copy) {
+                        return $copy->codigo;
+                    }, $invalidCopies);
+                    
+                    // Conseguimos un array con los códigos para cada uno de los estados
+                    // tan solo de los ejemplares válidos
+                    $goodState = $mediumState = $badState = array();
+                    foreach ($copies as $copy) {
+                        switch ($copiesNewStatus[$copy->codigo]) {
+                            case 0:
+                                $goodState[] = $copy->codigo;
+                            break;
+                            case 1:
+                                $mediumState[] = $copy->codigo;
+                            break;
+                            case 2:
+                                $badState[] = $copy->codigo;
+                            break;
+                        }
+                    }
+
+                    $app->render('copies_student_return.html.twig', array(
+                        'confirmation'                          => true,
+                        'sidebar_copies_active'                 => true,
+                        'sidebar_copies_mass_return_active'     => true,
+                        'good_state'                            => join(',', $goodState),
+                        'medium_state'                          => join(',', $mediumState),
+                        'bad_state'                             => join(',', $badState),
+                        'invalid'                               => $invalidCopies,
+                        'student_id'                            => $student,
+                        'breadcrumbs'                           => array(
+                            array(
+                                'active'        => false,
+                                'text'          => 'Gestión de ejemplares',
+                                'route'         => self::$app->urlFor('copies_index'),
+                            ),
+                            array(
+                                'active'        => true,
+                                'text'          => 'Devolución de un lote de libros',
+                                'route'         => self::$app->urlFor('copies_student_return'),
+                            ),
+                        ),
+                    ));
+                    return;
+                }
+            }
+            
+            // Guardamos los cambios
+            if (count($copies) > 0) {
+                $dbh = \ORM::getDb();
+                $dbh->beginTransaction();
+                try {
+                    foreach ($copies as $copy) {
+                        $copy->estado = $copiesNewStatus[$copy->codigo];
+                        $copy->alumno_nie = null;
+                        $copy->save();
+                        Historial::add(
+                            $copy->codigo,
+                            'devuelto',
+                            $_SESSION['user_id'],
+                            '',
+                            $student
+                        );
+                    }
+                    
+                    $dbh->commit();
+                    $app->flash('success', 'Ejemplares devueltos correctamente.');
+                } catch (\PDOException $e) {
+                    $dbh->rollBack();
+                    $app->flash('error', 'Hubo un problema y no se pudieron devolver los ejemplares. Inténtelo de nuevo.');
+                }
+            }
+            
+            $app->redirect($app->urlFor('copies_student_return'));
+            return;
+        }
+        
+        $app->render('copies_student_return.html.twig', array(
+            'sidebar_copies_active'                 => true,
+            'sidebar_copies_mass_return_active'     => true,
+            'student'                               => $student,
+            'breadcrumbs'                           => array(
+                array(
+                    'active'        => false,
+                    'text'          => 'Gestión de ejemplares',
+                    'route'         => self::$app->urlFor('copies_index'),
+                ),
+                array(
+                    'active'        => true,
+                    'text'          => 'Devolución de un lote de libros',
+                    'route'         => self::$app->urlFor('copies_student_return'),
+                ),
+            ),
+        ));
+    }
+    
+    /**
+     * Marca un ejemplar como perdido.
+     */
+    public static function copyLost()
+    {
+        $app = self::$app;
+        $copyId = (int)$app->request->post('code', 0);
+        $copy = \Model::factory('Ejemplar')->findOne($copyId);
+        
+        if ($copy) {
+            $dbh = \ORM::getDb();
+            $dbh->beginTransaction();
+            try {
+                Historial::add(
+                    $copy->codigo,
+                    'perdido',
+                    $_SESSION['user_id'],
+                    '',
+                    $copy->alumno_nie
+                );
+                $copy->alumno_nie = null;
+                $copy->estado = 3;
+                $copy->save();
+                $dbh->commit();
+                
+                self::jsonResponse(200, array(
+                    'marked'       => true,
+                ));
+            } catch (\PDOException $e) {
+                $dbh->rollBack();
+                
+                self::jsonResponse(500, array(
+                    'error'         => 'Ha ocurrido un error y no se ha podido marcar como perdido el ejemplar.',
+                ));
+            }
+            return;
+        }
+        
+        self::jsonResponse(404, array(
+            'error'         => 'No se ha podido encontrar el ejemplar.',
+        ));
+    }
+    
+    /**
+     * Devuelve un objeto JSON que contiene los ejemplares no devueltos de un alumno
+     *
+     * @param int $student NIE del alumno
+     */
+    public static function notReturnedByStudent($student)
+    {
+        $app = self::$app;
+        
+        if (!\Model::factory('Alumno')->findOne($student)) {
+            self::jsonResponse(404, array(
+                'error'         => 'No se ha podido encontrar al usuario seleccionado.',
+            ));
+        } else {
+            $copiesNotReturned = \ORM::forTable('ejemplar')
+                ->tableAlias('e')
+                ->select('e.codigo')
+                ->select('l.titulo', 'libro')
+                ->join('libro', array('l.id', '=', 'e.libro_id'), 'l')
+                ->where('alumno_nie', $student)
+                ->findMany();
+            
+            $copies = array();
+            foreach ($copiesNotReturned as $copy) {
+                $copies[] = array(
+                    'code'                => $copy->codigo,
+                    'book'                => $copy->libro,
+                );
+            }
+            
+            self::jsonResponse(200, array(
+                'copies'            => $copies,
+            ));
+        }
     }
 }

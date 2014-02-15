@@ -1,0 +1,21 @@
+<form role="form" class="form-horizontal" method="POST" action="{{ urlFor('copies_student_return', {'student': student_id}) }}">
+    {% if invalid %}
+    <div class="alert alert-danger">
+        Hay ejemplares introducidos que no pertenecen al alumno escogido. A continuación se le facilitarán los códigos de dichos ejemplares:
+        <ul>
+            {% for code in invalid %}
+            <li>{{ code }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    <p>Si pulsa en el botón confirmar se marcarán como devueltos los ejemplares que pertenecían al alumno. Los que no pertenecen al alumno serán ignorados.</p>
+    <input type="hidden" name="good_state" value="{{ good_state }}">
+    <input type="hidden" name="medium_state" value="{{ medium_state }}">
+    <input type="hidden" name="bad_state" value="{{ bad_state }}">
+    <input type="hidden" id="csrf_key" name="{{ csrf_key }}" value="{{ csrf_token }}">
+    <div class="text-center">
+        <button class="btn btn-primary" type="submit" name="confirm" value="confirm">Confirmar</button>&nbsp;
+        <a href="{{ urlFor('copies_student_return') }}" class="btn btn-default">Cancelar</a>
+    </div>
+</form>

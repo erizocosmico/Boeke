@@ -98,9 +98,17 @@ ul.pagination li.active a {
 /* ==== HELPER CLASSES ============== */
 
 .base-icon {
-    vertical-align: middle;
+    
 }
 
 .centered {
     text-align: center;
+}
+
+.spacing-vertical {
+    padding: 30px 0;
+}
+
+.limited-width {
+    max-width: 1000px;
 }

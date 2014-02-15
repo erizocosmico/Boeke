@@ -1,0 +1,103 @@
+<script type="text/javascript">
+    window.addEventListener('DOMContentLoaded', function() {
+        studentCopiesReturnInit();
+    });
+</script>
+<form role="form" class="form-horizontal" method="POST" action="{{ urlFor('copies_student_return') }}">
+    {% if flash['error'] %}
+        <div class="alert alert-danger" id="lend-backend-error">
+            {{ flash['error']|raw }}
+        </div>
+    {% endif %}
+    {% if flash['success'] %}
+        <div class="alert alert-success" id="lend-backend-success">
+            {{ flash['success']|raw }}
+        </div>
+    {% endif %}
+    <div class="alert alert-danger hidden" id="return-alert-box"></div>
+    
+    <div class="form-group">
+        <label for="student" class="col-sm-3 control-label">Alumno</label>
+        <div class="col-sm-9">
+            <select class="form-control" id="return-student" name="student">
+            </select>
+        </div>
+    </div>
+    
+    <div id="return-data-hidden" class="hidden">
+        <hr />
+    
+        <table class="table table-bordered hidden" id="return-books-table">
+            <thead>
+                <th>Código</th>
+                <th>Libro</th>
+                <th class="text-center">Perdido</th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    
+        <h4>Introduce los códigos de los ejemplares</h4>
+        <p>Debes introducir los códigos de los ejemplares a devolver en la categoría que corresponda al estado en el que se han devuelto los mismos.</p>
+    
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <ul class="nav nav-tabs nav-justified">
+                    <li class="active"><a href="#good" data-toggle="tab">Buen estado</a></li>
+                    <li><a href="#medium" data-toggle="tab">Regular</a></li>
+                    <li><a href="#bad" data-toggle="tab">Mal estado</a></li>
+                </ul>
+            
+                <div class="tab-content">
+                    <div class="tab-pane active" id="good">
+                        <div id="status-good-code-box">
+                            <div class="form-group">
+                                <label for="good_state" class="col-sm-4 control-label">Código del ejemplar 1</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control" id="good_state_1" name="good_state[]" placeholder="Código del ejemplar...">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group text-center">
+                            <button class="btn" data-num="2" onclick="addAnotherCopy(this, 'status-good-code-box', 'good_state'); return false;">Añadir otro ejemplar</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="medium">
+                        <div id="status-medium-code-box">
+                            <div class="form-group">
+                                <label for="medium_state" class="col-sm-4 control-label">Código del ejemplar 1</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control" id="medium_state_1" name="medium_state[]" placeholder="Código del ejemplar...">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group text-center">
+                            <button class="btn" data-num="2" onclick="addAnotherCopy(this, 'status-medium-code-box', 'medium_state'); return false;">Añadir otro ejemplar</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="bad">
+                        <div id="status-bad-code-box">
+                            <div class="form-group">
+                                <label for="bad_state" class="col-sm-4 control-label">Código del ejemplar 1</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control" id="bad_state_1" name="bad_state[]" placeholder="Código del ejemplar...">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group text-center">
+                            <button class="btn" data-num="2" onclick="addAnotherCopy(this, 'status-bad-code-box', 'bad_state'); return false;">Añadir otro ejemplar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group text-center">
+        <button type="submit" id="return-submit-button" disabled="true" class="btn btn-primary">Devolver lote</button>
+    </div>
+    <input type="hidden" id="csrf_key" name="{{ csrf_key }}" value="{{ csrf_token }}">
+</form>

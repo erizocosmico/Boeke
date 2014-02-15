@@ -1,0 +1,19 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Devolución de lote de libros{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h2>Devolución de lote de libros</h2>
+                {% if not confirmation %}
+                {% include 'copies_student_return_content.html.twig' %}
+                {% else %}
+                {% include 'copies_student_return_confirmation.html.twig' %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

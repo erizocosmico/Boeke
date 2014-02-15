@@ -5,7 +5,7 @@
 {% block content %}
 <script type="text/javascript">
     window.addEventListener('DOMContentLoaded', function(e) {
-        filterCopiesInit();
+        filterCopiesInit({% if not_returned %}true{% endif %});
     });
 </script>
 {% include "sidebar.html.twig" %}

@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.9.1
+ * @version     0.10.0
  * @package     Boeke
  *
  * MIT LICENSE
@@ -51,6 +51,7 @@ class Historial extends \Model
         'prestado'      => 1,
         'devuelto'      => 2,
         'actualizado'   => 3,
+        'perdido'       => 4,
     );
     
     /**

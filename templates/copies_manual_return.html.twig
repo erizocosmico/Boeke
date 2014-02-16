@@ -1,0 +1,49 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Entrega de lote de libros{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h2>Devolución manual de libros</h2>
+                
+                <script type="text/javascript">
+                    window.addEventListener('DOMContentLoaded', function() {
+                        copiesReturnInit(true);
+                    });
+                </script>
+                <form role="form" class="form-horizontal" onsubmit="return false;">
+                    <div class="alert alert-danger hidden" id="return-alert-box"></div>
+
+                    <div class="form-group">
+                        <label for="student" class="col-sm-3 control-label">Alumno</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="return-student" name="student">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="return-data-hidden" class="hidden">
+                        <hr />
+                        
+                        <p>Para devolver un ejemplar tan solo tiene que pulsar en el botón correspondiente al estado en el que fue devuelto dicho ejemplar.</p>
+
+                        <table class="table table-bordered hidden" id="return-books-table">
+                            <thead>
+                                <th>Código</th>
+                                <th>Libro</th>
+                                <th>Estado de devolución</th>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info hidden" id="no-copies-message">El alumno no tiene ejemplares por devolver.</div>
+                    <input type="hidden" id="csrf_key" name="{{ csrf_key }}" value="{{ csrf_token }}">
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

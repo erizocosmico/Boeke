@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.10.0
+ * @version     0.11.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -360,6 +360,7 @@ class Copies extends Base
         $app = self::$app;
         $status = (int)$app->request->put('estado');
         $comment = $app->request->put('anotacion', '');
+        $returned = (bool)$app->request->put('returned', false);
         $error = array();
         
         $copy = \Model::factory('Ejemplar')->findOne($copyId);
@@ -374,16 +375,19 @@ class Copies extends Base
             $dbh = \ORM::getDb();
             $dbh->beginTransaction();
             try {
-                $copy->estado = $status;
-                $copy->save();
                 Historial::add(
                     $copyId,
-                    'actualizado',
+                    ($status === 3) ? 'perdido' : (($returned) ? 'devuelto' : 'actualizado'),
                     $_SESSION['user_id'],
                     $comment,
-                    null,
+                    $copy->alumno_nie,
                     $status
                 );
+                if ($status === 3 || $status === 4 || $returned) {
+                    $copy->alumno_nie = null;
+                }
+                $copy->estado = $status;
+                $copy->save();
                 $dbh->commit();
             } catch (\PDOException $e) {
                 self::jsonResponse(400, array(
@@ -837,49 +841,6 @@ class Copies extends Base
     }
     
     /**
-     * Marca un ejemplar como perdido.
-     */
-    public static function copyLost()
-    {
-        $app = self::$app;
-        $copyId = (int)$app->request->post('code', 0);
-        $copy = \Model::factory('Ejemplar')->findOne($copyId);
-        
-        if ($copy) {
-            $dbh = \ORM::getDb();
-            $dbh->beginTransaction();
-            try {
-                Historial::add(
-                    $copy->codigo,
-                    'perdido',
-                    $_SESSION['user_id'],
-                    '',
-                    $copy->alumno_nie
-                );
-                $copy->alumno_nie = null;
-                $copy->estado = 3;
-                $copy->save();
-                $dbh->commit();
-                
-                self::jsonResponse(200, array(
-                    'marked'       => true,
-                ));
-            } catch (\PDOException $e) {
-                $dbh->rollBack();
-                
-                self::jsonResponse(500, array(
-                    'error'         => 'Ha ocurrido un error y no se ha podido marcar como perdido el ejemplar.',
-                ));
-            }
-            return;
-        }
-        
-        self::jsonResponse(404, array(
-            'error'         => 'No se ha podido encontrar el ejemplar.',
-        ));
-    }
-    
-    /**
      * Devuelve un objeto JSON que contiene los ejemplares no devueltos de un alumno
      *
      * @param int $student NIE del alumno
@@ -913,5 +874,32 @@ class Copies extends Base
                 'copies'            => $copies,
             ));
         }
+    }
+    
+    /**
+     * Imprime la pantalla de devolución manual de libros.
+     * Todas las acciones son gestionadas mediante AJAX por lo que
+     * este método no efectúa ninguna otra operación.
+     */
+    public static function manualReturn()
+    {
+        $app = self::$app;
+        
+        $app->render('copies_manual_return.html.twig', array(
+            'sidebar_copies_active'                 => true,
+            'sidebar_copies_manual_return_active'   => true,
+            'breadcrumbs'                           => array(
+                array(
+                    'active'        => false,
+                    'text'          => 'Gestión de ejemplares',
+                    'route'         => self::$app->urlFor('copies_index'),
+                ),
+                array(
+                    'active'        => true,
+                    'text'          => 'Devolución manual de libros',
+                    'route'         => self::$app->urlFor('copies_manual_return'),
+                ),
+            ),
+        ));
     }
 }

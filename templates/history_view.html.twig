@@ -1,0 +1,88 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Historial del ejemplar{% endblock %}
+
+{% block content %}
+{% include "sidebar.html.twig" %}
+    <div class="col-xs-12 col-sm-9">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h2>Historial del ejemplar</h2>
+                {% if flash['error'] %}
+                <div class="alert alert-danger">{{ flash['error'] }}</div>
+                {% endif %}
+                {% if flash['success'] %}
+                <div class="alert alert-success">{{ flash['success'] }}</div>
+                {% endif %}
+                
+                <a href="{{ urlFor('copies_index') }}" class="btn btn-default"><span class="fa fa-chevron-left"></span> Ir al listado de ejemplares</a>
+                
+                {% if copy %}
+                <h3>Información</h3>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Código de ejemplar</th>
+                        <td>{{ copy.codigo }}</td>
+                    </tr>
+                    <tr>
+                        <th>Estado</th>
+                        <td>{{ copy.estado }}</td>
+                    </tr>
+                    <tr>
+                        <th>Libro</th>
+                        <td>{{ copy.titulo }}</td>
+                    </tr>
+                    <tr>
+                        <th>Asignatura</th>
+                        <td>{{ copy.asignatura }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nivel</th>
+                        <td>{{ copy.nivel }}</td>
+                    </tr>
+                    {% if copy.anio > 0 %}
+                    <tr>
+                        <th>Año de publicación</th>
+                        <td>{{ copy.anio }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if copy.autor %}
+                    <tr>
+                        <th>Autor</th>
+                        <td>{{ copy.autor }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>Prestado a</th>
+                        <td>{{ copy.alumno }}</td>
+                    </tr>
+                </table>
+                
+                <h3>Historial</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Mensaje</th>
+                            <th>Anotación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for record in history %}
+                        <tr>
+                            <td>{{ record.status }}</td>
+                            <td>{{ record.date }}</td>
+                            <td>{{ record.user }}</td>
+                            <td>{{ record.message }}</td>
+                            <td>{{ record.comment }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

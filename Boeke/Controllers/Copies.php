@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.11.2
+ * @version     0.12.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -47,7 +47,7 @@ class Copies extends Base
     /**
      * @var array Nombre de los estados de un ejemplar.
      */
-    private static $statuses = array('Bueno', 'Regular', 'Malo', 'Perdido', 'Baja');
+    public static $statuses = array('Bueno', 'Regular', 'Malo', 'Perdido', 'Baja');
     
     /**
      * Devuelve las opciones de los estados para añadir a un campo select.
@@ -805,7 +805,8 @@ class Copies extends Base
                             'devuelto',
                             $_SESSION['user_id'],
                             '',
-                            $student
+                            $student,
+                            $copy->estado
                         );
                     }
                     

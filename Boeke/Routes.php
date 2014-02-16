@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.11.2
+ * @version     0.12.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -183,6 +183,15 @@ class Routes
             // Devolución manual de libros
             $app->get('/manual_return', '\\Boeke\\Controllers\\Copies::manualReturn')
                 ->name('copies_manual_return');
+        });
+        
+        $app->group('/history', Middleware::isLoggedIn($app), function () use ($app) {
+            // Vista del historial de un ejemplar
+            $app->get('/view/:code', '\\Boeke\\Controllers\\History::view')
+                ->name('history_view');
+            // Añadir anotación a un ejemplar
+            $app->post('/comment', '\\Boeke\\Controllers\\History::comment')
+                ->name('history_comment');
         });
     }
 }

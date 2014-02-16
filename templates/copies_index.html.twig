@@ -57,7 +57,7 @@
                     <tbody>
                         {% for copy in copies %}
                         <tr>
-                            <td class="text-center">{{ copy.codigo }}</td>
+                            <td class="text-center"><a href="{{ urlFor('history_view', {'code': copy.codigo}) }}" title="Ver historial">{{ copy.codigo }}</a></td>
                             <td class="text-center">{{ copy.libro }}</td>
                             <td class="text-center">
                                 {{ copy.alumno }}{% if copy['alumno_apellidos'] %} {{ copy.alumno_apellidos }}{% endif %}

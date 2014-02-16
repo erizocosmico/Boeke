@@ -1009,26 +1009,36 @@ function copiesLendingInit() {
         });
 }
 
-function renderNotReturnedCopy(copy) {
-    return '<tr>'
-        + '<td>' + copy.code + '</td>'
-        + '<td>' + copy.book + '</td>'
-        + '<td class="text-center"><button class="btn btn-danger btn-sm" data-code="' + copy.code 
-        + '" onclick="markCopyLost(this); return false;">Marcar como perdido</button></td>'
-        + '</tr>';      
+function renderNotReturnedCopy(copy, extended) {
+    var output = '<tr><td>' + copy.code + '</td><td>' + copy.book + '</td>';
+    if (extended) {
+        output += '<td><button class="btn btn-success btn-sm" data-code="'
+            + copy.code + '" onclick="markCopyAs(this, 0); return false;">Bueno</button>'
+            + '&nbsp;<button class="btn btn-info btn-sm" data-code="' + copy.code
+            + '" onclick="markCopyAs(this, 1); return false;">Regular</button>'
+            + '&nbsp;<button class="btn btn-warning btn-sm" data-code="' + copy.code
+            + '" onclick="markCopyAs(this, 2); return false;">Malo</button>'
+            + '&nbsp;<button class="btn btn-danger btn-sm" data-code="' + copy.code
+            + '" onclick="markCopyAs(this, 3); return false;">Perdido</button>';
+    } else {
+        output += '<td class="text-center"><button class="btn btn-danger btn-sm" data-code="' 
+            + copy.code + '" onclick="markCopyAs(this, 3); return false;">'
+            + 'Marcar como perdido</button></td>';
+    }
+    return output + '</tr>';      
 }
 
-function markCopyLost(elem) {
+function markCopyAs(elem, status) {
     var code = elem.getAttribute('data-code'),
         cell = elem.parentNode,
         csrf = document.getElementById('csrf_key');
         
     $.ajax({
-        url: baseUrl + 'copies/mark_lost',
-        method: 'POST',
-        data: 'code=' + code + '&' + csrf.getAttribute('name') + '=' + csrf.value,
+        url: baseUrl + 'copies/update_status/' + code,
+        method: 'PUT',
+        data: 'estado=' + status + '&returned=true&' + csrf.getAttribute('name') + '=' + csrf.value,
         success: function(data) {
-            cell.innerHTML = 'Marcado como perdido';
+            cell.innerHTML = data.message;
         },
         errror: function(data) {
             showAlertBox('return-alert-box', JSON.parse(data.responseText).error);
@@ -1036,24 +1046,27 @@ function markCopyLost(elem) {
     });
 }
 
-function studentCopiesReturnInit() {
+function copiesReturnInit(extended) {
     var hiddenContent = document.getElementById('return-data-hidden'),
         submitBtn = document.getElementById('return-submit-button'),
         booksTable = document.getElementById('return-books-table'),
-        booksTableContent = booksTable.getElementsByTagName('tbody')[0];
+        booksTableContent = booksTable.getElementsByTagName('tbody')[0],
+        ncMsg = document.getElementById('no-copies-message');;
+        
+    if (extended === undefined) extended = false;
 
     selectStudent({
         placeholder: 'Seleccione un alumno',
         id: "return-student",
         onChange: function(value) {
-            submitBtn.disabled = false;
+            if (!extended) submitBtn.disabled = false;
             hiddenContent.className = '';
             
             $.ajax({
                 url: baseUrl + 'copies/not_returned/for_student/' + value,
                 method: 'GET',
                 success: function(data) {
-                    var copies = data.copies;
+                    var copies = data.copies, receivedCopies = false;
                     
                     booksTable.className = booksTable.className.replace('hidden', '');
                     booksTableContent.innerHTML = '';
@@ -1063,7 +1076,16 @@ function studentCopiesReturnInit() {
                     }
 
                     for (var i = 0; i < copies.length; i++) {
-                        booksTableContent.innerHTML += renderNotReturnedCopy(copies[i]);
+                        receivedCopies = true;
+                        booksTableContent.innerHTML += renderNotReturnedCopy(copies[i], extended);
+                    }
+                    
+                    if (extended && !receivedCopies) {
+                        ncMsg.className = ncMsg.className.replace(/hidden/gi, '');
+                    }
+                    
+                    if (extended && receivedCopies) {
+                        ncMsg.className += ' hidden';
                     }
                 },
                 error: function(res) {

@@ -44,7 +44,7 @@ class Alumno extends \Model
 {
     public static $_table = 'alumno';
     public static $_id_column = 'nie';
-    
+
     /**
      * Devuelve los ejemplares que posee un alumno
      */
@@ -52,7 +52,7 @@ class Alumno extends \Model
     {
         return $this->hasMany('Ejemplar');
     }
-    
+
     /**
      * Devuelve los registros del historial de un alumno
      */

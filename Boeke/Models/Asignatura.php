@@ -43,7 +43,7 @@ namespace Boeke\Models;
 class Asignatura extends \Model
 {
     public static $_table = 'asignatura';
-    
+
     /**
      * Devuelve el nivel al que pertenece la asignatura
      */
@@ -51,7 +51,7 @@ class Asignatura extends \Model
     {
         return $this->belongsTo('Nivel');
     }
-    
+
     /**
      * Devuelve los libros que tiene la asignatura
      */

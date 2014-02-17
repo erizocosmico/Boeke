@@ -52,16 +52,16 @@ class Routes
         // Índice
         $app->get('/', Middleware::isLoggedIn($app), '\\Boeke\\Controllers\\Index::index')
             ->name('index');
-   
-        // Conexión 
+
+        // Conexión
         $app->map('/login', Middleware::isLoggedIn($app, true), '\\Boeke\\Controllers\\Users::login')
             ->via('GET', 'POST')
             ->name('login');
-    
+
         // Desconexión
         $app->get('/logout',Middleware::isLoggedIn($app), '\\Boeke\\Controllers\\Users::logout')
             ->name('logout');
-    
+
         // Gestión de usuarios
         $app->group('/users', Middleware::isLoggedIn($app), function () use ($app) {
             // Listado
@@ -97,14 +97,14 @@ class Routes
         $app->group('/subjects', Middleware::isLoggedIn($app), function () use ($app) {
             // Listado
             $app->get('/list/(:page)', '\\Boeke\\Controllers\\Subjects::index')
-                ->name('subjects_index'); 
+                ->name('subjects_index');
             // Listado en formato JSON
             $app->get('/for_level/:level', '\\Boeke\\Controllers\\Subjects::forLevel');
-            $app->get('/all', '\\Boeke\\Controllers\\Subjects::getAll');   
+            $app->get('/all', '\\Boeke\\Controllers\\Subjects::getAll');
             // Creación
-            $app->post('/new', '\\Boeke\\Controllers\\Subjects::create'); 
+            $app->post('/new', '\\Boeke\\Controllers\\Subjects::create');
             // Edición
-            $app->put('/edit/:id', '\\Boeke\\Controllers\\Subjects::edit');   
+            $app->put('/edit/:id', '\\Boeke\\Controllers\\Subjects::edit');
             // Borrado
             $app->delete('/delete/:id', '\\Boeke\\Controllers\\Subjects::delete');
         });
@@ -184,7 +184,7 @@ class Routes
             $app->get('/manual_return', '\\Boeke\\Controllers\\Copies::manualReturn')
                 ->name('copies_manual_return');
         });
-        
+
         $app->group('/history', Middleware::isLoggedIn($app), function () use ($app) {
             // Vista del historial de un ejemplar
             $app->get('/view/:code', '\\Boeke\\Controllers\\History::view')

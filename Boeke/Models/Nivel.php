@@ -43,7 +43,7 @@ namespace Boeke\Models;
 class Nivel extends \Model
 {
     public static $_table = 'nivel';
-    
+
     /**
      * Devuelve las asignaturas de este nivel
      */

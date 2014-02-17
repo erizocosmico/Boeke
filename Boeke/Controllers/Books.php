@@ -41,15 +41,16 @@ namespace Boeke\Controllers;
  * @author José Miguel Molina
  */
 class Books extends Base
-{  
+{
     /**
      * Comprueba si un ISBN es válido o no.
      *
      * @see http://en.wikipedia.org/wiki/International_Standard_Book_Number
-     * @param string $isbn
+     * @param  string $isbn
      * @return bool
      */
-    public static function isValidISBN($isbn) {
+    public static function isValidISBN($isbn)
+    {
         if (preg_match('/^[0-9-]{12,}[0-9]$/', $isbn)) {
             $controlDigit = $isbn[strlen($isbn) - 1];
             $isbn = substr(preg_replace('/[^\d]/', '', $isbn), 0, 12);
@@ -57,7 +58,7 @@ class Books extends Base
 
             if (strlen($isbn) < 12 && !is_numeric($controlDigit)) {
                 return false;
-            } else if (strlen($isbn) < 12) {
+            } elseif (strlen($isbn) < 12) {
                 return self::isValidIsbn($isbn . $controlDigit);
             }
 
@@ -71,25 +72,26 @@ class Books extends Base
             }
 
             return ($check + $controlDigit) % 10 === 0;
-        } else if (preg_match('/^[0-9-]{9,}[0-9xX]$/', $isbn)) {
+        } elseif (preg_match('/^[0-9-]{9,}[0-9xX]$/', $isbn)) {
             $controlDigit = strtolower($isbn[strlen($isbn) - 1]);
             $isbn = substr(preg_replace('/[^\d]/', '', $isbn), 0, 9);
             $sum = 0;
 
-            if (strlen($isbn) < 9 
+            if (strlen($isbn) < 9
                 || (!is_numeric($controlDigit) && $controlDigit !== 'x')) {
                 return false;
             }
 
             for ($i = 0; $i < 9; $i++) {
-                $sum += (int)$isbn[$i] * ($i + 1);
+                $sum += (int) $isbn[$i] * ($i + 1);
             }
-        
+
             $check = $sum % 11;
+
             return ($check === 10 && $controlDigit === 'x')
-                || ($check < 10 && $check === (int)$controlDigit);
+                || ($check < 10 && $check === (int) $controlDigit);
         }
-        
+
         return false;
     }
 
@@ -105,7 +107,7 @@ class Books extends Base
         if ($page < 1) {
             $page = 1;
         }
-        
+
         // Obtenemos los registros
         $bookList = \ORM::forTable('libro')
             ->tableAlias('l')
@@ -116,13 +118,13 @@ class Books extends Base
             ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
             ->orderByAsc('l.titulo')
             ->limit(25)
-            ->offset((25 * ((int)$page - 1)))
+            ->offset((25 * ((int) $page - 1)))
             ->findMany();
-        
+
         foreach ($bookList as $row) {
             $books[] = $row;
         }
-        
+
         // Generamos la paginación para el conjunto de libros
         $pagination = self::generatePagination(
             \Model::factory('Libro'),
@@ -132,7 +134,7 @@ class Books extends Base
                 return $app->urlFor('books_index', array('page' => $i));
             }
         );
-        
+
         $app->render('books_index.html.twig', array(
             'sidebar_books_active'                  => true,
             'page'                                  => $page,
@@ -147,12 +149,12 @@ class Books extends Base
             ),
         ));
     }
-    
+
     /**
      * Devuelve la lista de libros de un nivel diciendo si el estudiante
      * especificado tiene un ejemplar de dicho libro en su posesión.
      *
-     * @param int $levelId ID del nivel
+     * @param int $levelId   ID del nivel
      * @param int $studentId NIE del estudiante
      */
     public static function forLevelAndStudent($levelId, $studentId)
@@ -166,7 +168,7 @@ class Books extends Base
             ->join('asignatura', array('a.id', '=', 'l.asignatura_id'), 'a')
             ->where('a.nivel_id', $levelId)
             ->findMany();
-        
+
         $userCopies = array_map(function ($copy) {
             return $copy['libro_id'];
         }, \Model::factory('Ejemplar')
@@ -174,7 +176,7 @@ class Books extends Base
             ->where('alumno_nie', $studentId)
             ->findArray()
         );
-        
+
         foreach ($levelBooks as $book) {
             $books[] = array(
                 'subject'       => $book->asignatura,
@@ -183,12 +185,12 @@ class Books extends Base
                 'owned'         => in_array($book->id, $userCopies),
             );
         }
-        
+
         self::jsonResponse(200, array(
             'books'         => $books,
         ));
     }
-    
+
     /**
      * Devuelve en formato JSON todos los libros existentes.
      */
@@ -207,12 +209,12 @@ class Books extends Base
             },
             \Model::factory('Libro')->findArray()
         );
-        
+
         self::jsonResponse(200, array(
             'books'       => $books,
         ));
     }
-    
+
     /**
      * Devuelve la lista de libros para una asignatura.
      */
@@ -228,12 +230,12 @@ class Books extends Base
             },
             \Model::factory('Libro')->where('asignatura_id', $subject)->findArray()
         );
-        
+
         self::jsonResponse(200, array(
             'books'       => $books,
         ));
     }
-    
+
     /**
      * Se encarga de crear un libro.
      */
@@ -244,13 +246,13 @@ class Books extends Base
         $isbn = $app->request->post('isbn');
         $author = $app->request->post('autor', '');
         $title = $app->request->post('titulo');
-        $year = (int)$app->request->post('anio');
-        $subjectId = (int)$app->request->post('asignatura_id');
+        $year = (int) $app->request->post('anio');
+        $subjectId = (int) $app->request->post('asignatura_id');
 
         if (empty($title)) {
             $error[] = 'El título de libro es obligatorio.';
         }
-        
+
         if (empty($isbn) || !self::isValidISBN($isbn)) {
             $error[] = 'El ISBN introducido no es válido.';
         } else {
@@ -258,23 +260,23 @@ class Books extends Base
                 ->where('isbn', $isbn)
                 ->where('asignatura_id', $subjectId)
                 ->findOne();
-            
+
             if ($book) {
                 $error[] = 'Ya existe este libro para la asignatura escogida.';
             }
         }
-        
+
         if ($year > date('Y') || $year <= 0) {
             $error[] = 'Fecha de publicación del libro no válida.';
         }
-        
+
         $subject = \Model::factory('Asignatura')
             ->findOne($subjectId);
-        
+
         if (!$subject) {
             $error[] = 'La asignatura seleccionada no es válida.';
         }
-        
+
         // Si no hay errores lo creamos
         if (count($error) == 0) {
             $book = \Model::factory('Libro')->create();
@@ -284,7 +286,7 @@ class Books extends Base
             $book->anio = $year;
             $book->autor = $author;
             $book->save();
-            
+
             self::jsonResponse(201, array(
                 'message'       => 'Libro creado correctamente.',
             ));
@@ -294,7 +296,7 @@ class Books extends Base
             ));
         }
     }
-    
+
     /**
      * Se encarga de editar un libro.
      *
@@ -312,20 +314,21 @@ class Books extends Base
             self::jsonResponse(404, array(
                 'error'       => 'El libro seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         $isbn = $app->request->put('isbn');
         $author = $app->request->put('autor', '');
         $title = $app->request->put('titulo');
-        $year = (int)$app->request->put('anio');
-        $subjectId = (int)$app->request->put('asignatura_id');
+        $year = (int) $app->request->put('anio');
+        $subjectId = (int) $app->request->put('asignatura_id');
 
         $error = array();
         if (empty($title)) {
             $error[] = 'El título de libro es obligatorio.';
         }
-        
+
         if (empty($isbn) || !self::isValidISBN($isbn)) {
             $error[] = 'El ISBN introducido no es válido.';
         } else {
@@ -334,23 +337,23 @@ class Books extends Base
                 ->where('asignatura_id', $subjectId)
                 ->whereNotEqual('id', $id)
                 ->findOne();
-            
+
             if ($bookTmp) {
                 $error[] = 'Ya existe este libro para la asignatura escogida.';
             }
         }
-        
+
         if ($year > date('Y') || $year <= 0) {
             $error[] = 'Fecha de publicación del libro no válida.';
         }
-        
+
         $subject = \Model::factory('Asignatura')
             ->findOne($subjectId);
-        
+
         if (!$subject) {
             $error[] = 'La asignatura seleccionada no es válida.';
         }
-        
+
         // Si no hay errores editamos el libro
         if (count($error) == 0) {
             $book->titulo = $title;
@@ -369,7 +372,7 @@ class Books extends Base
             ));
         }
     }
-    
+
     /**
      * Borra el libro seleccionado.
      *
@@ -378,7 +381,7 @@ class Books extends Base
     public static function delete($id)
     {
         $app = self::$app;
-        
+
         $book = \Model::factory('Libro')
             ->findOne($id);
 
@@ -386,9 +389,10 @@ class Books extends Base
             self::jsonResponse(404, array(
                 'error'       => 'El libro seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         if ($app->request->delete('confirm') === 'yes') {
             // Borramos el libro
             \Model::factory('Libro')
@@ -398,9 +402,10 @@ class Books extends Base
             self::jsonResponse(200, array(
                 'deleted'     => false,
             ));
+
             return;
         }
-        
+
         self::jsonResponse(200, array(
             'deleted'     => true,
             'message'     => 'Libro borrado correctamente.',

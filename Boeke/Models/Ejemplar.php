@@ -44,7 +44,7 @@ class Ejemplar extends \Model
 {
     public static $_table = 'ejemplar';
     public static $_id_column = 'codigo';
-    
+
     /**
      * Devuelve el alumno al que pertenece
      */
@@ -52,7 +52,7 @@ class Ejemplar extends \Model
     {
         return $this->belongsTo('Alumno');
     }
-    
+
     /**
      * Devuelve el libro que es este ejemplar
      */
@@ -60,7 +60,7 @@ class Ejemplar extends \Model
     {
         return $this->belongsTo('Libro');
     }
-    
+
     /**
      * Devuelve el historial asociado a este ejemplar
      */

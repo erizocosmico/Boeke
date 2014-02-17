@@ -27,7 +27,7 @@
                         {% for book in books %}
                         <tr>
                             <td>{{ book.isbn }}</td>
-                            <td>{{ book.titulo }} ({{ book.anio }})</td>
+                            <td>{{ book.titulo }}{% if book.anio > 0 %} ({{ book.anio }}){% endif %}</td>
                             <td>{{ book.autor }}</td>
                             <td>{{ book.asignatura }} ({{ book.nivel }})</td>
                             <td><button data-id="{{ book.id }}" data-isbn="{{ book.isbn }}" data-title="{{ book.titulo }}" data-author="{{ book.autor }}" data-year="{{ book.anio }}" data-subject="{{ book.asignatura_id }}" class="btn btn-sm btn-default" onclick="showBookEditor(this); return false;"><span class="fa fa-edit"></span> Editar</button><br /><button data-id="{{ book.id }}" data-isbn="{{ book.isbn }}" data-title="{{ book.titulo }}" data-author="{{ book.autor }}" data-year="{{ book.anio }}" data-subject="{{ book.asignatura_id }}" class="btn btn-sm btn-danger" onclick="deleteBook(this); return false;"><span class="fa fa-times-circle"></span> Borrar</button></td>

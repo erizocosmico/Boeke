@@ -45,7 +45,7 @@ if (@$config['debug']) {
 /**
  * Devuelve el contenido de una variable pasada por POST o un valor por
  * defecto en caso de no estar definida.
- * 
+ *
  * @param string $name Nombre del parámetro.
  * @param mixed $default Valor por defecto.
  * @return mixed Valor por defecto o del parámetro.
@@ -105,7 +105,7 @@ $errors = array(
     'database_port'             => 'El puerto de la base de datos es obligatorio.',
     'database_pass'             => 'La contraseña del usuario de la base de datos es obligatorio.',
     'database_name'             => 'El nombre de la base de datos es obligatorio.',
-    
+
     'admin_username'            => 'El nombre de usuario debe tener entre 5 y 60 caracteres.',
     'admin_full_name'           => 'El nombre completo debe tener entre 3 y 90 caracteres.',
     'admin_password'            => 'La contraseña debe tener entre 5 y 60 caracteres.',
@@ -123,13 +123,13 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
     // Si el método es POST se procesarán los datos
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $post = true;
-        
+
         // Recogemos los datos
         $fields = array(
             'database'      => array(
                 'host'          => requestVar('db_server'),
                 'user'          => requestVar('db_user'),
-                'port'          => (int)requestVar('db_port'),
+                'port'          => (int) requestVar('db_port'),
                 'pass'          => requestVar('db_pass'),
                 'name'          => requestVar('db_name'),
             ),
@@ -156,7 +156,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                 'password_repeat'   => requestVar('password_repeat')
             ),
         );
-            
+
         // Validamos los diferentes campos
         foreach ($fields as $type => $content) {
             if (in_array($type, array('general', 'cookie'))) {
@@ -187,22 +187,22 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                     } elseif (strlen($value) === 0) {
                         $error = true;
                     }
-                    
+
                     if ($error) {
                         $messages[$type][] = $errors[$fieldName];
                     }
                 }
             }
         }
-        
+
         // ¿Hay mensajes de error en $messages?
         if (count(array_filter($messages, function ($item) {
             return count($item) > 0;
         })) === 0) {
             $connectionWorks = true;
-            
+
             // Probamos la nueva conexión
-            try{
+            try {
                 $dbh = new \PDO(
                     'mysql:host=' .
                     $fields['database']['host'] .
@@ -212,19 +212,18 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                     $fields['database']['pass'],
                     array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
                 );
-            }
-            catch(\PDOException $e){
+            } catch (\PDOException $e) {
                 // Si la conexión no funciona se lanzará una excepción y daremos el mensaje de error
                 $connectionWorks = false;
                 $messages['database'][] = 'Los datos proporcionados no son correctos. No puede establecerse conexión.';
             }
-            
+
             if ($connectionWorks) {
                 // Si la conexión funciona probaremos si hay una instalación previa
                 try {
                     $stmt = $dbh->prepare('SELECT * FROM usuario LIMIT 1');
                     $stmt->execute();
-                    
+
                     $messages['database'][] = 'Hay una instalación previa en la base de datos. Se abortará la instalación.';
                 } catch (\PDOException $e) {
                     $continue = true;
@@ -241,7 +240,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                         $continue = false;
                         $dbh->rollBack();
                     }
-                    
+
                     // Crear usuario administrador si se pudieron crear las tablas
                     if ($continue) {
                         try {
@@ -254,7 +253,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                     PASSWORD_BCRYPT
                                 ),
                             ));
- 
+
                             $dbh->commit();
                             $success = true;
                         } catch (\PDOException $e) {
@@ -263,7 +262,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                             $dbh->rollBack();
                         }
                     }
-                    
+
                     // Generar el yml de configuración si la creación del administrador ha sido correcta
                     if ($continue) {
                         $ymlOutputLines = array('debug: false');
@@ -272,22 +271,22 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                 if ($type == 'admin') {
                                     break;
                                 }
-                            
+
                                 if (is_bool($value)) {
                                     $value = ($value ? 'true' : 'false');
                                 }
-                            
+
                                 if ($key == 'secret_key' || $key == 'password_salt') {
                                     $value = '"' . $value . '"';
                                 }
-                            
+
                                 $fieldName = ($type != 'general' ? $type . '_' : '') . $key;
                                 $ymlOutputLines[] = $fieldName . ': ' . $value;
                             }
                         }
-                    
+
                         $ymlOutput = join("\n", $ymlOutputLines);
-                    
+
                         // Si se puede escribir en el directorio escribimos directamente el config.yml
                         if (is_writable(dirname(dirname(__FILE__)))) {
                             file_put_contents(
@@ -336,7 +335,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
-            
+
             <div class="container col-md-8 col-md-offset-2 col-xs-10 col-xs-offset-1">
                 <header>
                     <h1>
@@ -345,9 +344,9 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                         <small>Aplicación de gestión del préstamo de libros a alumnos.</small>
                     </h1>
                 </header>
-                
+
                 <br />
-                
+
                 <div class="row">
                     <?php if ($success): ?>
                         <div class="alert alert-success">
@@ -375,7 +374,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                         <input type="text" required="required" required="required" class="form-control" id="db_server" name="db_server" placeholder="Servidor de la base de datos" <?php if ($post) { echo 'value="' . $fields['database']['host'] . '"'; } ?>>
                                     </div>
                                 </div>
-                        
+
                                 <div class="form-group">
                                     <label for="db_port" class="col-sm-3 control-label">Puerto</label>
                                     <div class="col-sm-9">
@@ -385,21 +384,21 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                         <small>Por defecto MySQL usa el puerto 3306.</small>
                                     </div>
                                 </div>
-                        
+
                                 <div class="form-group">
                                     <label for="db_user" class="col-sm-3 control-label">Usuario</label>
                                     <div class="col-sm-9">
                                         <input type="text" required="required" class="form-control" id="db_user" name="db_user" placeholder="Usuario de la base de datos" <?php if ($post) { echo 'value="' . $fields['database']['user'] . '"'; } ?>>
                                     </div>
                                 </div>
-                        
+
                                 <div class="form-group">
                                     <label for="db_pass" class="col-sm-3 control-label">Contraseña</label>
                                     <div class="col-sm-9">
                                         <input type="password" required="required" class="form-control" id="db_pass" name="db_pass" placeholder="Contraseña del usuario de la base de datos" <?php if ($post) { echo 'value="' . $fields['database']['pass'] . '"'; } ?>>
                                     </div>
                                 </div>
-                                
+
                                 <div class="form-group">
                                     <label for="db_name" class="col-sm-3 control-label">Base de datos</label>
                                     <div class="col-sm-9">
@@ -425,21 +424,21 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                         <input type="text" required="required" class="form-control" id="nombre_usuario" name="nombre_usuario" placeholder="Nombre de usuario..." <?php if ($post) { echo 'value="' . $fields['admin']['username'] . '"'; } ?>>
                                     </div>
                                 </div>
-                    
+
                                 <div class="form-group">
                                     <label for="nombre_completo" class="col-sm-3 control-label">Nombre completo</label>
                                     <div class="col-sm-9">
                                         <input type="text" required="required" class="form-control" id="nombre_completo" name="nombre_completo" placeholder="Nombre completo..." <?php if ($post) { echo 'value="' . $fields['admin']['full_name'] . '"'; } ?>>
                                     </div>
                                 </div>
-                    
+
                                 <div class="form-group">
                                     <label for="usuario_pass" class="col-sm-3 control-label">Contraseña</label>
                                     <div class="col-sm-9">
                                         <input type="password" required="required" class="form-control" id="usuario_pass" name="usuario_pass" placeholder="Contraseña" <?php if ($post) { echo 'value="' . $fields['admin']['password'] . '"'; } ?>>
                                     </div>
                                 </div>
-                                
+
                                 <div class="form-group">
                                     <label for="password_repeat" class="col-sm-3 control-label">Repetir contraseña</label>
                                     <div class="col-sm-9">
@@ -448,7 +447,7 @@ if (file_exists(dirname(dirname(__FILE__)) . DSEP . 'config.yml')) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="panel panel-default">
                             <div class="panel-body centered">
                                 <button type="submit" name="submit" class="btn btn-primary">Instalar aplicación</button> <button type="reset" name="reset" class="btn btn-default">Limpiar formulario</button>

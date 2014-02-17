@@ -46,7 +46,7 @@ class History extends Base
      * Devuelve un mensaje formateado para el historial dependiendo del tipo de
      * registro que sea.
      *
-     * @param \ORM $row Fila con los datos del registro del historial
+     * @param  \ORM   $row Fila con los datos del registro del historial
      * @return string
      */
     final private static function historyMessage($row)
@@ -59,7 +59,7 @@ class History extends Base
             case 1:
             case 2:
             case 4:
-                $row->tipo = (int)$row->tipo;
+                $row->tipo = (int) $row->tipo;
                 switch ($row->tipo) {
                     case 2:
                         $action = 'devuelto por el';
@@ -74,7 +74,7 @@ class History extends Base
                 $alumno = 'desconocido';
                 if ($row->alumno) {
                     $alumno = $row->alumno;
-                
+
                     if ($row->alumno_apellidos) {
                         $alumno .= ' ' . $row->alumno_apellidos;
                     }
@@ -85,7 +85,7 @@ class History extends Base
                 $msg = 'El estado del ejemplar ha sido actualizado.';
             break;
         }
-        
+
         return $msg;
     }
 
@@ -97,7 +97,7 @@ class History extends Base
     public static function view($code)
     {
         $app = self::$app;
-        
+
         $history = array();
         $copy = \ORM::forTable('ejemplar')
             ->tableAlias('e')
@@ -151,7 +151,7 @@ class History extends Base
                 );
             }
         }
-        
+
         $app->render('history_view.html.twig', array(
             'sidebar_copies_active'                 => true,
             'sidebar_copies_list_active'            => true,
@@ -177,7 +177,7 @@ class History extends Base
             ),
         ));
     }
-    
+
     /**
      * Añade una anotación al historial de un ejemplar.
      */

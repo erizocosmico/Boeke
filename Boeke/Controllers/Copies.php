@@ -48,27 +48,30 @@ class Copies extends Base
      * @var array Nombre de los estados de un ejemplar.
      */
     public static $statuses = array('Bueno', 'Regular', 'Malo', 'Perdido', 'Baja');
-    
+
     /**
      * Devuelve las opciones de los estados para añadir a un campo select.
      *
      * @return string
      */
-    public static function getStatusSelectOptions() {
+    public static function getStatusSelectOptions()
+    {
         $output = '';
         foreach (self::$statuses as $i => $status) {
             $output .= '<option value="' . $i . '">' . $status . '</option>';
         }
+
         return $output;
     }
-    
-    /** 
+
+    /**
      * Devuelve el nombre para el código de estado seleccionado.
-     * 
-     * @param int $status
+     *
+     * @param  int    $status
      * @return string
      */
-    public static function getStatusName($status) {
+    public static function getStatusName($status)
+    {
         return self::$statuses[$status];
     }
 
@@ -76,9 +79,9 @@ class Copies extends Base
      * Muestra el listado de ejemplares paginado con filtros.
      *
      * @param string $collection Colección en la que buscar
-     * @param string $type Tipo de filtro
-     * @param int $id Identificador para el filtro
-     * @param int $page Página
+     * @param string $type       Tipo de filtro
+     * @param int    $id         Identificador para el filtro
+     * @param int    $page       Página
      */
     public static function filter($collection, $type = 'all', $id = 0, $page = 1)
     {
@@ -87,33 +90,33 @@ class Copies extends Base
         if ($collection !== 'not_returned') {
             $collection = 'all';
         }
-        
+
         switch ($type) {
             case 'level':
                 $level = \Model::factory('Nivel')->findOne($id);
                 $skipQuery = !$level;
             break;
-            
+
             case 'subject':
                 $subject = \Model::factory('Asignatura')->findOne($id);
                 $skipQuery = !$subject;
             break;
-            
+
             case 'student':
                 $student = \Model::factory('Alumno')->findOne($id);
                 $skipQuery = !$student;
             break;
-            
+
             case 'status':
                 $skipQuery = !in_array($id, array_keys(self::$statuses));
             break;
-            
+
             default:
                 $type = 'all';
         }
-        
+
         $copies = array();
-        
+
         if (!$skipQuery) {
             $query = \ORM::forTable('ejemplar')
                 ->tableAlias('e')
@@ -123,7 +126,7 @@ class Copies extends Base
                 ->select('l.titulo', 'libro')
                 ->join('libro', array('e.libro_id', '=', 'l.id'), 'l')
                 ->leftOuterJoin('alumno', array('e.alumno_nie', '=', 'al.nie'), 'al');
-            
+
             switch ($type) {
                 case 'level':
                     $query = $query
@@ -131,18 +134,18 @@ class Copies extends Base
                         ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
                         ->where('n.id', $id);
                 break;
-                
+
                 case 'subject':
                     $query = $query
                         ->join('asignatura', array('l.asignatura_id', '=', 'a.id'), 'a')
                         ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
                         ->where('a.id', $id);
                 break;
-                
+
                 case 'student':
                     $query = $query->where('e.alumno_nie', $id);
                 break;
-                
+
                 case 'status':
                     $query = $query->where('e.estado', $id);
                 break;
@@ -153,14 +156,14 @@ class Copies extends Base
             $copyCount = $query->count();
             $query = $query->orderByAsc('e.codigo')
                 ->limit('25')
-                ->offset((25 * ((int)$page - 1)));
+                ->offset((25 * ((int) $page - 1)));
             $copyList = $query->findMany();
-            
+
             foreach ($copyList as $row) {
                 if (is_null($row->alumno)) {
                     $row->alumno = 'No prestado';
                 } else {
-                    
+
                 }
                 $row->_estado = self::getStatusName($row->estado);
                 $copies[] = $row;
@@ -168,7 +171,7 @@ class Copies extends Base
         } else {
             $copyCount = 0;
         }
-        
+
         // Generamos la paginación para el conjunto de ejemplares
         $pagination = self::generatePagination(
             $copyCount,
@@ -183,7 +186,7 @@ class Copies extends Base
                 ));
             }
         );
-        
+
         $app->render('copies_index.html.twig', array(
             'sidebar_copies_active'                 => true,
             'sidebar_copies_list_active'            => $collection !== 'not_returned',
@@ -204,7 +207,7 @@ class Copies extends Base
             ),
         ));
     }
-    
+
     /**
      * Crea los ejemplares recibidos si es accedido mediante POST o muestra el formulario
      * de alta de un lote de ejemplares si es accedido mediante GET.
@@ -214,24 +217,24 @@ class Copies extends Base
         $app = self::$app;
         if ($app->request->isPost()) {
             $codes = array_map(function ($code) {
-                return (int)$code;
+                return (int) $code;
             }, $app->request->post('codigo'));
-            $bookId = (int)$app->request->post('libro');
+            $bookId = (int) $app->request->post('libro');
             $books = $error = array();
-            
+
             $book = \Model::factory('Libro')->findOne($bookId);
             if (!$book) {
                 $error[] = 'El libro escogido no existe.';
             }
-            
+
             $copies = \Model::factory('Ejemplar')
                 ->whereIn('codigo', $codes)
                 ->count();
-            
+
             if ($copies > 0) {
                 $error[] = 'Uno o más de los códigos de ejemplares ya existen.';
             }
-            
+
             if (count($error) === 0) {
                 $dbh = \ORM::getDb();
                 $dbh->beginTransaction();
@@ -242,7 +245,7 @@ class Copies extends Base
                             $bookTmp->codigo = $code;
                             $bookTmp->libro_id = $bookId;
                             $bookTmp->save();
-                            
+
                             Historial::add($code, 'nuevo', $_SESSION['user_id']);
                         }
                     }
@@ -253,12 +256,12 @@ class Copies extends Base
                     $error[] = 'Ha ocurrido un error insertando los ejemplares. Ninguno fue insertado para garantizar la integridad de los datos.';
                 }
             }
-            
+
             if (count($error) > 0) {
                 $app->flashNow('error', join('<br />', $error));
             }
         }
-        
+
         $app->render('copies_create.html.twig', array(
             'sidebar_copies_active'                 => true,
             'sidebar_copies_create_active'            => true,
@@ -276,7 +279,7 @@ class Copies extends Base
             ),
         ));
     }
-    
+
     /**
      * Edita el libro de un ejemplar.
      *
@@ -285,26 +288,27 @@ class Copies extends Base
     public static function edit($copyId)
     {
         $app = self::$app;
-        $book = (int)$app->request->put('libro');
+        $book = (int) $app->request->put('libro');
         $error = array();
-        
+
         $copy = \Model::factory('Ejemplar')->findOne($copyId);
         if (!$copy) {
             self::jsonResponse(404, array(
                 'error'       => 'El ejemplar seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         $bookTmp = \Model::factory('Libro')->findOne($book);
         if (!$bookTmp) {
             $error[] = 'El libro seleccionado no existe.';
         }
-        
+
         if (count($error) === 0) {
             $copy->libro_id = $book;
             $copy->save();
-            
+
             self::jsonResponse(200, array(
                 'message'     => 'Ejemplar editado correctamente.',
             ));
@@ -314,7 +318,7 @@ class Copies extends Base
             ));
         }
     }
-    
+
     /**
      * Elimina un ejemplar.
      *
@@ -323,7 +327,7 @@ class Copies extends Base
     public static function delete($id)
     {
         $app = self::$app;
-        
+
         $copy = \Model::factory('Ejemplar')
             ->findOne($id);
 
@@ -331,9 +335,10 @@ class Copies extends Base
             self::jsonResponse(404, array(
                 'error'       => 'El ejemplar seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         if ($app->request->delete('confirm') === 'yes') {
             // Borramos el libro
             $copy->delete();
@@ -341,15 +346,16 @@ class Copies extends Base
             self::jsonResponse(200, array(
                 'deleted'     => false,
             ));
+
             return;
         }
-        
+
         self::jsonResponse(200, array(
             'deleted'     => true,
             'message'     => 'Ejemplar borrado correctamente.',
         ));
     }
-    
+
     /**
      * Actualiza el estado de un ejemplar.
      *
@@ -358,19 +364,20 @@ class Copies extends Base
     public static function updateStatus($copyId)
     {
         $app = self::$app;
-        $status = (int)$app->request->put('estado');
+        $status = (int) $app->request->put('estado');
         $comment = $app->request->put('anotacion', '');
-        $returned = (bool)$app->request->put('returned', false);
+        $returned = (bool) $app->request->put('returned', false);
         $error = array();
-        
+
         $copy = \Model::factory('Ejemplar')->findOne($copyId);
         if (!$copy) {
             self::jsonResponse(404, array(
                 'error'       => 'El ejemplar seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         if (count($error) === 0) {
             $dbh = \ORM::getDb();
             $dbh->beginTransaction();
@@ -394,9 +401,10 @@ class Copies extends Base
                     'error'       => 'Se ha producido un error al insertar los datos.',
                 ));
                 $dbh->rollBack();
+
                 return;
             }
-            
+
             self::jsonResponse(200, array(
                 'message'     => 'Estado actualizado correctamente.',
             ));
@@ -406,7 +414,7 @@ class Copies extends Base
             ));
         }
     }
-    
+
     /**
      * Si es accedida mediante GET muestra el formulario para el préstamo de un lote
      * de libros. Si es accedida mediante POST procesa dicha petición.
@@ -416,25 +424,26 @@ class Copies extends Base
         $app = self::$app;
 
         if ($app->request->isPost()) {
-            $student = (int)$app->request->post('alumno');
+            $student = (int) $app->request->post('alumno');
             $books = $app->request->post('book');
             $copies = array(
                 'given'         => array(),
                 'error'         => array(),
             );
-            
+
             // Buscamos los libros para sacar el título
             $bookList = array();
             array_map(
                 function ($book) use (&$bookList) {
                     $bookList[$book['id']] = $book['titulo'];
+
                     return 0;
                 },
                 \Model::factory('Libro')
                     ->whereIn('id', $books)
                     ->findArray()
             );
-            
+
             // Buscamos los últimos libros que el alumno entregó junto con su estado
             // y su disponibilidad
             $studentCopies = \ORM::forTable('historial')
@@ -447,7 +456,7 @@ class Copies extends Base
                 ->where('h.alumno_nie', $student)
                 ->where('h.tipo', 2)
                 ->findArray();
-            
+
             // Reordenamos aleatoriamente las copias para dejar al azar el estado
             // de los libros que obtendrá el alumno
             shuffle($studentCopies);
@@ -465,17 +474,18 @@ class Copies extends Base
                             if ($copy['libro'] == $book) {
                                 $targetCopy = $copy;
                             }
+
                             return $copy['libro'] == $book;
                         }
                     )) > 0;
-                
+
                     // Si tuvo el libro pero no está disponible lo descartamos
                     if ($didStudentOwnCopy) {
                         if (is_null($targetCopy['disponible'])) {
                             $targetCopy = null;
                         }
                     }
-                
+
                     // Si lo tuvo y está disponible se lo asignamos
                     if ($targetCopy) {
                         // Asignado
@@ -524,7 +534,7 @@ class Copies extends Base
                     );
                 }
             }
-            
+
             $app->render('copies_lending.html.twig', array(
                 'sidebar_copies_active'                 => true,
                 'sidebar_copies_lending_active'         => true,
@@ -561,15 +571,15 @@ class Copies extends Base
             ));
         }
     }
-    
+
     /**
      * Asigna un ejemplar a un alumno basándose en el mejor estado en el que puede
      * entregarse el ejemplar.
      *
-     * @param int $student NIE del alumno
-     * @param int $bookId ID del libro
-     * @param int $higherStatus Mejor estado en el que podemos entregar el libro
-     * @param int $copyCode Buscar un ejemplar específico
+     * @param  int      $student      NIE del alumno
+     * @param  int      $bookId       ID del libro
+     * @param  int      $higherStatus Mejor estado en el que podemos entregar el libro
+     * @param  int      $copyCode     Buscar un ejemplar específico
      * @return int|null Devuelve el código del ejemplar asignado o null si no ha podido asignarse
      */
     final private static function assignCopy(
@@ -590,11 +600,13 @@ class Copies extends Base
                     $copy->alumno_nie = $student;
                     $copy->save();
                     Historial::add($copy->codigo, 'prestado', $_SESSION['user_id'], '', $student);
-                    
+
                     $dbh->commit();
+
                     return $copy->codigo;
                 } catch (\PDOException $e) {
                     $dbh->rollBack();
+
                     return null;
                 }
             }
@@ -618,14 +630,15 @@ class Copies extends Base
                     $copy->alumno_nie = $student;
                     $copy->save();
                     Historial::add($copy->codigo, 'prestado', $_SESSION['user_id'], '', $student);
-                    
+
                     $dbh->commit();
+
                     return $copy->codigo;
                 } catch (\PDOException $e) {
                     $dbh->rollBack();
                 }
             }
-            
+
             // Si quedan no quedan más copias pasamos a un estado peor
             if ($copiesCount < 2) {
                 $higherStatus++;
@@ -634,7 +647,7 @@ class Copies extends Base
                 $skip++;
             }
         }
-        
+
         // Si no ha habido manera de encontrar ninguno en el estado requerido
         // intentamos buscar el que sea
         $copy = \Model::factory('Ejemplar')
@@ -648,17 +661,18 @@ class Copies extends Base
                 $copy->alumno_nie = $student;
                 $copy->save();
                 Historial::add($copy->codigo, 'prestado', $_SESSION['user_id'], '', $student);
-                
+
                 $dbh->commit();
+
                 return $copy->codigo;
             } catch (\PDOException $e) {
                 $dbh->rollBack();
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Gestiona la devolución de un lote de libros.
      * Si es accedido mediante POST procesará los datos recibidos.
@@ -669,26 +683,27 @@ class Copies extends Base
     public static function returnStudentCopies($student = 0)
     {
         $app = self::$app;
-        
+
         if ($app->request->isPost()) {
-            $confirmed = (bool)$app->request->post('confirm', 0);
+            $confirmed = (bool) $app->request->post('confirm', 0);
             // Si no ha confirmado recogemos los datos
             if (!$confirmed) {
-                $student = (int)$app->request->post('student');
-                $goodState = (array)$app->request->post('good_state');
-                $mediumState = (array)$app->request->post('medium_state');
-                $badState = (array)$app->request->post('bad_state');
+                $student = (int) $app->request->post('student');
+                $goodState = (array) $app->request->post('good_state');
+                $mediumState = (array) $app->request->post('medium_state');
+                $badState = (array) $app->request->post('bad_state');
             } else {
                 $goodState = explode(',', $app->request->post('good_state'));
                 $mediumState = explode(',', $app->request->post('medium_state'));
                 $badState = explode(',', $app->request->post('bad_state'));
             }
-            
+
             // Comprobamos que el alumno existe y si no existe devolvemos a la
             // pantalla de devolución de lote de libros
             if (!\Model::factory('Alumno')->findOne($student)) {
                 $app->flash('error', 'El alumno especificado no existe.');
                 $app->redirect($app->urlFor('copies_student_return'));
+
                 return;
             }
 
@@ -699,25 +714,27 @@ class Copies extends Base
             if (count($copiesToUpdate) !== count($uniqueCopies)) {
                 $app->flash('error', 'Hay ejemplares repetidos en los diferentes estados. Por favor, inténtelo de nuevo con los datos correctos.');
                 $app->redirect($app->urlFor('copies_student_return'));
+
                 return;
-            } else if (count($copiesToUpdate) === 0) {
+            } elseif (count($copiesToUpdate) === 0) {
                 $app->flash('error', 'No se han introducido ejemplares para devolver.');
                 $app->redirect($app->urlFor('copies_student_return'));
+
                 return;
             }
 
             foreach ($goodState as $copy) {
                 $copiesNewStatus[$copy] = 0;
             }
-        
+
             foreach ($mediumState as $copy) {
                 $copiesNewStatus[$copy] = 1;
             }
-        
+
             foreach ($badState as $copy) {
                 $copiesNewStatus[$copy] = 2;
             }
-            
+
             $copiesList = array();
             if (count($copiesToUpdate) > 0) {
                 $copiesList = \Model::factory('Ejemplar')
@@ -726,7 +743,7 @@ class Copies extends Base
             }
             $copies = array();
             $invalidCopies = array();
-        
+
             // Comprobamos que los ejemplares pertenecen al alumno
             foreach ($copiesList as $copy) {
                 if ($copy->alumno_nie != $student) {
@@ -735,7 +752,7 @@ class Copies extends Base
                     $copies[] = $copy;
                 }
             }
-            
+
             // Comprobamos si el usuario ha confirmado la acción
             // en cuyo caso simplemente seguiremos adelante
             if (!$confirmed) {
@@ -747,7 +764,7 @@ class Copies extends Base
                     $invalidCopies = array_map(function ($copy) {
                         return $copy->codigo;
                     }, $invalidCopies);
-                    
+
                     // Conseguimos un array con los códigos para cada uno de los estados
                     // tan solo de los ejemplares válidos
                     $goodState = $mediumState = $badState = array();
@@ -787,10 +804,11 @@ class Copies extends Base
                             ),
                         ),
                     ));
+
                     return;
                 }
             }
-            
+
             // Guardamos los cambios
             if (count($copies) > 0) {
                 $dbh = \ORM::getDb();
@@ -809,7 +827,7 @@ class Copies extends Base
                             $copy->estado
                         );
                     }
-                    
+
                     $dbh->commit();
                     $app->flash('success', 'Ejemplares devueltos correctamente.');
                 } catch (\PDOException $e) {
@@ -817,11 +835,12 @@ class Copies extends Base
                     $app->flash('error', 'Hubo un problema y no se pudieron devolver los ejemplares. Inténtelo de nuevo.');
                 }
             }
-            
+
             $app->redirect($app->urlFor('copies_student_return'));
+
             return;
         }
-        
+
         $app->render('copies_student_return.html.twig', array(
             'sidebar_copies_active'                 => true,
             'sidebar_copies_mass_return_active'     => true,
@@ -840,7 +859,7 @@ class Copies extends Base
             ),
         ));
     }
-    
+
     /**
      * Devuelve un objeto JSON que contiene los ejemplares no devueltos de un alumno
      *
@@ -849,7 +868,7 @@ class Copies extends Base
     public static function notReturnedByStudent($student)
     {
         $app = self::$app;
-        
+
         if (!\Model::factory('Alumno')->findOne($student)) {
             self::jsonResponse(404, array(
                 'error'         => 'No se ha podido encontrar al usuario seleccionado.',
@@ -862,7 +881,7 @@ class Copies extends Base
                 ->join('libro', array('l.id', '=', 'e.libro_id'), 'l')
                 ->where('alumno_nie', $student)
                 ->findMany();
-            
+
             $copies = array();
             foreach ($copiesNotReturned as $copy) {
                 $copies[] = array(
@@ -870,13 +889,13 @@ class Copies extends Base
                     'book'                => $copy->libro,
                 );
             }
-            
+
             self::jsonResponse(200, array(
                 'copies'            => $copies,
             ));
         }
     }
-    
+
     /**
      * Imprime la pantalla de devolución manual de libros.
      * Todas las acciones son gestionadas mediante AJAX por lo que
@@ -885,7 +904,7 @@ class Copies extends Base
     public static function manualReturn()
     {
         $app = self::$app;
-        
+
         $app->render('copies_manual_return.html.twig', array(
             'sidebar_copies_active'                 => true,
             'sidebar_copies_manual_return_active'   => true,

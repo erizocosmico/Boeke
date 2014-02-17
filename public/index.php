@@ -89,7 +89,7 @@ $app->add(new \Slim\Extras\Middleware\CsrfGuard());
 $app->hook('slim.before', function () use ($app) {
     $posIndex = strpos($_SERVER['PHP_SELF'], '/index.php');
     $baseUrl = substr($_SERVER['PHP_SELF'], 0, $posIndex + 1);
-    
+
     $app->view()->appendData(array(
         'base_url'              => $baseUrl,
         'logged_in'             => isset($_SESSION['session_hash']),

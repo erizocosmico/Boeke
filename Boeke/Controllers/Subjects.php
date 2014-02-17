@@ -41,7 +41,7 @@ namespace Boeke\Controllers;
  * @author José Miguel Molina
  */
 class Subjects extends Base
-{  
+{
     /**
      * Muestra el listado de asignaturas paginado.
      *
@@ -51,7 +51,7 @@ class Subjects extends Base
     {
         $app = self::$app;
         $subjects = array();
-        
+
         // Obtenemos los registros
         $subjectList = \ORM::forTable('asignatura')
             ->tableAlias('a')
@@ -59,10 +59,10 @@ class Subjects extends Base
             ->select('n.nombre', 'nivel')
             ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
             ->limit(25)
-            ->offset(25 * ((int)$page - 1))
+            ->offset(25 * ((int) $page - 1))
             ->orderByAsc('a.id')
             ->findMany();
-        
+
         foreach ($subjectList as $row) {
             $subjects[] = array(
                 'id'            => $row->id,
@@ -71,7 +71,7 @@ class Subjects extends Base
                 'nivel'         => $row->nivel,
             );
         }
-        
+
         // Generamos la paginación para el conjunto de asignaturas
         $pagination = self::generatePagination(
             \Model::factory('Asignatura'),
@@ -81,7 +81,7 @@ class Subjects extends Base
                 return $app->urlFor('subjects_index', array('page' => $i));
             }
         );
-        
+
         $app->render('subjects_index.html.twig', array(
             'sidebar_subjects_active'                  => true,
             'page'                                  => $page,
@@ -96,7 +96,7 @@ class Subjects extends Base
             ),
         ));
     }
-    
+
     /**
      * Devuelve en formato JSON todas las asignaturas.
      */
@@ -109,7 +109,7 @@ class Subjects extends Base
             ->select('n.nombre', 'nivel')
             ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
             ->findMany();
-        
+
         $subjects = array();
         foreach ($subjectList as $row) {
             $subjects[] = array(
@@ -117,15 +117,15 @@ class Subjects extends Base
                 'name'          => $row->nombre . ' (' . $row->nivel . ')',
             );
         }
-        
+
         self::jsonResponse(200, array(
             'subjects'       => $subjects,
         ));
     }
-    
+
     /**
      * Devuelve en formato JSON todas las asignaturas para un nivel.
-     * 
+     *
      * @param int $level Nivel para el cual se devuelven las asignaturas.
      */
     public static function forLevel($level)
@@ -139,15 +139,15 @@ class Subjects extends Base
                 );
             },
             \Model::factory('Asignatura')
-                ->where('nivel_id', (int)$level)
+                ->where('nivel_id', (int) $level)
                 ->findArray()
         );
-        
+
         self::jsonResponse(200, array(
             'subjects'       => $subjects,
         ));
     }
-    
+
     /**
      * Se encarga de crear una asignatura.
      */
@@ -156,8 +156,8 @@ class Subjects extends Base
         $app = self::$app;
         $error = array();
         $subjectName = $app->request->post('nombre');
-        $levelId = (int)$app->request->post('nivel');
-        
+        $levelId = (int) $app->request->post('nivel');
+
         $level = \Model::factory('Nivel')
             ->where('id', $levelId)
             ->findOne();
@@ -170,23 +170,23 @@ class Subjects extends Base
                 ->where('nivel_id', $levelId)
                 ->where('nombre', $subjectName)
                 ->findOne();
-            
+
             if ($subject) {
                 $error[] = 'El nombre de asignatura ya está en uso.';
             }
         }
-        
+
         if (!$level) {
             $error[] = 'El nivel seleccionado no existe o no es válido.';
         }
-        
+
         // Si no hay errores lo creamos
         if (count($error) == 0) {
             $subject = \Model::factory('Asignatura')->create();
             $subject->nombre = $subjectName;
             $subject->nivel_id = $levelId;
             $subject->save();
-            
+
             self::jsonResponse(201, array(
                 'message'       => 'Asignatura creada correctamente.',
             ));
@@ -196,7 +196,7 @@ class Subjects extends Base
             ));
         }
     }
-    
+
     /**
      * Se encarga de editar una asignatura.
      *
@@ -205,30 +205,31 @@ class Subjects extends Base
     public static function edit($subjectId)
     {
         $app = self::$app;
-        
+
         $subject = \Model::factory('Asignatura')
             ->where('id', $subjectId)
             ->findOne();
-        
+
         if (!$subject) {
             self::jsonResponse(404, array(
                 'error'       => 'La asignatura seleccionada no existe.',
             ));
+
             return;
         }
-        
+
         $error = array();
         $subjectName = $app->request->put('nombre');
-        $levelId = (int)$app->request->put('nivel');
-        
+        $levelId = (int) $app->request->put('nivel');
+
         $level = \Model::factory('Nivel')
             ->where('id', $levelId)
             ->findOne();
-        
+
         if (!$level) {
             $error[] = 'El nivel seleccionado no existe o no es válido.';
         }
-        
+
         // Validamos los campos
         if (empty($subjectName)) {
             $error[] = 'El nombre de asignatura es obligatorio.';
@@ -238,12 +239,12 @@ class Subjects extends Base
                 ->where('nivel_id', $levelId)
                 ->whereNotEqual('id', $subject->id)
                 ->findOne();
-            
+
             if ($subjectTmp) {
                 $error[] = 'El nombre de asignatura ya está en uso.';
             }
         }
-        
+
         // Si no hay errores editamos la asignatura
         if (count($error) == 0) {
             $subject->nombre = $subjectName;
@@ -259,7 +260,7 @@ class Subjects extends Base
             ));
         }
     }
-    
+
     /**
      * Borra la asignatura seleccionada.
      *
@@ -268,7 +269,7 @@ class Subjects extends Base
     public static function delete($subjectId)
     {
         $app = self::$app;
-        
+
         $subject = \Model::factory('Asignatura')
             ->where('id', $subjectId)
             ->findOne();
@@ -277,9 +278,10 @@ class Subjects extends Base
             self::jsonResponse(404, array(
                 'error'       => 'La asignatura seleccionada no existe.',
             ));
+
             return;
         }
-        
+
         if ($app->request->delete('confirm') === 'yes') {
             // Borramos la asignatura
             \Model::factory('Asignatura')
@@ -290,9 +292,10 @@ class Subjects extends Base
             self::jsonResponse(200, array(
                 'deleted'     => false,
             ));
+
             return;
         }
-        
+
         self::jsonResponse(200, array(
             'deleted'     => true,
             'message'     => 'Asignatura borrada correctamente.',

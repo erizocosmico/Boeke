@@ -50,7 +50,7 @@ class Users extends Base
     {
         // ¿Debemos procesar la petición en caso de ser post?
         $processRequest = true;
-        
+
         // Comprobamos si el acceso le fue bloqueado al usuario
         // si lo fue ignoraremos la petición si es post y mostraremos
         // um mensaje. Si lo fue lo dejaremos entrar.
@@ -62,14 +62,14 @@ class Users extends Base
                 unset($_SESSION['block_started']);
             }
         }
-        
+
         $request = self::$app->request;
-        if ($request->isPost() && $processRequest) {     
+        if ($request->isPost() && $processRequest) {
             // Buscamos al usuario
             $user = \Model::factory('Usuario')
                 ->where('nombre_usuario', $request->post('username'))
                 ->findOne();
-            
+
             $valid = false;
             if ($user) {
                 // Comprobamos si la contraseña coincide
@@ -77,7 +77,7 @@ class Users extends Base
                     $valid = true;
                 }
             }
-            
+
             if (!$valid) {
                 self::$app->flashNow('error', 'Nombre o contraseña incorrectos.');
 
@@ -87,7 +87,7 @@ class Users extends Base
                 } else {
                     $_SESSION['retries_left'] = self::$config['login_max_retries'];
                 }
-                
+
                 // Si ha agotado sus intentos le bloqueamos el acceso
                 if ($_SESSION['retries_left'] == 0) {
                     $_SESSION['block_started'] = time() +
@@ -98,7 +98,7 @@ class Users extends Base
                 if (isset($_SESSION['retries_left'])) {
                     unset($_SESSION['retries_left']);
                 }
-                
+
                 // Creamos la sesión
                 $_SESSION['user_id'] = $user->id;
                 $_SESSION['session_hash'] = sha1(uniqid());
@@ -108,7 +108,7 @@ class Users extends Base
                 $session->ultima_visita = time();
                 $session->hash_sesion = $_SESSION['session_hash'];
                 $session->save();
-                
+
                 // Redirigimos al índice
                 self::$app->redirect('/');
             }
@@ -125,20 +125,20 @@ class Users extends Base
             ),
         ));
     }
-    
+
     /**
      * Cierra la sesión del usuario y lo redirige al login
      */
     public static function logout()
     {
         self::$app->deleteCookie(self::$config['cookie_name']);
-        
+
         // Borramos la sesión
         \Model::factory('Sesion')
             ->where('hash_sesion', $_SESSION['session_hash'])
             ->findOne()
             ->delete();
-        
+
         // Nos deshacemos de todas las variables de sesión
         foreach ($_SESSION as $key => $value) {
             unset($_SESSION[$key]);
@@ -148,7 +148,7 @@ class Users extends Base
         // lo mandamos directamente al login.
         self::$app->redirect('/login');
     }
-    
+
     /**
      * Muestra el listado de usuarios paginado.
      *
@@ -158,18 +158,18 @@ class Users extends Base
     {
         $app = self::$app;
         $users = array();
-        
+
         // Obtenemos los registros
         $userList = \Model::factory('Usuario')
             ->limit(25)
-            ->offset(25 * ((int)$page - 1))
+            ->offset(25 * ((int) $page - 1))
             ->orderByAsc('id')
             ->findArray();
-        
+
         foreach ($userList as $row) {
             $users[] = $row;
         }
-        
+
         // Generamos la paginación para el conjunto de usuarios
         $pagination = self::generatePagination(
             \Model::factory('Usuario'),
@@ -179,7 +179,7 @@ class Users extends Base
                 return $app->urlFor('users_index', array('page' => $i));
             }
         );
-        
+
         try {
             $isAdminCallback = \Boeke\Middleware::isAdmin($app, true);
             $isAdminCallback();
@@ -187,7 +187,7 @@ class Users extends Base
         } catch (\Exception $e) {
             $isAdmin = false;
         }
-        
+
         $app->render('users_index.html.twig', array(
             'sidebar_users_active'                  => true,
             'is_admin'                              => $isAdmin,
@@ -203,7 +203,7 @@ class Users extends Base
             ),
         ));
     }
-    
+
     /**
      * Si es accedida mediante GET muestra el formulario de creación de usuario
      * si es accedida mediante POST procesa la creación del usuario.
@@ -211,13 +211,13 @@ class Users extends Base
     public static function create()
     {
         $app = self::$app;
-        
+
         $error = array();
         $username = $app->request->post('nombre_usuario');
         $fullName = $app->request->post('nombre_completo');
         $password = $app->request->post('usuario_pass');
-        $isAdmin = (int)$app->request->post('es_admin', 0);
-        
+        $isAdmin = (int) $app->request->post('es_admin', 0);
+
         // Validamos los posibles errores
         if (empty($username)) {
             $error[] = 'El nombre de usuario es obligatorio.';
@@ -225,16 +225,16 @@ class Users extends Base
             $user = \Model::factory('Usuario')
                 ->where('nombre_usuario', $username)
                 ->findOne();
-            
+
             if ($user) {
                 $error[] = 'El nombre de usuario ya está en uso.';
             }
         }
-        
+
         if (strlen($password) < 6) {
             $error[] = 'La contraseña debe tener un mínimo de 6 caracteres.';
         }
-        
+
         // Si no hay errores lo creamos
         if (count($error) == 0) {
             $user = \Model::factory('Usuario')->create();
@@ -243,7 +243,7 @@ class Users extends Base
             $user->usuario_pass = password_hash($password, PASSWORD_BCRYPT);
             $user->es_admin = $isAdmin;
             $user->save();
-            
+
             self::jsonResponse(201, array(
                 'message'       => 'Usuario creado correctamente.',
             ));
@@ -253,7 +253,7 @@ class Users extends Base
             ));
         }
     }
-    
+
     /**
      * Si es accedida mediante GET muestra el formulario de edición de usuario
      * si es accedida mediante PUT procesa la edición del usuario.
@@ -263,7 +263,7 @@ class Users extends Base
     public static function edit($userId)
     {
         $app = self::$app;
-        
+
         $user = \Model::factory('Usuario')
             ->where('id', $userId)
             ->findOne();
@@ -272,16 +272,17 @@ class Users extends Base
             self::jsonResponse(404, array(
                 'error'       => 'El usuario seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         $error = array();
-        
+
         $username = $app->request->put('nombre_usuario');
         $fullName = $app->request->put('nombre_completo');
         $password = $app->request->put('usuario_pass');
-        $isAdmin = (int)$app->request->put('es_admin', 0);
-        
+        $isAdmin = (int) $app->request->put('es_admin', 0);
+
         // Validamos los campos
         if (empty($username)) {
             $error[] = 'El nombre de usuario es obligatorio.';
@@ -290,16 +291,16 @@ class Users extends Base
                 ->where('nombre_usuario', $username)
                 ->whereNotEqual('id', $userId)
                 ->findOne();
-            
+
             if ($userTmp) {
                 $error[] = 'El nombre de usuario ya está en uso.';
             }
         }
-        
+
         if (strlen($password) < 6 && !empty($password)) {
             $error[] = 'La contraseña debe tener un mínimo de 6 caracteres.';
         }
-        
+
         // Si no hay errores editamos el usuario
         if (count($error) == 0) {
             $user->nombre_usuario = $username;
@@ -309,7 +310,7 @@ class Users extends Base
             }
             $user->es_admin = $isAdmin;
             $user->save();
-            
+
             self::jsonResponse(200, array(
                 'message'       => 'Usuario editado correctamente.',
             ));
@@ -319,7 +320,7 @@ class Users extends Base
             ));
         }
     }
-    
+
     /**
      * Si es accedida mediante GET muestra el formulario de borrado de usuario
      * si es accedida mediante DELETE procesa el borrado del usuario.
@@ -329,7 +330,7 @@ class Users extends Base
     public static function delete($userId)
     {
         $app = self::$app;
-        
+
         $user = \Model::factory('Usuario')
             ->where('id', $userId)
             ->findOne();
@@ -338,9 +339,10 @@ class Users extends Base
             self::jsonResponse(404, array(
                 'error'       => 'El usuario seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         if ($app->request->delete('confirm') === 'yes') {
             // Borramos el usuario
             \Model::factory('Usuario')
@@ -350,9 +352,10 @@ class Users extends Base
             self::jsonResponse(200, array(
                 'deleted'     => false,
             ));
+
             return;
         }
-        
+
         self::jsonResponse(200, array(
             'deleted'     => true,
             'message'     => 'Usuario borrado correctamente.',

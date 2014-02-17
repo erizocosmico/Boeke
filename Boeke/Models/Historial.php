@@ -53,17 +53,17 @@ class Historial extends \Model
         'actualizado'   => 3,
         'perdido'       => 4,
     );
-    
+
     /**
      * Añade un registro al historial.
      *
-     * @param int $copy Código del ejemplar
-     * @param string $type Tipo de registro
-     * @param int|null $user Usuario que añade el registro
-     * @param string $comment Anotación
-     * @param int|null $nie Nie del alumno, si procede
-     * @param int $status Estado del ejemplar
-     * @param int $date UNIX Timestamp del momento en que se añade el registro
+     * @param  int           $copy    Código del ejemplar
+     * @param  string        $type    Tipo de registro
+     * @param  int|null      $user    Usuario que añade el registro
+     * @param  string        $comment Anotación
+     * @param  int|null      $nie     Nie del alumno, si procede
+     * @param  int           $status  Estado del ejemplar
+     * @param  int           $date    UNIX Timestamp del momento en que se añade el registro
      * @throws \PDOException si se produce algún error en la inserción
      */
     public static function add(
@@ -88,7 +88,7 @@ class Historial extends \Model
         $h->anotacion = $comment;
         $h->save();
     }
-    
+
     /**
      * Devuelve el alumno asociado al registro del historial
      */
@@ -96,7 +96,7 @@ class Historial extends \Model
     {
         return $this->belongsTo('Alumno');
     }
-    
+
     /**
      * Devuelve el usuario que insertó el registro en el historial
      */
@@ -104,7 +104,7 @@ class Historial extends \Model
     {
         return $this->belongsTo('Usuario');
     }
-    
+
     /**
      * Devuelve el ejemplar al que hace referencia el registro del historial
      */

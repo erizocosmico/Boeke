@@ -51,15 +51,15 @@ class Base
      * @var array Configuración del usuario
      */
     public static $config;
-    
+
     /**
      * Genera el HTML para la paginación de un conjunto de items.
      *
-     * @param \ORMWrapper $set Conjunto de items a paginar
-     * @param int $perPage Cantidad de items por página
-     * @param int $current Página actual
-     * @param callable $urlCallback Función que dada la página genere la url para dicha página
-     * @return string HTML de la paginación
+     * @param  \ORMWrapper $set         Conjunto de items a paginar
+     * @param  int         $perPage     Cantidad de items por página
+     * @param  int         $current     Página actual
+     * @param  callable    $urlCallback Función que dada la página genere la url para dicha página
+     * @return string      HTML de la paginación
      */
     final public static function generatePagination(
         $set,
@@ -73,33 +73,33 @@ class Base
             $count = $set->count();
         }
         $pages = ceil($count / $perPage);
-        
+
         // Si no hay suficientes registros para paginar no devolvemos nada
         if ($count < $perPage) {
             return '';
         }
-        
+
         // Si la página actual es mayor al número de páginas asumimos
         // que se trata de la primera
         if ($pages < $current) {
             $current = 1;
         }
-        
+
         $output = '';
-        
+
         if ($current > 1) {
             // Primera página
             $output .= '<li><a href="' . $urlCallback(1) .
                 '">&larr; Primera</a></li>';
         }
-        
+
         if ($current < 8 || $pages < 8) {
             // La página actual está al principio
             for ($i = 1; $i < (($pages + 1) < 8 ? $pages + 1 : 8); $i++) {
                 $output .= '<li' . ($current == $i ? ' class="active"' : '') .
                     '><a href="' . $urlCallback($i) . '">' . $i . '</a></li>';
             }
-            
+
             if ($pages > (($pages) < 7 ? $pages : 7)) {
                 $output .= '<li class="disabled"><span>...</span></li>';
             }
@@ -119,21 +119,21 @@ class Base
             }
             $output .= '<li class="disabled"><span>...</span></li>';
         }
-        
+
         if ($current < $pages) {
             // Última página
             $output .= '<li><a href="' . $urlCallback($pages) .
                 '">Última &rarr;</a></li>';
         }
-        
+
         return $output;
     }
-    
+
     /**
      * Envía una respuesta en formato JSON.
      *
-     * @param int $status Estado de la respuesta
-     * @param array $data Datos
+     * @param int   $status Estado de la respuesta
+     * @param array $data   Datos
      */
     final public static function jsonResponse($status, array $data)
     {

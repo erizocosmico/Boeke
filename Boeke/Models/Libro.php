@@ -43,7 +43,7 @@ namespace Boeke\Models;
 class Libro extends \Model
 {
     public static $_table = 'libro';
-    
+
     /**
      * Devuelve la asignatura a la que pertenece el libro
      */
@@ -51,7 +51,7 @@ class Libro extends \Model
     {
         return $this->belongsTo('Asignatura');
     }
-    
+
     /**
      * Devuelve los ejemplares de este libro
      */

@@ -41,7 +41,7 @@ namespace Boeke\Controllers;
  * @author José Miguel Molina
  */
 class Levels extends Base
-{  
+{
     /**
      * Muestra el listado de niveles paginado.
      *
@@ -51,18 +51,18 @@ class Levels extends Base
     {
         $app = self::$app;
         $levels = array();
-        
+
         // Obtenemos los registros
         $levelList = \Model::factory('Nivel')
             ->limit(25)
-            ->offset(25 * ((int)$page - 1))
+            ->offset(25 * ((int) $page - 1))
             ->orderByAsc('id')
             ->findArray();
-        
+
         foreach ($levelList as $row) {
             $levels[] = $row;
         }
-        
+
         // Generamos la paginación para el conjunto de niveles
         $pagination = self::generatePagination(
             \Model::factory('Nivel'),
@@ -72,7 +72,7 @@ class Levels extends Base
                 return $app->urlFor('levels_index', array('page' => $i));
             }
         );
-        
+
         $app->render('levels_index.html.twig', array(
             'sidebar_levels_active'                  => true,
             'page'                                  => $page,
@@ -87,7 +87,7 @@ class Levels extends Base
             ),
         ));
     }
-    
+
     /**
      * Devuelve en formato JSON todos los niveles existentes.
      */
@@ -103,12 +103,12 @@ class Levels extends Base
             },
             \Model::factory('Nivel')->findArray()
         );
-        
+
         self::jsonResponse(200, array(
             'levels'       => $levels,
         ));
     }
-    
+
     /**
      * Se encarga de crear un nivel.
      */
@@ -125,18 +125,18 @@ class Levels extends Base
             $level = \Model::factory('Nivel')
                 ->where('nombre', $levelName)
                 ->findOne();
-            
+
             if ($level) {
                 $error[] = 'El nombre de nivel ya está en uso.';
             }
         }
-        
+
         // Si no hay errores lo creamos
         if (count($error) == 0) {
             $level = \Model::factory('Nivel')->create();
             $level->nombre = $levelName;
             $level->save();
-            
+
             self::jsonResponse(201, array(
                 'message'       => 'Nivel creado correctamente.',
             ));
@@ -146,7 +146,7 @@ class Levels extends Base
             ));
         }
     }
-    
+
     /**
      * Se encarga de editar un nivel.
      *
@@ -155,7 +155,7 @@ class Levels extends Base
     public static function edit($levelId)
     {
         $app = self::$app;
-        
+
         $level = \Model::factory('Nivel')
             ->where('id', $levelId)
             ->findOne();
@@ -164,12 +164,13 @@ class Levels extends Base
             self::jsonResponse(404, array(
                 'error'       => 'El nivel seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         $error = array();
         $levelName = $app->request->put('nombre');
-        
+
         // Validamos los campos
         if (empty($levelName)) {
             $error[] = 'El nombre de nivel es obligatorio.';
@@ -178,12 +179,12 @@ class Levels extends Base
                 ->where('nombre', $levelName)
                 ->whereNotEqual('id', $level->id)
                 ->findOne();
-            
+
             if ($levelTmp) {
                 $error[] = 'El nombre de nivel ya está en uso.';
             }
         }
-        
+
         // Si no hay errores editamos el nivel
         if (count($error) == 0) {
             $level->nombre = $levelName;
@@ -198,7 +199,7 @@ class Levels extends Base
             ));
         }
     }
-    
+
     /**
      * Borra el nivel seleccionado.
      *
@@ -207,7 +208,7 @@ class Levels extends Base
     public static function delete($levelId)
     {
         $app = self::$app;
-        
+
         $level = \Model::factory('Nivel')
             ->where('id', $levelId)
             ->findOne();
@@ -216,9 +217,10 @@ class Levels extends Base
             self::jsonResponse(404, array(
                 'error'       => 'El nivel seleccionado no existe.',
             ));
+
             return;
         }
-        
+
         if ($app->request->delete('confirm') === 'yes') {
             // Borramos el nivel
             \Model::factory('Nivel')
@@ -229,9 +231,10 @@ class Levels extends Base
             self::jsonResponse(200, array(
                 'deleted'     => false,
             ));
+
             return;
         }
-        
+
         self::jsonResponse(200, array(
             'deleted'     => true,
             'message'     => 'Nivel borrado correctamente.',

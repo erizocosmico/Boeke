@@ -45,8 +45,8 @@ class Middleware
     /**
      * Middleware para comprobar si el usuario está o no conectado.
      *
-     * @param \Slim\Slim $app La instancia de la aplicación
-     * @param bool $reverse Si es verdadero se redirigirá si está conectado.
+     * @param  \Slim\Slim $app     La instancia de la aplicación
+     * @param  bool       $reverse Si es verdadero se redirigirá si está conectado.
      * @return \Closure
      */
     public static function isLoggedIn(\Slim\Slim $app, $reverse = false)
@@ -67,7 +67,7 @@ class Middleware
                     ->where('hash_sesion', $_SESSION['session_hash'])
                     ->where('usuario_id', $_SESSION['user_id'])
                     ->findOne();
-                
+
                 // Si no se corresponde enviarlo a la entrada de conexión
                 if ($session === false) {
                     unset($_SESSION['user_id']);
@@ -81,28 +81,28 @@ class Middleware
             }
         };
     }
-    
+
     /**
      * Middleware para comprobar si el usuario actual es o no administrador.
      * Si el usuario no es administrador mostrará la plantilla de "no
      * autorizado" y parará la ejecución.
      *
-     * @param \Slim\Slim $app Instancia de la aplicación
-     * @param bool $checkOnly Solo comprobar en lugar de imprimir plantilla de no autorizado.
+     * @param  \Slim\Slim $app       Instancia de la aplicación
+     * @param  bool       $checkOnly Solo comprobar en lugar de imprimir plantilla de no autorizado.
      * @return \Closure
      */
     public static function isAdmin(\Slim\Slim $app, $checkOnly = false)
     {
-        return function() use ($app) {
+        return function () use ($app) {
             $user = \Model::factory('Usuario')
                 ->where('id', $_SESSION['user_id'])
                 ->findOne();
             $authorized = false;
-        
+
             if ($user !== false) {
                 $authorized = ($user->es_admin == 1);
             }
-        
+
             if (!$authorized) {
                 if (!$checkOnly) {
                     $app->render('not_authorised.html.twig');

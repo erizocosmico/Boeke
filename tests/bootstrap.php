@@ -30,13 +30,13 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-use Symfony\Component\Yaml\Yaml;
 
 set_include_path(dirname(__FILE__) . '/../' . PATH_SEPARATOR . get_include_path());
 
 require_once 'vendor/autoload.php';
 
-function customAutoLoader($class) {
+function customAutoLoader($class)
+{
     $file = rtrim(dirname(__FILE__), '/') . '/' . $class . '.php';
     if (file_exists($file)) {
         require $file;

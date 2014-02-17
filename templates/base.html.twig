@@ -27,7 +27,7 @@
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
-            
+
             <header>
                 {% if logged_in %}
                 <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
@@ -56,7 +56,7 @@
                 <h1 class="text-center spacing-vertical"><span class="fa fa-book base-icon"></span> Boeke</h1>
                 {% endif %}
             </header>
-            
+
             <div class="container limited-width">
                 {% if logged_in %}
                 <ol class="breadcrumb">
@@ -69,7 +69,7 @@
                   {% endif %}
                 </ol>
                 {% endif %}
-                
+
                 <div class="row row-offcanvas row-offcanvas-right">
                 {% block content %}
                 {% endblock %}

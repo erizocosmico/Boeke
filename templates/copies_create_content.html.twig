@@ -1,7 +1,7 @@
 <script type="text/javascript">
     window.addEventListener('DOMContentLoaded', function() {
         copiesCreationInit();
-        
+
         hide = function(elem) {
             if (elem == undefined) return;
             window.setTimeout(function() {
@@ -9,7 +9,7 @@
                 elem.className += ' hidden';
             }, 2000);
         }
-        
+
         hide(document.getElementById('backend-error'));
         hide(document.getElementById('backend-success'));
     });
@@ -34,7 +34,7 @@
             </select>
         </div>
     </div>
-    
+
     <div class="form-group hidden">
         <label for="asignatura" class="col-sm-4 control-label">Asignatura</label>
         <div class="col-sm-8">
@@ -42,7 +42,7 @@
             </select>
         </div>
     </div>
-    
+
     <div class="form-group hidden">
         <label for="libro" class="col-sm-4 control-label">Libro</label>
         <div class="col-sm-8">
@@ -50,7 +50,7 @@
             </select>
         </div>
     </div>
-    
+
     <div id="copy-code-box" class="hidden">
         <div class="form-group">
             <label for="codigo" class="col-sm-4 control-label">Código del ejemplar 1</label>

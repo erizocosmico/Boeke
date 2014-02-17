@@ -14,9 +14,9 @@
                 {% if flash['success'] %}
                 <div class="alert alert-success">{{ flash['success'] }}</div>
                 {% endif %}
-                
+
                 <a href="{{ urlFor('copies_index') }}" class="btn btn-default"><span class="fa fa-chevron-left"></span> Ir al listado de ejemplares</a>
-                
+
                 {% if copy %}
                 <h3>Información</h3>
                 <table class="table table-bordered">
@@ -57,7 +57,7 @@
                         <td>{{ copy.alumno }}</td>
                     </tr>
                 </table>
-                
+
                 <h3>Historial</h3>
                 <table class="table table-bordered">
                     <thead>

@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.12.1
+ * @version     0.12.3
  * @package     Boeke
  *
  * MIT LICENSE
@@ -218,7 +218,7 @@ class Copies extends Base
         if ($app->request->isPost()) {
             $codes = array_map(function ($code) {
                 return (int) $code;
-            }, $app->request->post('codigo'));
+            }, (array) $app->request->post('codigo'));
             $bookId = (int) $app->request->post('libro');
             $books = $error = array();
 

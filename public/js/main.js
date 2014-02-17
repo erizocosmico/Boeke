@@ -6,9 +6,13 @@ var modalBox = $('#modal-box'),
     modalFooter = modalBoxDOMObject.getElementsByClassName('modal-footer')[0],
     defaultRenderer = {
         option: function(item, escape) {
-            return '<div>' + escape(item.name) + '</div>';
+            return '<div>' + escapeHTML(item.name) + '</div>';
         }
     };
+    
+function escapeHTML(text) {
+    return text.replace(/</gi, '&lt;').replace(/>/gi, '&gt;').replace(/"/gi, '&quot;');
+}
   
 function refresh() {
     window.location.href = window.location.href;
@@ -318,7 +322,7 @@ function showLevelEditor(elem) {
 function deleteLevel(elem) {
     genericDelete({
         title: 'Borrar nivel',
-        content: '¿Deseas borrar el nivel "<b>' + elem.getAttribute('data-name') + '</b>"?',
+        content: '¿Deseas borrar el nivel "<b>' + escapeHTML(elem.getAttribute('data-name')) + '</b>"?',
         url: 'levels/delete/' + elem.getAttribute('data-id')
     });
 }
@@ -355,7 +359,7 @@ function showSubjectEditor(elem) {
     
     showGenericEditor({
         data: function() {
-            return "nombre=" + name.value + '&nivel=' + level.val();
+            return "nombre=" + name.value + '&nivel=' + select.$input[0].value;
         },
         editing: editing,
         editTitle: 'Editar asignatura',
@@ -365,7 +369,7 @@ function showSubjectEditor(elem) {
         callbackValidator: function() {
             if (name.value.length < 3) {
                 displayModalAlert('El nombre de la asignatura debe tener al menos 3 caracteres', 'danger');
-            } else if (level.val() == '') {
+            } else if (select.$input[0].value == '') {
                 displayModalAlert('Debes seleccionar un nivel.', 'danger');
             } else {
                 return true;
@@ -379,7 +383,7 @@ function showSubjectEditor(elem) {
 function deleteSubject(elem) {
     genericDelete({
         title: 'Borrar asignatura',
-        content: '¿Deseas borrar la asignatura "<b>' + elem.getAttribute('data-name') + '</b>"?',
+        content: '¿Deseas borrar la asignatura "<b>' + escapeHTML(elem.getAttribute('data-name')) + '</b>"?',
         url: 'subjects/delete/' + elem.getAttribute('data-id')
     });
 }
@@ -437,7 +441,7 @@ function showStudentEditor(elem) {
 function deleteStudent(elem) {
     genericDelete({
         title: 'Borrar alumno',
-        content: '¿Deseas borrar el alumno "<b>' + elem.getAttribute('data-name') + '</b>"?',
+        content: '¿Deseas borrar el alumno "<b>' + escapeHTML(elem.getAttribute('data-name')) + '</b>"?',
         url: 'students/delete/' + elem.getAttribute('data-id')
     });
 }
@@ -484,7 +488,7 @@ function showBookEditor(elem) {
     showGenericEditor({
         data: function() {
             return "titulo=" + title.value + '&isbn=' + isbn.value + '&autor='
-            + author.value + '&anio=' + year.value + '&asignatura_id=' + subject.val();
+            + author.value + '&anio=' + year.value + '&asignatura_id=' + subject.$input[0].value;
         },
         editing: editing,
         editTitle: 'Editar libro',
@@ -500,7 +504,7 @@ function showBookEditor(elem) {
                 displayModalAlert('El ISBN no es válido.', 'danger');
             } else if (year.value > Number(new Date().getFullYear()) || year.value <= 0) {
                 displayModalAlert('Fecha de publicación no válida.', 'danger');
-            } else if (subject.val() == '') {
+            } else if (subject.$input[0].value == '') {
                 displayModalAlert('Debes seleccionar una asignatura.', 'danger');
             } else {
                 return true;
@@ -514,7 +518,7 @@ function showBookEditor(elem) {
 function deleteBook(elem) {
     genericDelete({
         title: 'Borrar libro',
-        content: '¿Deseas borrar el libro "<b>' + elem.getAttribute('data-title') + '</b>"?',
+        content: '¿Deseas borrar el libro "<b>' + escapeHTML(elem.getAttribute('data-title')) + '</b>"?',
         url: 'books/delete/' + elem.getAttribute('data-id')
     });
 }
@@ -572,7 +576,7 @@ function showUserEditor(elem) {
 function deleteUser(elem) {
     genericDelete({
         title: 'Borrar usuario',
-        content: '¿Deseas borrar el usuario "<b>' + elem.getAttribute('data-username') + '</b>"?',
+        content: '¿Deseas borrar el usuario "<b>' + escapeHTML(elem.getAttribute('data-username')) + '</b>"?',
         url: 'users/delete/' + elem.getAttribute('data-id')
     });
 }
@@ -827,7 +831,7 @@ function deleteCopy(elem) {
     $('#update-status-actions').addClass('hidden');
     genericDelete({
         title: 'Borrar ejemplar',
-        content: '¿Deseas borrar el ejemplar "<b>' + elem.getAttribute('data-code') + '</b>"?',
+        content: '¿Deseas borrar el ejemplar "<b>' + escapeHTML(elem.getAttribute('data-code')) + '</b>"?',
         url: 'copies/delete/' + elem.getAttribute('data-code')
     });
 }
@@ -948,9 +952,9 @@ function renderLevelBook(book) {
         checked = '';
 
     output += '<tr>';
-    output += '<td>' + book.subject + '</td>';
+    output += '<td>' + escapeHTML(book.subject) + '</td>';
     checked = (book.owned) ? ' checked="checked" disabled="true"' : '';
-    output += '<td>' + book.title;
+    output += '<td>' + escapeHTML(book.title);
     
     output += '</td><td class="text-center">';
     if (book.owned) {
@@ -1010,7 +1014,7 @@ function copiesLendingInit() {
 }
 
 function renderNotReturnedCopy(copy, extended) {
-    var output = '<tr><td>' + copy.code + '</td><td>' + copy.book + '</td>';
+    var output = '<tr><td>' + copy.code + '</td><td>' + escapeHTML(copy.book) + '</td>';
     if (extended) {
         output += '<td><button class="btn btn-success btn-sm" data-code="'
             + copy.code + '" onclick="markCopyAs(this, 0); return false;">Bueno</button>'

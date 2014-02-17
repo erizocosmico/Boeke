@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.12.1
+ * @version     0.12.3
  * @package     Boeke
  *
  * MIT LICENSE
@@ -31,8 +31,6 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-use Symfony\Component\Yaml\Yaml;
-
 set_include_path(dirname(__FILE__) . '/../' . PATH_SEPARATOR . get_include_path());
 
 require_once 'vendor/autoload.php';
@@ -49,34 +47,4 @@ function customAutoLoader($class)
 
 spl_autoload_register('customAutoLoader');
 
-// Configuración cargada de config.yml
-$config = Yaml::parse('config.yml');
-
-if ($config['debug']) {
-    error_reporting(E_ALL);
-}
-
-// Inicializamos la aplicación
-$app = new \Slim\Slim(array(
-    'mode'                  => ($config['debug']) ? 'development' : 'production',
-    'view'                  => new \Slim\Extras\Views\Twig(),
-    'debug'                 => $config['debug'],
-    'templates.path'        => dirname(dirname(__FILE__)) . DSEP . 'templates',
-    'log.level'             => ($config['debug']) ? \Slim\Log::DEBUG : \Slim\Log::WARN,
-    'log.enabled'           => true,
-    'cookies.encrypt'       => true,
-    'cookies.lifetime'      => $config['cookie_lifetime'],
-    'cookies.path'          => $config['cookie_path'],
-    'cookies.secret_key'    => $config['secret_key'],
-    'http.version'          => '1.1',
-));
-
-// Inicializamos la base de datos
-$driver = new \Aurora\Drivers\MySQLDriver(
-    $config['database_host'],
-    $config['database_name'],
-    $config['database_port'],
-    $config['database_user'],
-    $config['database_pass']
-);
-\Aurora\Dbal::init($driver);
+// TODO

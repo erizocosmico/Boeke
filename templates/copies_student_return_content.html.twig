@@ -15,7 +15,7 @@
         </div>
     {% endif %}
     <div class="alert alert-danger hidden" id="return-alert-box"></div>
-    
+
     <div class="form-group">
         <label for="student" class="col-sm-3 control-label">Alumno</label>
         <div class="col-sm-9">
@@ -23,10 +23,10 @@
             </select>
         </div>
     </div>
-    
+
     <div id="return-data-hidden" class="hidden">
         <hr />
-    
+
         <table class="table table-bordered hidden" id="return-books-table">
             <thead>
                 <th>Código</th>
@@ -36,10 +36,10 @@
             <tbody>
             </tbody>
         </table>
-    
+
         <h4>Introduce los códigos de los ejemplares</h4>
         <p>Debes introducir los códigos de los ejemplares a devolver en la categoría que corresponda al estado en el que se han devuelto los mismos.</p>
-    
+
         <div class="panel panel-default">
             <div class="panel-body">
                 <ul class="nav nav-tabs nav-justified">
@@ -47,7 +47,7 @@
                     <li><a href="#medium" data-toggle="tab">Regular</a></li>
                     <li><a href="#bad" data-toggle="tab">Mal estado</a></li>
                 </ul>
-            
+
                 <div class="tab-content">
                     <div class="tab-pane active" id="good">
                         <div id="status-good-code-box">
@@ -58,7 +58,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="form-group text-center">
                             <button class="btn" data-num="2" onclick="addAnotherCopy(this, 'status-good-code-box', 'good_state'); return false;">Añadir otro ejemplar</button>
                         </div>
@@ -72,7 +72,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="form-group text-center">
                             <button class="btn" data-num="2" onclick="addAnotherCopy(this, 'status-medium-code-box', 'medium_state'); return false;">Añadir otro ejemplar</button>
                         </div>
@@ -86,7 +86,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="form-group text-center">
                             <button class="btn" data-num="2" onclick="addAnotherCopy(this, 'status-bad-code-box', 'bad_state'); return false;">Añadir otro ejemplar</button>
                         </div>

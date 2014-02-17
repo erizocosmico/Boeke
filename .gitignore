@@ -3,3 +3,6 @@ config.yml
 composer.lock
 public/js/vendor/*
 templates/cache/**/*.php
+bin/*
+sql/*
+!sql/schema.sql

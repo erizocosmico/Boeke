@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.12.1
+ * @version     0.12.2
  * @package     Boeke
  *
  * MIT LICENSE
@@ -32,7 +32,7 @@
  */
 
 require dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR .
-    'public' . DIRECTORY_SEPARATOR . 'config.php';
+    'Boeke' . DIRECTORY_SEPARATOR . 'config.php';
 
 if (count($argv) < 4) {
     die('Uso: add_admin.php <nombre de usuario> <contraseña> <nombre completo>');
@@ -41,7 +41,7 @@ if (count($argv) < 4) {
 try {
     $user = Model::factory('Usuario')->create();
     $user->nombre_usuario = $argv[1];
-    $user->usuario_pass = sha1($config['password_salt'] . $argv[2]);
+    $user->usuario_pass = password_hash($argv[2], PASSWORD_BCRYPT);
     $user->nombre_completo = $argv[3];
     $user->es_admin = 1;
     $user->save();

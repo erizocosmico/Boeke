@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.12.3
+ * @version     0.12.5
  * @package     Boeke
  *
  * MIT LICENSE
@@ -60,7 +60,8 @@ class Subjects extends Base
             ->join('nivel', array('a.nivel_id', '=', 'n.id'), 'n')
             ->limit(25)
             ->offset(25 * ((int) $page - 1))
-            ->orderByAsc('a.id')
+            ->orderByAsc('n.nombre')
+            ->orderByAsc('a.nombre')
             ->findMany();
 
         foreach ($subjectList as $row) {

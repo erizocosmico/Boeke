@@ -81,6 +81,15 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                
+                <h3>Añadir una anotación</h3>
+                <form role="form" method="POST" action="{{ urlFor('history_comment', {'code': copy.codigo}) }}">
+                    <textarea name="comment" id="comment" class="form-control" placeholder="Introduce una anotación..."></textarea>
+                    <div class="text-center space-top">
+                        <button type="submit" name="submit" class="btn btn-primary">Añadir anotación</button>
+                    </div>
+                    <input type="hidden" name="{{ csrf_key }}" value="{{ csrf_token}}">
+                </form>
                 {% endif %}
             </div>
         </div>

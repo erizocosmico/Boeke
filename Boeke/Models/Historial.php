@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.12.3
+ * @version     0.12.5
  * @package     Boeke
  *
  * MIT LICENSE
@@ -52,6 +52,7 @@ class Historial extends \Model
         'devuelto'      => 2,
         'actualizado'   => 3,
         'perdido'       => 4,
+        'comentario'    => 5,
     );
 
     /**
@@ -72,12 +73,23 @@ class Historial extends \Model
         $user = null,
         $comment = '',
         $nie = null,
-        $status = 0,
+        $status = -1,
         $date = null
     ) {
+        if ($status < 0) {
+            $copyTmp = \Model::factory('Ejemplar')->findOne($copy);
+
+            if (!$copyTmp) {
+                $status = 0;
+            } else {
+                $status = $copyTmp->estado;
+            }
+        }
+
         if ($date === null) {
             $date = time();
         }
+
         $h = \Model::factory('Historial')->create();
         $h->tipo = self::$types[$type];
         $h->ejemplar_codigo = $copy;

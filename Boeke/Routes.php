@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.12.3
+ * @version     0.12.5
  * @package     Boeke
  *
  * MIT LICENSE
@@ -190,7 +190,7 @@ class Routes
             $app->get('/view/:code', '\\Boeke\\Controllers\\History::view')
                 ->name('history_view');
             // Añadir anotación a un ejemplar
-            $app->post('/comment', '\\Boeke\\Controllers\\History::comment')
+            $app->post('/comment/:code', '\\Boeke\\Controllers\\History::comment')
                 ->name('history_comment');
         });
     }

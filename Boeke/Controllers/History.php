@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     0.12.3
+ * @version     0.12.5
  * @package     Boeke
  *
  * MIT LICENSE
@@ -31,6 +31,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 namespace Boeke\Controllers;
+
+use Boeke\Models\Historial;
 
 /**
  * History
@@ -83,6 +85,9 @@ class History extends Base
             break;
             case 3:
                 $msg = 'El estado del ejemplar ha sido actualizado.';
+            break;
+            case 5:
+                $msg = 'Se ha añadido una anotación.';
             break;
         }
 
@@ -180,9 +185,31 @@ class History extends Base
 
     /**
      * Añade una anotación al historial de un ejemplar.
+     *
+     * @param int $code Código del ejemplar
      */
-    public static function comment()
+    public static function comment($code)
     {
-        // TODO implement
+        $app = self::$app;
+        $comment = $app->request->post('comment', '');
+
+        $copy = \Model::factory('Ejemplar')->findOne($code);
+
+        if (!empty($comment) && $copy) {
+            try {
+                Historial::add(
+                    $code,
+                    'comentario',
+                    $_SESSION['user_id'],
+                    $comment
+                );
+
+                $app->flash('success', 'Anotación añadida correctamente.');
+            } catch (\PDOException $e) {
+                $app->flash('error', 'Error insertando la anotación.');
+            }
+        }
+
+        $app->redirect($app->urlFor('history_view', array('code' => $code)));
     }
 }

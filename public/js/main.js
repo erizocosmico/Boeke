@@ -202,6 +202,7 @@ function selectLevel(options) {
 function showGenericEditor(options) {
     var createButton = document.getElementById('create-button'),
         cancelButton = document.getElementById('cancel-create'),
+        modalBodyContent = document.getElementById('modal-body-content'),
         method = 'POST';
         
     hideModalAlert();
@@ -229,6 +230,9 @@ function showGenericEditor(options) {
                 type: method
             }).done(function(data) {
                 displayModalAlert(data.message, 'success');
+                createButton.disabled = true;
+                cancelButton.disabled = true;
+                modalBodyContent.style.display = 'none';
                 name.value = '';
                 setTimeout(function() {
                     refresh();
@@ -266,6 +270,8 @@ function genericDelete(options) {
         }).done(function(data) {
             if (data.deleted) {
                 panel.className = 'hidden';
+                deleteButton.disabled = true;
+                cancelButton.disabled = true;
                 displayModalAlert(data.message, 'success');
                 setTimeout(function() {
                     refresh();

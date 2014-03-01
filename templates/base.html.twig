@@ -6,7 +6,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>{% block title %}Boeke{% endblock %}</title>
+        <title>{% block title %}Inicio{% endblock %} &mdash; Boeke</title>
         <meta name="description" content="Aplicación de gestión del préstamo de libros a alumnos.">
         <meta name="viewport" content="width=device-width">
 
@@ -85,7 +85,9 @@
               </div>
               <div class="modal-body">
                   <div class="alert hidden" id="modal-alert"></div>
-                  {% block modal_body %}{% endblock %}
+                  <div id="modal-body-content">
+                      {% block modal_body %}{% endblock %}
+                  </div>
               </div>
               <div class="modal-footer">
                   {% block modal_footer %}{% endblock %}

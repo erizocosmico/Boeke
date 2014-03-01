@@ -23,7 +23,7 @@ bower install
 ```
 **Nota:** Requiere composer y bower instalados si se va a instalar de este método.
 
-Si no deseas tener que hacer todo este proceso o tu servidor no puede utilizar estos gestores de paquetes puedes descargar la aplicación con todos los paquetes necesarios desde [aquí]().
+Si no deseas tener que hacer todo este proceso o tu servidor no puede utilizar estos gestores de paquetes puedes descargar la aplicación con todos los paquetes necesarios desde [aquí](https://github.com/mvader/Boeke/releases/download/1.0.0/Boeke-1.0.0.zip).
 
 Una vez subida la aplicación al servidor, de cualquiera de las dos maneras, habrá que ir al instalador:
 

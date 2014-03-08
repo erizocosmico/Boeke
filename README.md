@@ -23,10 +23,30 @@ bower install
 ```
 **Nota:** Requiere composer y bower instalados si se va a instalar de este método.
 
-Si no deseas tener que hacer todo este proceso o tu servidor no puede utilizar estos gestores de paquetes puedes descargar la aplicación con todos los paquetes necesarios desde [aquí]().
+Si no deseas tener que hacer todo este proceso o tu servidor no puede utilizar estos gestores de paquetes puedes descargar la aplicación con todos los paquetes necesarios desde [aquí](https://github.com/mvader/Boeke/releases/download/1.0.1/Boeke-1.0.1.zip).
 
 Una vez subida la aplicación al servidor, de cualquiera de las dos maneras, habrá que ir al instalador:
 
 ```
 http://tudominio.com/install.php
+```
+
+###Instalar en un subdirectorio
+Si el ```DocumentRoot``` de Apache no apunta a la carpeta ```public```, será necesario añadir ```/public/``` a la ruta. Es decir, si tienes la aplicación en ```http://midominio.com/boeke/``` para acceder será necesario acceder a ```http://midominio.com/boeke/public/```.
+
+Para que funcione correctamente será necesario hacer los siguientes cambios:
+
+* Crear un fichero ```.htaccess``` con el siguiente contenido en la carpeta de la aplicación:
+```
+RewriteEngine On
+RewriteBase /ruta-de-nuestro-subdirectorio/
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^ public/ [L,R=301]
+````
+* Modificar el fichero ```.htaccess``` de la carpeta ```public```:
+```
+RewriteEngine On
+RewriteBase /ruta-de-nuestro-subdirectorio/public/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]
 ```

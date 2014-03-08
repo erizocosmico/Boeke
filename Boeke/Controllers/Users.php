@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     1.0.0
+ * @version     1.0.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -48,6 +48,7 @@ class Users extends Base
      */
     public static function login()
     {
+        $app = self::$app;
         // ¿Debemos procesar la petición en caso de ser post?
         $processRequest = true;
 
@@ -56,14 +57,14 @@ class Users extends Base
         // um mensaje. Si lo fue lo dejaremos entrar.
         if (isset($_SESSION['block_started'])) {
             if ($_SESSION['block_started'] > time()) {
-                self::$app->flashNow('error', 'Tienes el acceso bloqueado. Intenta de nuevo en unos minutos.');
+                $app->flashNow('error', 'Tienes el acceso bloqueado. Intenta de nuevo en unos minutos.');
                 $processRequest = false;
             } else {
                 unset($_SESSION['block_started']);
             }
         }
 
-        $request = self::$app->request;
+        $request = $app->request;
         if ($request->isPost() && $processRequest) {
             // Buscamos al usuario
             $user = \Model::factory('Usuario')
@@ -79,7 +80,7 @@ class Users extends Base
             }
 
             if (!$valid) {
-                self::$app->flashNow('error', 'Nombre o contraseña incorrectos.');
+                $app->flashNow('error', 'Nombre o contraseña incorrectos.');
 
                 // Miramos los intentos que le quedan al usuario
                 if (isset($_SESSION['retries_left'])) {
@@ -110,17 +111,17 @@ class Users extends Base
                 $session->save();
 
                 // Redirigimos al índice
-                self::$app->redirect('/');
+                $app->redirect($app->urlFor('index'));
             }
         }
 
-        self::$app->render('login.html.twig', array(
-            'action'        => self::$app->urlFor('login'),
+        $app->render('login.html.twig', array(
+            'action'        => $app->urlFor('login'),
             'breadcrumbs'   => array(
                 array(
                     'active'        => true,
                     'text'          => 'Entrar',
-                    'route'         => self::$app->urlFor('login'),
+                    'route'         => $app->urlFor('login'),
                 ),
             ),
         ));
@@ -131,7 +132,8 @@ class Users extends Base
      */
     public static function logout()
     {
-        self::$app->deleteCookie(self::$config['cookie_name']);
+        $app = self::$app;
+        $app->deleteCookie(self::$config['cookie_name']);
 
         // Borramos la sesión
         \Model::factory('Sesion')
@@ -146,7 +148,7 @@ class Users extends Base
         // Si redirigimos al índice y no está conectado lo redirigirá
         // al login, así que nos ahorramos una redirección y
         // lo mandamos directamente al login.
-        self::$app->redirect('/login');
+        $app->redirect('login');
     }
 
     /**
@@ -198,7 +200,7 @@ class Users extends Base
                 array(
                     'active'        => true,
                     'text'          => 'Listado de usuarios',
-                    'route'         => self::$app->urlFor('users_index'),
+                    'route'         => $app->urlFor('users_index'),
                 ),
             ),
         ));

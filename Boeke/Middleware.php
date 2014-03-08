@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     1.0.0
+ * @version     1.0.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -58,7 +58,7 @@ class Middleware
                 isset($_SESSION['session_hash']))) {
                 session_destroy();
                 if (!$reverse) {
-                    $app->redirect('/login');
+                    $app->redirect('login');
                 }
             } else {
                 // Si está conectado debemos determinar si la id del usuario
@@ -73,10 +73,10 @@ class Middleware
                     unset($_SESSION['user_id']);
                     unset($_SESSION['session_hash']);
                     if (!$reverse) {
-                        $app->redirect('/login');
+                        $app->redirect('login');
                     }
                 } elseif ($reverse) {
-                    $app->redirect('/');
+                    $app->redirect($app->urlFor('index'));
                 }
             }
         };

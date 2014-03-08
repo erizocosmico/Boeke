@@ -6,7 +6,7 @@
  * @copyright   2013 José Miguel Molina
  * @link        https://github.com/mvader/Boeke
  * @license     https://raw.github.com/mvader/Boeke/master/LICENSE
- * @version     1.0.0
+ * @version     1.0.1
  * @package     Boeke
  *
  * MIT LICENSE
@@ -58,14 +58,14 @@ class Base
      * @param  \ORMWrapper $set         Conjunto de items a paginar
      * @param  int         $perPage     Cantidad de items por página
      * @param  int         $current     Página actual
-     * @param  callable    $urlCallback Función que dada la página genere la url para dicha página
+     * @param  \Closure    $urlCallback Función que dada la página genere la url para dicha página
      * @return string      HTML de la paginación
      */
     final public static function generatePagination(
         $set,
         $perPage,
         $current,
-        callable $urlCallback
+        \Closure $urlCallback
     ) {
         if (is_numeric($set)) {
             $count = $set;
